@@ -36,7 +36,25 @@
     { office: 'St. Louis', market: 'St. Louis', state: 'MO', region: 'Central', lat: 38.63, lng: -90.20 },
     { office: 'Indianapolis', market: 'Indianapolis', state: 'IN', region: 'Central', lat: 39.77, lng: -86.16 },
     { office: 'Columbus', market: 'Columbus', state: 'OH', region: 'East', lat: 39.96, lng: -83.00 },
-    { office: 'Birmingham', market: 'Birmingham', state: 'AL', region: 'East', lat: 33.52, lng: -86.80 }
+    { office: 'Birmingham', market: 'Birmingham', state: 'AL', region: 'East', lat: 33.52, lng: -86.80 },
+    { office: 'Chicago', market: 'Chicago', state: 'IL', region: 'Central', lat: 41.88, lng: -87.63 },
+    { office: 'Cleveland', market: 'Cleveland', state: 'OH', region: 'East', lat: 41.50, lng: -81.69 },
+    { office: 'Pittsburgh', market: 'Pittsburgh', state: 'PA', region: 'East', lat: 40.44, lng: -79.99 },
+    { office: 'Philadelphia', market: 'Philadelphia', state: 'PA', region: 'East', lat: 39.95, lng: -75.17 },
+    { office: 'Raleigh', market: 'Raleigh', state: 'NC', region: 'East', lat: 35.78, lng: -78.64 },
+    { office: 'Greenville', market: 'Greenville', state: 'SC', region: 'East', lat: 34.85, lng: -82.40 },
+    { office: 'Louisville', market: 'Louisville', state: 'KY', region: 'Central', lat: 38.25, lng: -85.76 },
+    { office: 'Minneapolis', market: 'Minneapolis', state: 'MN', region: 'Central', lat: 44.98, lng: -93.27 },
+    { office: 'Oklahoma City', market: 'Oklahoma City', state: 'OK', region: 'Central', lat: 35.47, lng: -97.52 },
+    { office: 'Little Rock', market: 'Little Rock', state: 'AR', region: 'Central', lat: 34.75, lng: -92.29 },
+    { office: 'New Orleans', market: 'New Orleans', state: 'LA', region: 'Central', lat: 29.95, lng: -90.07 },
+    { office: 'Albuquerque', market: 'Albuquerque', state: 'NM', region: 'West', lat: 35.08, lng: -106.65 },
+    { office: 'Salt Lake City', market: 'Salt Lake City', state: 'UT', region: 'West', lat: 40.76, lng: -111.89 },
+    { office: 'Boise', market: 'Boise', state: 'ID', region: 'West', lat: 43.62, lng: -116.20 },
+    { office: 'Sacramento', market: 'Sacramento', state: 'CA', region: 'West', lat: 38.58, lng: -121.49 },
+    { office: 'Portland', market: 'Portland', state: 'OR', region: 'West', lat: 45.52, lng: -122.68 },
+    { office: 'Milwaukee', market: 'Milwaukee', state: 'WI', region: 'Central', lat: 43.04, lng: -87.91 },
+    { office: 'Detroit', market: 'Detroit', state: 'MI', region: 'East', lat: 42.33, lng: -83.05 }
   ];
   F.STREETS = ['Maple','Oak','Cedar','Pine','Elm','Willow','Birch','Juniper','Magnolia','Hickory','Sycamore','Aspen','Laurel','Chestnut','Poplar','Cypress','Redbud','Mesquite','Dogwood','Sweetgum'];
   F.SUFFIX = ['St','Ave','Dr','Ln','Ct','Way','Blvd','Pl','Trl','Cir'];

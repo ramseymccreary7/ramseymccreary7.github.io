@@ -3,12 +3,18 @@
   var months = [], y = 2023, m = 1; // Jan-23 .. Oct-26
   while (y < 2026 || (y === 2026 && m <= 10)) { months.push({ y: y, m: m, label: MON[m - 1] + '-' + String(y).slice(-2) }); m++; if (m > 12) { m = 1; y++; } }
   var M = months.length, ttmS = M - 12, season = [0.07, 0.075, 0.09, 0.09, 0.088, 0.085, 0.083, 0.087, 0.082, 0.085, 0.078, 0.077];
-  var offices = F.OFFICES.map(function (o, k) {
-    var lvl = F.r(8, 34), dpd = F.r(11000, 17500), trend = F.r(-0.01, 0.02), d = [], v = [];
+  var EXTRA = [['Chicago','IL'],['Detroit','MI'],['Cleveland','OH'],['Cincinnati','OH'],['Pittsburgh','PA'],['Philadelphia','PA'],['Baltimore','MD'],['Richmond','VA'],['Raleigh','NC'],['Greenville','SC'],
+    ['Columbia','SC'],['Louisville','KY'],['Milwaukee','WI'],['Minneapolis','MN'],['Omaha','NE'],['Des Moines','IA'],['Oklahoma City','OK'],['Tulsa','OK'],['Little Rock','AR'],['Baton Rouge','LA'],
+    ['New Orleans','LA'],['Jackson','MS'],['Huntsville','AL'],['Albuquerque','NM'],['Tucson','AZ'],['Salt Lake City','UT'],['Boise','ID'],['Sacramento','CA'],['Riverside','CA'],['Spokane','WA'],['Portland','OR'],['El Paso','TX']];
+  var ALL = F.OFFICES.map(function (o) { return { office: o.office, state: o.state }; }).concat(EXTRA.map(function (x) { return { office: x[0], state: x[1] }; }));
+  var seenO = {}; ALL = ALL.filter(function (o) { if (seenO[o.office]) return false; seenO[o.office] = 1; return true; });
+  ALL.sort(function (a, b) { return a.office.localeCompare(b.office); });
+  var offices = ALL.map(function (o, k) {
+    var lvl = F.r(60, 240), dpd = F.r(11000, 17500), trend = F.r(-0.01, 0.02), d = [], v = [];
     months.forEach(function (mo, i) { var x = Math.max(0, Math.round(lvl * (1 + trend * i / 2) * season[mo.m - 1] * 12 * F.r(0.8, 1.2) * 2) / 2); d.push(x); v.push(Math.round(x * dpd * F.r(0.9, 1.1))); });
     return { n: o.office, s: o.state, d: d, v: v, r: 'Active' };
   });
-  var inactive = [{ n: 'Boise', s: 'ID', d: months.map(function (_, i) { return i < M - 8 ? F.i(0, 3) : 0; }), v: months.map(function (_, i) { return i < M - 8 ? F.i(0, 3) * 12000 : 0; }), r: 'No deals Aug-26 – Oct-26' }];
+  var inactive = [{ n: 'Fresno', s: 'CA', d: months.map(function (_, i) { return i < M - 8 ? F.i(0, 3) : 0; }), v: months.map(function (_, i) { return i < M - 8 ? F.i(0, 3) * 12000 : 0; }), r: 'No deals Aug-26 – Oct-26' }];
   var ref = { months: months.map(function (x) { return x.label; }), years: months.map(function (x) { return x.y; }), mons: months.map(function (x) { return x.m; }),
     ttmStart: ttmS, latest: months[M - 1].label, ttmLabel: months[ttmS].label + ' – ' + months[M - 1].label, recentLabel: months[M - 3].label + ' – ' + months[M - 1].label,
     offices: offices, inactive: inactive, season: { d: season, v: season }, companyDpd: 14200 };

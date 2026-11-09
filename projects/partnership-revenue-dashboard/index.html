@@ -7,7 +7,7 @@
 
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Deal Ops & Partnership Revenue — Demo</title>
+<title>Institutional Buyer Dashboard — Demo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700;900&display=swap" rel="stylesheet">
@@ -224,7 +224,7 @@
     <div class="logo-fb" id="gateFb" hidden>Atlas</div>
   </div>
   <div class="ag-card">
-    <h1>Deal Ops &amp; Partnership Revenue</h1>
+    <h1>Institutional Buyer Dashboard</h1>
     <p class="ag-lead">Sign in with the email address FP&amp;A gave access to. We'll email you a 6-digit code.</p>
     <div class="ag-note" id="ag-note"></div>
     <div id="ag-step1">
@@ -252,8 +252,8 @@
       <div class="logo-fb" id="hdrFb" hidden><div class="mark">Atlas</div><div class="name">Atlas</div></div>
     </div>
     <div style="flex:1;min-width:260px">
-      <h1>Deal Ops &amp; Partnership Revenue Dashboard</h1>
-      <div class="sub">Revenue basis: <b style="color:#BD9F40">Profit after Holdback</b> &nbsp;·&nbsp; AA acquisition partnerships &amp; DA disposition partnerships</div>
+      <h1>Institutional Buyer Dashboard</h1>
+      <div class="sub">Revenue basis: <b style="color:#BD9F40">Profit after Holdback</b> &nbsp;·&nbsp; Front Side acquisition partnerships &amp; Back Side disposition partnerships</div>
     </div>
     <div class="meta">
       <div>Data refreshed<br><b id="genAt">—</b></div>
@@ -266,12 +266,12 @@
 
 <div class="tabs">
   <button class="tab active" data-tab="overview" onclick="switchTab('overview')">Overview</button>
-  <button class="tab" data-tab="aa" onclick="switchTab('aa')">AA Side</button>
-  <button class="tab" data-tab="da" onclick="switchTab('da')">DA Side</button>
-  <button class="tab" data-tab="nd" onclick="switchTab('nd')">Non-Deal Ops</button>
+  <button class="tab" data-tab="aa" onclick="switchTab('aa')">Front Side</button>
+  <button class="tab" data-tab="da" onclick="switchTab('da')">Back Side</button>
+  <button class="tab" data-tab="nd" onclick="switchTab('nd')">Field Deals</button>
   <button class="tab" data-tab="payout" style="display:none" onclick="switchTab('payout')">Bonus Payout Tracker 🔒</button>
   <button class="tab" data-tab="boost" onclick="switchTab('boost')">Personal Production Boost Deals</button>
-  <button class="tab" data-tab="criteria" onclick="switchTab('criteria')">AA &amp; DA Side Criteria</button>
+  <button class="tab" data-tab="criteria" onclick="switchTab('criteria')">Front &amp; Back Side Criteria</button>
   <button class="tab" data-tab="rules" style="display:none" onclick="switchTab('rules')">Classification Rules 🔒</button>
   <button class="tab" data-tab="editor" style="display:none" onclick="switchTab('editor')">Editor 🔒</button>
 </div>
@@ -335,19 +335,19 @@
 <main>
   <!-- OVERVIEW -->
   <section class="page active" id="page-overview">
-    <p class="scope-note">Showing <b id="ov-scope">all Closed deals</b> — partnership revenue (AA + DA) is shown as a subset of the total.</p>
+    <p class="scope-note">Showing <b id="ov-scope">all Closed deals</b> — partnership revenue (front + back side) is shown as a subset of the total.</p>
     <div class="kpis" id="ov-kpis"></div>
     <div class="grid g-full">
       <div class="card">
-        <h3>Monthly Revenue - Deal Ops vs Total Partnership</h3>
-        <p class="hint">Stacked Profit after Holdback: DA Only + AA Only + Both AA&amp;DA + Non-Deal Ops = period total (each deal counted once). Hover a bar for full AA / DA / Deal Ops totals.</p>
+        <h3>Monthly Revenue - Institutional Buyer vs Total Partnership</h3>
+        <p class="hint">Stacked Profit after Holdback: Back Side Only + Front Side Only + Both Sides + Field Deals = period total (each deal counted once). Hover a bar for full Front Side / Back Side / Institutional Buyer totals.</p>
         <div class="chart-wrap tall"><canvas id="ov-trend"></canvas></div>
       </div>
     </div>
     <div class="grid g-2">
       <div class="card">
         <h3>Revenue by Market</h3>
-        <p class="hint">Stacked DA-only + AA-only + Both + Non-Deal Ops per market (each deal once) · counts (AA · DA · Both · Non) shown at the right of each bar. Click a bar to filter the dashboard to that market.</p>
+        <p class="hint">Stacked back-side-only + front-side-only + Both + Field Deals per market (each deal once) · counts (Front · Back · Both · Field) shown at the right of each bar. Click a bar to filter the dashboard to that market.</p>
         <div class="chart-wrap tall"><canvas id="ov-office"></canvas></div>
       </div>
       <div class="card">
@@ -362,32 +362,32 @@
     </div>
   </section>
 
-  <!-- AA SIDE -->
+  <!-- FRONT SIDE -->
   <section class="page" id="page-aa">
-    <p class="scope-note"><b>AA Side</b> = acquisition partnerships — Lead Source in (DealOps, Wholesaler (WAM)) or Marketing Source in (Wholesaler (WAM), WAM Partner).</p>
+    <p class="scope-note"><b>Front Side</b> = acquisition partnerships — Lead Source in (DealOps, Wholesaler (WAM)) or Marketing Source in (Wholesaler (WAM), WAM Partner).</p>
     <div class="kpis" id="aa-kpis"></div>
     <div class="grid g-full">
       <div class="card">
-        <h3>AA Side — Monthly Revenue &amp; Deal Count</h3>
+        <h3>Front Side — Monthly Revenue &amp; Deal Count</h3>
         <p class="hint">Bars: Profit after Holdback · Line: deal count.</p>
         <div class="chart-wrap tall"><canvas id="aa-trend"></canvas></div>
       </div>
     </div>
     <div class="grid g-2">
       <div class="card">
-        <h3>AA Revenue by Market</h3>
+        <h3>Front Side Revenue by Market</h3>
         <p class="hint">Click a bar to filter to that market.</p>
         <div class="chart-wrap tall"><canvas id="aa-office"></canvas></div>
       </div>
       <div class="card">
-        <h3>AA Revenue by Lead Source</h3>
+        <h3>Front Side Revenue by Lead Source</h3>
         <p class="hint">DealOps vs. WAM and related partner sources.</p>
         <div class="chart-wrap tall"><canvas id="aa-lead"></canvas></div>
       </div>
     </div>
     <div class="card">
       <div class="tbl-head">
-        <h3>AA Side Deals</h3>
+        <h3>Front Side Deals</h3>
         <input class="search" id="aa-search" placeholder="Search address, agent, market, source…" oninput="renderAA()">
       </div>
       <div class="scroll-x"><table id="aa-table"></table></div>
@@ -395,32 +395,32 @@
     </div>
   </section>
 
-  <!-- DA SIDE -->
+  <!-- BACK SIDE -->
   <section class="page" id="page-da">
-    <p class="scope-note"><b>DA Side</b> = disposition partnerships — Buyer is <b>Partner Fund A</b> (Partner B), plus any deals matched by DA rules on the Classification Rules tab. See <b>AA &amp; DA Side Criteria</b> for the full logic.</p>
+    <p class="scope-note"><b>Back Side</b> = disposition partnerships — Buyer is <b>Partner Fund A</b> (Partner B), plus any deals matched by Back Side rules on the Classification Rules tab. See <b>Front &amp; Back Side Criteria</b> for the full logic.</p>
     <div class="kpis" id="da-kpis"></div>
     <div class="grid g-full">
       <div class="card">
-        <h3>DA Side — Monthly Revenue &amp; Deal Count</h3>
+        <h3>Back Side — Monthly Revenue &amp; Deal Count</h3>
         <p class="hint">Bars: Profit after Holdback · Line: deal count.</p>
         <div class="chart-wrap tall"><canvas id="da-trend"></canvas></div>
       </div>
     </div>
     <div class="grid g-2">
       <div class="card">
-        <h3>DA Revenue by Market</h3>
+        <h3>Back Side Revenue by Market</h3>
         <p class="hint">Click a bar to filter to that market.</p>
         <div class="chart-wrap tall"><canvas id="da-office"></canvas></div>
       </div>
       <div class="card">
-        <h3>DA Revenue by Disposition Agent</h3>
+        <h3>Back Side Revenue by Disposition Agent</h3>
         <p class="hint">Top primary DAs on partnership deals.</p>
         <div class="chart-wrap tall"><canvas id="da-agent"></canvas></div>
       </div>
     </div>
     <div class="card">
       <div class="tbl-head">
-        <h3>DA Side Deals</h3>
+        <h3>Back Side Deals</h3>
         <input class="search" id="da-search" placeholder="Search address, DA, market, buyer…" oninput="renderDA()">
       </div>
       <div class="scroll-x"><table id="da-table"></table></div>
@@ -428,32 +428,32 @@
     </div>
   </section>
 
-  <!-- NON-Deal Ops -->
+  <!-- Field Deals -->
   <section class="page" id="page-nd">
-    <p class="scope-note"><b>Non-Deal Ops</b> = deals that are neither AA side nor DA side — no acquisition or disposition partnership attached.</p>
+    <p class="scope-note"><b>Field Deals</b> = deals that are neither front side nor back side — no acquisition or disposition partnership attached.</p>
     <div class="kpis" id="nd-kpis"></div>
     <div class="grid g-full">
       <div class="card">
-        <h3>Non-Deal Ops — Monthly Revenue &amp; Deal Count</h3>
+        <h3>Field Deals — Monthly Revenue &amp; Deal Count</h3>
         <p class="hint">Bars: Profit after Holdback · Line: deal count.</p>
         <div class="chart-wrap tall"><canvas id="nd-trend"></canvas></div>
       </div>
     </div>
     <div class="grid g-2">
       <div class="card">
-        <h3>Non-Deal Ops Revenue by Market</h3>
+        <h3>Field Deals Revenue by Market</h3>
         <p class="hint">Click a bar to filter to that market.</p>
         <div class="chart-wrap tall"><canvas id="nd-office"></canvas></div>
       </div>
       <div class="card">
-        <h3>Non-Deal Ops Revenue by Lead Source</h3>
+        <h3>Field Deals Revenue by Lead Source</h3>
         <p class="hint">Which lead sources drive non-partnership revenue.</p>
         <div class="chart-wrap tall"><canvas id="nd-lead"></canvas></div>
       </div>
     </div>
     <div class="card">
       <div class="tbl-head">
-        <h3>Non-Deal Ops Deals</h3>
+        <h3>Field Deals Deals</h3>
         <input class="search" id="nd-search" placeholder="Search address, agent, market, source…" oninput="renderND()">
       </div>
       <div class="scroll-x"><table id="nd-table"></table></div>
@@ -472,7 +472,7 @@
       <div id="payout-gate-err" style="color:#8C2A1B;font-size:12.5px;margin-top:8px;display:none">Incorrect password — try again.</div>
     </div>
     <div id="payout-panel" style="display:none">
-    <p class="scope-note">Payout is based on <b>combined AA + DA partnership revenue</b> (Profit after Holdback) per quarter. Respects the current <b>stage</b>, market and lead-source filters; the Month/Quarter period filter does not apply here — all four quarters are always shown.</p>
+    <p class="scope-note">Payout is based on <b>combined Front Side + Back Side partnership revenue</b> (Profit after Holdback) per quarter. Respects the current <b>stage</b>, market and lead-source filters; the Month/Quarter period filter does not apply here — all four quarters are always shown.</p>
     <div class="fgroup" style="margin-bottom:16px">
       <label>Quarter in Focus</label>
       <div class="seg" id="payoutQSeg">
@@ -494,7 +494,7 @@
       </div>
       <div class="card">
         <h3>Payout Tiers</h3>
-        <p class="hint">Combined AA + DA quarterly revenue → payout earned.</p>
+        <p class="hint">Combined Front Side + Back Side quarterly revenue → payout earned.</p>
         <table id="pay-tiers"></table>
       </div>
     </div>
@@ -511,15 +511,15 @@
     </div>
 
     <h2 style="font-size:19px;font-weight:800;margin:32px 0 4px;padding-top:16px;border-top:2px solid var(--line)">New Market Bonuses</h2>
-    <p class="scope-note">Each new market earns its <b>bonus payout</b> once it reaches its <b>required number of closed deals</b> (both the deal count and the payout are set per side in the Editor tab) counted from its entry date onward. AA-side markets count AA-side deals; DA-side markets count DA-side deals. On the progress bar, <b style="color:#8a7420">solid gold</b> = closed deals (count toward the bonus); <b style="color:var(--grey)">striped grey</b> = pending (Sold / Pre&nbsp;Close) deals, shown for pipeline context only. Add or edit markets on the <b>Editor</b> tab.</p>
+    <p class="scope-note">Each new market earns its <b>bonus payout</b> once it reaches its <b>required number of closed deals</b> (both the deal count and the payout are set per side in the Editor tab) counted from its entry date onward. front-side markets count front-side deals; back-side markets count back-side deals. On the progress bar, <b style="color:#8a7420">solid gold</b> = closed deals (count toward the bonus); <b style="color:var(--grey)">striped grey</b> = pending (Sold / Pre&nbsp;Close) deals, shown for pipeline context only. Add or edit markets on the <b>Editor</b> tab.</p>
     <div class="kpis" id="mk-kpis"></div>
     <div class="grid g-2">
       <div class="card">
-        <h3>AA Side — New Markets</h3>
+        <h3>Front Side — New Markets</h3>
         <div class="scroll-x"><table id="mk-aa"></table></div>
       </div>
       <div class="card">
-        <h3>DA Side — New Markets</h3>
+        <h3>Back Side — New Markets</h3>
         <div class="scroll-x"><table id="mk-da"></table></div>
       </div>
     </div>
@@ -528,12 +528,12 @@
 
   <!-- PERSONAL PRODUCTION BOOST DEALS -->
   <section class="page" id="page-boost">
-    <p class="scope-note">Deals that count toward the <b>New Market bonuses</b> — a deal in an entered new market, on that side, with a close date on/after the market's entry date. Use the toggle for AA / DA / Both, and the top filters for market, month and stage.</p>
+    <p class="scope-note">Deals that count toward the <b>New Market bonuses</b> — a deal in an entered new market, on that side, with a close date on/after the market's entry date. Use the toggle for Front Side / Back Side / Both, and the top filters for market, month and stage.</p>
     <div class="fgroup" style="margin-bottom:16px">
       <label>Side</label>
       <div class="seg" id="boostSeg">
-        <button data-bs="AA">AA Side</button>
-        <button data-bs="DA">DA Side</button>
+        <button data-bs="AA">Front Side</button>
+        <button data-bs="DA">Back Side</button>
         <button data-bs="BOTH" class="on">Both</button>
       </div>
     </div>
@@ -553,48 +553,48 @@
     </div>
   </section>
 
-  <!-- AA & DA SIDE CRITERIA -->
+  <!-- Front &amp; Back Side SIDE CRITERIA -->
   <section class="page" id="page-criteria">
     <p class="scope-note">How every deal is classified. These rules are applied in the data layer, so they drive every tab, chart, KPI, and the bonus payout. Counts below reflect all deals in the current dataset.</p>
     <div class="kpis" id="cr-kpis"></div>
     <div class="grid g-2">
       <div class="card crit" style="border-left:4px solid var(--gold)">
-        <h3>AA Side <span class="muted" id="cr-aa-n"></span></h3>
-        <p class="hint">Acquisition-side partnership. Through <b>6/30/2026</b>, a deal is <b>AA Side</b> if <b>any</b> of these are true:</p>
+        <h3>Front Side <span class="muted" id="cr-aa-n"></span></h3>
+        <p class="hint">Acquisition-side partnership. Through <b>6/30/2026</b>, a deal is <b>Front Side</b> if <b>any</b> of these are true:</p>
         <ul>
           <li>Lead Source is <span class="chip">DealOps</span> or <span class="chip">Wholesaler (WAM)</span></li>
           <li>Marketing Source is <span class="chip">Wholesaler (WAM)</span> or <span class="chip">WAM Partner</span></li>
-          <li>The sheet's <span class="chip">AA Side Criteria</span> column = <span class="chip">AA Side</span></li>
+          <li>The sheet's <span class="chip">Front Side Criteria</span> column = <span class="chip">Front Side</span></li>
         </ul>
-        <div class="rule-note"><b>Rule change — effective 7/1/2026:</b> for deals with a close date on or after 7/1/2026, a deal is AA Side if <b>any</b> of:
+        <div class="rule-note"><b>Rule change — effective 7/1/2026:</b> for deals with a close date on or after 7/1/2026, a deal is Front Side if <b>any</b> of:
           <ul style="margin:6px 0 0">
             <li>Lead Source = <span class="chip">DealOps</span></li>
             <li>Marketing Source = <span class="chip">WAM Partner</span></li>
             <li>Acquisition Agent or Secondary AA is <span class="chip">Avery Pemberton</span>, <span class="chip">Micah Langley</span>, <span class="chip">Dana Wexler</span>, or <span class="chip">Hollis Yardley</span></li>
           </ul>
-          Wholesaler (WAM) as a lead source and the AA Side Criteria column no longer qualify on their own.</div>
+          Wholesaler (WAM) as a lead source and the Front Side Criteria column no longer qualify on their own.</div>
       </div>
       <div class="card crit" style="border-left:4px solid var(--teal)">
-        <h3>DA Side <span class="muted" id="cr-da-n"></span></h3>
-        <p class="hint">Disposition-side partnership (Partner B). A deal is <b>DA Side</b> if <b>any</b> of these are true:</p>
+        <h3>Back Side <span class="muted" id="cr-da-n"></span></h3>
+        <p class="hint">Disposition-side partnership (Partner B). A deal is <b>Back Side</b> if <b>any</b> of these are true:</p>
         <ul>
           <li>Buyer: Full Name = <span class="chip">Partner Fund A</span> (Partner B's buying entity)</li>
-          <li>The sheet's <span class="chip">DA Side Criteria</span> column = <span class="chip">DA Side</span></li>
+          <li>The sheet's <span class="chip">Back Side Criteria</span> column = <span class="chip">Back Side</span></li>
         </ul>
-        <p class="hint" style="margin-top:12px">The DA Side rule is the same for all dates — it did not change on 7/1/2026.</p>
+        <p class="hint" style="margin-top:12px">The Back Side rule is the same for all dates — it did not change on 7/1/2026.</p>
       </div>
     </div>
     <div class="grid g-2">
       <div class="card crit" style="border-left:4px solid var(--grey)">
-        <h3>Non-Deal Ops <span class="muted" id="cr-nd-n"></span></h3>
-        <p class="hint">Everything that qualifies as <b>neither AA Side nor DA Side</b>. These are deals with no acquisition or disposition partnership attached (e.g. referral or direct lead sources with a non-partner buyer).</p>
+        <h3>Field Deals <span class="muted" id="cr-nd-n"></span></h3>
+        <p class="hint">Everything that qualifies as <b>neither Front Side nor Back Side</b>. These are deals with no acquisition or disposition partnership attached (e.g. referral or direct lead sources with a non-partner buyer).</p>
       </div>
       <div class="card crit">
         <h3>Overlap &amp; how counts add up</h3>
         <ul>
-          <li>A deal can be <b>both AA and DA</b> (partner-sourced acquisition sold to Partner B). It then appears on <b>both</b> the AA Side and DA Side tabs.</li>
-          <li>On the Overview stack, revenue is split into <b>AA Only</b>, <b>DA Only</b>, <b>Both AA &amp; DA</b> (its own color), and <b>Non-Deal Ops Partnership</b> — each deal counted <b>once</b>, so nothing is overstated and the bar equals the period total.</li>
-          <li>Deals on <b>both</b> sides are counted once (in the Both segment). Hover the Overview bars to see full <b>AA Side</b>, full <b>DA Side</b>, <b>Both</b>, and <b>Total Deal Ops</b> (AA + DA combined).</li>
+          <li>A deal can be <b>both sides</b> (partner-sourced acquisition sold to Partner B). It then appears on <b>both</b> the Front Side and Back Side tabs.</li>
+          <li>On the Overview stack, revenue is split into <b>Front Side Only</b>, <b>Back Side Only</b>, <b>Both Sides</b> (its own color), and <b>Field Deals</b> — each deal counted <b>once</b>, so nothing is overstated and the bar equals the period total.</li>
+          <li>Deals on <b>both</b> sides are counted once (in the Both segment). Hover the Overview bars to see full <b>Front Side</b>, full <b>Back Side</b>, <b>Both</b>, and <b>Total Institutional Buyer</b> (front + back side combined).</li>
           <li>Revenue everywhere = <span class="chip">Profit after Holdback</span>.</li>
         </ul>
       </div>
@@ -610,7 +610,7 @@
   <section class="page" id="page-rules">
     <div id="rules-gate" class="card" style="max-width:420px;margin:12px auto">
       <h3>🔒 Classification Rules</h3>
-      <p class="hint">Enter the password to add or edit custom AA / DA classification rules.</p>
+      <p class="hint">Enter the password to add or edit custom front / back side classification rules.</p>
       <input type="password" id="rules-pw" class="search" style="width:100%;min-width:0" placeholder="Password"
              onkeydown="if(event.key==='Enter')unlockRules()">
       <div style="margin-top:10px"><button class="btn btn-gold" onclick="unlockRules()">Unlock</button></div>
@@ -618,7 +618,7 @@
     </div>
 
     <div id="rules-panel" style="display:none">
-      <p class="scope-note">Build rules to classify deals as <b>AA Side</b> or <b>DA Side</b>. Each rule can combine one or more <b>conditions</b> — Lead Source, Marketing Source, Market, Acquisition Agent, Secondary AA, Primary DA, Secondary DA, or <b>Deal (Address)</b> for a one-off deal — plus an optional <b>date range</b>. Within a condition, pick one or more values (matches any of them); across conditions a deal must satisfy <b>all</b> of them. A matching deal is forced to that side, <b>in addition</b> to the standard logic. Saving applies to everyone, refreshes the dashboard, and updates the Criteria tab.</p>
+      <p class="scope-note">Build rules to classify deals as <b>Front Side</b> or <b>Back Side</b>. Each rule can combine one or more <b>conditions</b> — Lead Source, Marketing Source, Market, Acquisition Agent, Secondary AA, Primary DA, Secondary DA, or <b>Deal (Address)</b> for a one-off deal — plus an optional <b>date range</b>. Within a condition, pick one or more values (matches any of them); across conditions a deal must satisfy <b>all</b> of them. A matching deal is forced to that side, <b>in addition</b> to the standard logic. Saving applies to everyone, refreshes the dashboard, and updates the Criteria tab.</p>
       <div class="card">
         <div class="tbl-head"><h3>Rules</h3><button class="btn btn-ghost" style="color:var(--charcoal);border-color:var(--line)" onclick="addRuleRow()">+ Add rule</button></div>
         <div id="rules-edit"></div>
@@ -658,22 +658,22 @@
       </div>
 
       <h3 style="margin:26px 0 4px">New Markets — Bonus</h3>
-      <p class="hint" style="margin-bottom:12px">Enter each new market and the date the team entered it. AA-side markets track AA-side Closed deals; DA-side markets track DA-side Closed deals. Type the market exactly as it appears in the data (suggestions provided).</p>
+      <p class="hint" style="margin-bottom:12px">Enter each new market and the date the team entered it. front-side markets track front-side Closed deals; back-side markets track back-side Closed deals. Type the market exactly as it appears in the data (suggestions provided).</p>
       <div class="card" style="display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap">
-        <div class="fgroup"><label>AA Side — closed deals required</label><input type="number" min="1" step="1" id="goal-AA" class="ed-input" style="text-align:left;width:90px"></div>
-        <div class="fgroup"><label>AA Side — bonus payout ($)</label><input type="number" min="0" step="500" id="goal-bonus-AA" class="ed-input" style="text-align:left;width:110px"></div>
-        <div class="fgroup"><label>DA Side — closed deals required</label><input type="number" min="1" step="1" id="goal-DA" class="ed-input" style="text-align:left;width:90px"></div>
-        <div class="fgroup"><label>DA Side — bonus payout ($)</label><input type="number" min="0" step="500" id="goal-bonus-DA" class="ed-input" style="text-align:left;width:110px"></div>
+        <div class="fgroup"><label>Front Side — closed deals required</label><input type="number" min="1" step="1" id="goal-AA" class="ed-input" style="text-align:left;width:90px"></div>
+        <div class="fgroup"><label>Front Side — bonus payout ($)</label><input type="number" min="0" step="500" id="goal-bonus-AA" class="ed-input" style="text-align:left;width:110px"></div>
+        <div class="fgroup"><label>Back Side — closed deals required</label><input type="number" min="1" step="1" id="goal-DA" class="ed-input" style="text-align:left;width:90px"></div>
+        <div class="fgroup"><label>Back Side — bonus payout ($)</label><input type="number" min="0" step="500" id="goal-bonus-DA" class="ed-input" style="text-align:left;width:110px"></div>
         <button class="btn btn-gold" onclick="saveGoals()">💾 Save bonus settings</button>
         <span id="goals-msg" style="font-weight:700"></span>
       </div>
       <div class="grid g-2">
         <div class="card">
-          <div class="tbl-head"><h3>AA Side</h3><button class="btn btn-ghost" style="color:var(--charcoal);border-color:var(--line)" onclick="addMarketRow('AA')">+ Add market</button></div>
+          <div class="tbl-head"><h3>Front Side</h3><button class="btn btn-ghost" style="color:var(--charcoal);border-color:var(--line)" onclick="addMarketRow('AA')">+ Add market</button></div>
           <div id="mkedit-AA"></div>
         </div>
         <div class="card">
-          <div class="tbl-head"><h3>DA Side</h3><button class="btn btn-ghost" style="color:var(--charcoal);border-color:var(--line)" onclick="addMarketRow('DA')">+ Add market</button></div>
+          <div class="tbl-head"><h3>Back Side</h3><button class="btn btn-ghost" style="color:var(--charcoal);border-color:var(--line)" onclick="addMarketRow('DA')">+ Add market</button></div>
           <div id="mkedit-DA"></div>
         </div>
       </div>
@@ -728,7 +728,7 @@ var charts = {};           // Chart.js registry
 var state = { stage:'Closed', office:'__ALL__', lead:'__ALL__', marketing:'__ALL__', buyer:'__ALL__', from:1, to:12,
               gran:'month', quarter:'ALL', payoutQ:'Q1', boostSide:'BOTH' };
 
-/* Performance payout: combined AA+DA quarterly revenue -> payout (highest tier met wins).
+/* Performance payout: combined Front Side+Back Side quarterly revenue -> payout (highest tier met wins).
    Tier targets (incl. the defaults) live ONLY on the server (Code.gs DEFAULT_TIERS / Editor tab) and are
    sent only to Director / Admin. Nothing is hard-coded in this page, so View Source shows no amounts. */
 var TARGETS = null;             // {Q1:[{t,rev,pay}..],...} from server; null for User
@@ -1144,10 +1144,10 @@ function renderCriteria(){
   });
   kpiRow('cr-kpis',[
     {label:'Total Deals',val:num(DEALS.length),sub:'all deals in dataset',cls:'k-charcoal'},
-    {label:'AA Side',val:num(aa),sub:pct(aa,DEALS.length)+' of deals',cls:'k-gold'},
-    {label:'DA Side',val:num(da),sub:pct(da,DEALS.length)+' of deals',cls:'k-teal'},
-    {label:'Non-Deal Ops',val:num(nd),sub:pct(nd,DEALS.length)+' of deals',cls:'k-sage'},
-    {label:'Both AA & DA',val:num(both),sub:'appear on both tabs',cls:'k-copper'}
+    {label:'Front Side',val:num(aa),sub:pct(aa,DEALS.length)+' of deals',cls:'k-gold'},
+    {label:'Back Side',val:num(da),sub:pct(da,DEALS.length)+' of deals',cls:'k-teal'},
+    {label:'Field Deals',val:num(nd),sub:pct(nd,DEALS.length)+' of deals',cls:'k-sage'},
+    {label:'Both Sides',val:num(both),sub:'appear on both tabs',cls:'k-copper'}
   ]);
   var set=function(id,n){ var e=document.getElementById(id); if(e) e.textContent='· '+num(n)+' deals'; };
   set('cr-aa-n',aa); set('cr-da-n',da); set('cr-nd-n',nd);
@@ -1198,7 +1198,7 @@ function renderOverview(){
   var totRev=sum(base,function(d){return d.profit;});
   var aaRev=sum(aa,function(d){return d.profit;});
   var daRev=sum(da,function(d){return d.profit;});
-  var partnership=base.filter(function(d){return d.isAA||d.isDA;});   // Deal Ops = AA or DA, each deal once
+  var partnership=base.filter(function(d){return d.isAA||d.isDA;});   // Institutional Buyer = Front Side or Back Side, each deal once
   var partRev=sum(partnership,function(d){return d.profit;});
   var nonDeals=base.filter(function(d){return !d.isAA && !d.isDA;});
   var nonRev=sum(nonDeals,function(d){return d.profit;});
@@ -1210,17 +1210,17 @@ function renderOverview(){
   var bothRev=sum(both,function(d){return d.profit;});
 
   kpiRow('ov-kpis',[
-    {label:'Total Deal Ops Revenue', val:money(partRev), sub:num(partnership.length)+' deals · '+pct(partRev,totRev)+' of total', cls:'k-charcoal'},
+    {label:'Total Institutional Buyer Revenue', val:money(partRev), sub:num(partnership.length)+' deals · '+pct(partRev,totRev)+' of total', cls:'k-charcoal'},
     {label:'Avg $ / Deal', val:money(base.length?totRev/base.length:0), sub:'per closed deal', cls:''},
-    {label:'AA Side Revenue', val:money(aaOnlyRev), sub:num(aaOnly.length)+' deals', cls:'k-gold'},
-    {label:'DA Side Revenue', val:money(daOnlyRev), sub:num(daOnly.length)+' deals', cls:'k-teal'},
-    {label:'AA & DA Side Revenue', val:money(bothRev), sub:num(both.length)+' deals', cls:'k-copper'},
-    {label:'Non-Deal Ops Revenue', val:money(nonRev), sub:num(nonDeals.length)+' deals', cls:'k-grey'}
+    {label:'Front Side Revenue', val:money(aaOnlyRev), sub:num(aaOnly.length)+' deals', cls:'k-gold'},
+    {label:'Back Side Revenue', val:money(daOnlyRev), sub:num(daOnly.length)+' deals', cls:'k-teal'},
+    {label:'Front &amp; Back Side Revenue', val:money(bothRev), sub:num(both.length)+' deals', cls:'k-copper'},
+    {label:'Field Deals Revenue', val:money(nonRev), sub:num(nonDeals.length)+' deals', cls:'k-grey'}
   ]);
 
-  // de-duplicated stack: DA-only + AA-only + Both + Non-Deal Ops = total (each deal once)
+  // de-duplicated stack: back-side-only + front-side-only + Both + Field Deals = total (each deal once)
   var st=trendSeries(base);
-  var sa=trendSeries(aa), sd=trendSeries(da);   // full AA / full DA (for the breakdown table)
+  var sa=trendSeries(aa), sd=trendSeries(da);   // full Front Side / full Back Side (for the breakdown table)
   var sAAo=trendSeries(base.filter(function(d){return d.isAA && !d.isDA;}));
   var sDAo=trendSeries(base.filter(function(d){return d.isDA && !d.isAA;}));
   var sBoth=trendSeries(base.filter(function(d){return d.isAA && d.isDA;}));
@@ -1240,16 +1240,16 @@ function renderOverview(){
   charts['ov-trend']=new Chart(ctx('ov-trend'),{
     type:'bar',
     data:{labels:st.labels,datasets:[
-      {label:'DA Only',data:sDAo.rev,backgroundColor:C.teal,stack:'s',$counts:sDAo.cnt,$fontColor:'#ffffff'},
-      {label:'AA Only',data:sAAo.rev,backgroundColor:C.gold,stack:'s',$counts:sAAo.cnt,$fontColor:'#2E2E2B'},
-      {label:'Both AA & DA',data:sBoth.rev,backgroundColor:C.copper,stack:'s',$counts:sBoth.cnt,$fontColor:'#ffffff'},
-      {label:'Non-Deal Ops Partnership',data:sNon.rev,backgroundColor:C.grey,stack:'s',$counts:sNon.cnt,$fontColor:'#ffffff'}
+      {label:'Back Side Only',data:sDAo.rev,backgroundColor:C.teal,stack:'s',$counts:sDAo.cnt,$fontColor:'#ffffff'},
+      {label:'Front Side Only',data:sAAo.rev,backgroundColor:C.gold,stack:'s',$counts:sAAo.cnt,$fontColor:'#2E2E2B'},
+      {label:'Both Sides',data:sBoth.rev,backgroundColor:C.copper,stack:'s',$counts:sBoth.cnt,$fontColor:'#ffffff'},
+      {label:'Field Deals',data:sNon.rev,backgroundColor:C.grey,stack:'s',$counts:sNon.cnt,$fontColor:'#ffffff'}
     ]},
     options:tOpts,
     plugins:[segmentCountPlugin]
   });
 
-  // by market (de-duplicated stack: DA-only + AA-only + Both + Non-Deal Ops, clickable)
+  // by market (de-duplicated stack: back-side-only + front-side-only + Both + Field Deals, clickable)
   var off=groupBy(base,function(d){return d.office;}).slice(0,12);
   var labelsO=off.map(function(o){return o.key;});
   var aaoR={},daoR={},bothR={},nonR={}, aaoC={},daoC={},bothC={},nonC={};
@@ -1268,10 +1268,10 @@ function renderOverview(){
   charts['ov-office']=new Chart(ctx('ov-office'),{
     type:'bar',
     data:{labels:labelsO,datasets:[
-      {label:'DA Only',data:mp(daoR),backgroundColor:C.teal,stack:'s',$counts:mp(daoC)},
-      {label:'AA Only',data:mp(aaoR),backgroundColor:C.gold,stack:'s',$counts:mp(aaoC)},
-      {label:'Both AA & DA',data:mp(bothR),backgroundColor:C.copper,stack:'s',$counts:mp(bothC)},
-      {label:'Non-Deal Ops Partnership',data:mp(nonR),backgroundColor:C.grey,stack:'s',$counts:mp(nonC)}
+      {label:'Back Side Only',data:mp(daoR),backgroundColor:C.teal,stack:'s',$counts:mp(daoC)},
+      {label:'Front Side Only',data:mp(aaoR),backgroundColor:C.gold,stack:'s',$counts:mp(aaoC)},
+      {label:'Both Sides',data:mp(bothR),backgroundColor:C.copper,stack:'s',$counts:mp(bothC)},
+      {label:'Field Deals',data:mp(nonR),backgroundColor:C.grey,stack:'s',$counts:mp(nonC)}
     ]},
     options:oOpts,
     plugins:[rightBarCountsPlugin]
@@ -1289,7 +1289,7 @@ function renderOverview(){
     options:donutOpts()
   });
 
-  // breakdown table (per period): Deal Ops total, AA-only, DA-only, Both
+  // breakdown table (per period): Institutional Buyer total, front-side-only, back-side-only, Both
   var sDope=trendSeries(partnership);
   var f=function(d){return d.profit;};
   var aaOnlyDeals=base.filter(function(d){return d.isAA && !d.isDA;});
@@ -1311,22 +1311,22 @@ function renderOverview(){
     +tdn(num(bothDeals.length))+tdn(money(sum(bothDeals,f)))+'</tr>';
   document.getElementById('ov-table').innerHTML=
     '<thead><tr><th>'+(state.gran==='quarter'?'Quarter':'Month')+'</th>'
-    +'<th class="num">Total Deal Ops Deals</th><th class="num">Total Deal Ops Revenue</th>'
-    +'<th class="num">AA Deals</th><th class="num">AA Revenue</th>'
-    +'<th class="num">DA Deals</th><th class="num">DA Revenue</th>'
-    +'<th class="num">AA &amp; DA Deals</th><th class="num">AA &amp; DA Revenue</th></tr></thead><tbody>'+rows+'</tbody>';
+    +'<th class="num">Total Institutional Buyer Deals</th><th class="num">Total Institutional Buyer Revenue</th>'
+    +'<th class="num">Front Side Deals</th><th class="num">Front Side Revenue</th>'
+    +'<th class="num">Back Side Deals</th><th class="num">Back Side Revenue</th>'
+    +'<th class="num">Front &amp; Back Side Deals</th><th class="num">Front &amp; Back Side Revenue</th></tr></thead><tbody>'+rows+'</tbody>';
 }
 
-/* ============================ AA SIDE ============================ */
+/* ============================ FRONT SIDE ============================ */
 function renderAA(){
   var deals=filtered().filter(function(d){return d.isAA;});
   var total=filtered();
   var rev=sum(deals,function(d){return d.profit;});
   var off=groupBy(deals,function(d){return d.office;});
   kpiRow('aa-kpis',[
-    {label:'AA Revenue',val:money(rev),sub:num(deals.length)+' deals',cls:'k-gold'},
-    {label:'Avg Revenue / Deal',val:money(deals.length?rev/deals.length:0),sub:'per AA deal',cls:''},
-    {label:'AA Deals',val:num(deals.length),sub:'acquisition partnerships',cls:'k-charcoal'},
+    {label:'Front Side Revenue',val:money(rev),sub:num(deals.length)+' deals',cls:'k-gold'},
+    {label:'Avg Revenue / Deal',val:money(deals.length?rev/deals.length:0),sub:'per front side deal',cls:''},
+    {label:'Front Side Deals',val:num(deals.length),sub:'acquisition partnerships',cls:'k-charcoal'},
     {label:'Share of Total Deals',val:pct(deals.length,total.length),sub:'of '+num(total.length)+' total deals',cls:'k-copper'},
     {label:'Top Market',val:off.length?off[0].key:'—',sub:off.length?money(off[0].rev):'',cls:'k-sage'}
   ]);
@@ -1373,24 +1373,24 @@ function renderAA(){
   ]);
 }
 
-/* ============================ DA SIDE ============================ */
+/* ============================ BACK SIDE ============================ */
 function renderDA(){
   var deals=filtered().filter(function(d){return d.isDA;});
   var total=filtered();
   var rev=sum(deals,function(d){return d.profit;});
   var off=groupBy(deals,function(d){return d.office;});
   var agents=groupBy(deals,function(d){return d.primaryDA;});
-  // buyer mix for the DA Deals subtitle (built from the data, so it stays accurate as rules change)
+  // buyer mix for the Back Side Deals subtitle (built from the data, so it stays accurate as rules change)
   var buyers=groupBy(deals,function(d){return d.buyer||'(No buyer)';}).sort(function(a,b){return b.count-a.count;});
-  var buyerSub = !buyers.length ? 'no DA deals in view'
+  var buyerSub = !buyers.length ? 'no back side deals in view'
     : buyers.length===1 ? buyers[0].key
     : buyers[0].key+' + '+(buyers.length-1)+' other buyer'+(buyers.length-1===1?'':'s');
   kpiRow('da-kpis',[
-    {label:'DA Revenue',val:money(rev),sub:num(deals.length)+' deals',cls:'k-teal'},
-    {label:'Avg Revenue / Deal',val:money(deals.length?rev/deals.length:0),sub:'per DA deal',cls:''},
-    {label:'DA Deals',val:num(deals.length),sub:buyerSub,cls:'k-charcoal'},
+    {label:'Back Side Revenue',val:money(rev),sub:num(deals.length)+' deals',cls:'k-teal'},
+    {label:'Avg Revenue / Deal',val:money(deals.length?rev/deals.length:0),sub:'per back side deal',cls:''},
+    {label:'Back Side Deals',val:num(deals.length),sub:buyerSub,cls:'k-charcoal'},
     {label:'Share of Total Deals',val:pct(deals.length,total.length),sub:'of '+num(total.length)+' total deals',cls:'k-copper'},
-    {label:'Top DA Agent',val:agents.length&&agents[0].key!=='(blank)'?agents[0].key:'—',sub:agents.length?money(agents[0].rev):'',cls:'k-sage'}
+    {label:'Top Agent',val:agents.length&&agents[0].key!=='(blank)'?agents[0].key:'—',sub:agents.length?money(agents[0].rev):'',cls:'k-sage'}
   ]);
 
   var mm=trendSeries(deals);
@@ -1436,16 +1436,16 @@ function renderDA(){
   ]);
 }
 
-/* ============================ NON-Deal Ops ============================ */
+/* ============================ Field Deals ============================ */
 function renderND(){
   var deals=filtered().filter(function(d){return !d.isAA && !d.isDA;});
   var total=filtered();
   var rev=sum(deals,function(d){return d.profit;});
   var off=groupBy(deals,function(d){return d.office;});
   kpiRow('nd-kpis',[
-    {label:'Non-Deal Ops Revenue',val:money(rev),sub:num(deals.length)+' deals',cls:'k-charcoal'},
-    {label:'Avg Revenue / Deal',val:money(deals.length?rev/deals.length:0),sub:'per Non-Deal Ops deal',cls:''},
-    {label:'Non-Deal Ops Deals',val:num(deals.length),sub:'no partnership attached',cls:'k-charcoal'},
+    {label:'Field Deals Revenue',val:money(rev),sub:num(deals.length)+' deals',cls:'k-charcoal'},
+    {label:'Avg Revenue / Deal',val:money(deals.length?rev/deals.length:0),sub:'per Field Deals deal',cls:''},
+    {label:'Field Deals Deals',val:num(deals.length),sub:'no partnership attached',cls:'k-charcoal'},
     {label:'Share of Total Deals',val:pct(deals.length,total.length),sub:'of '+num(total.length)+' total deals',cls:'k-copper'},
     {label:'Top Market',val:off.length?off[0].key:'—',sub:off.length?money(off[0].rev):'',cls:'k-sage'}
   ]);
@@ -1505,12 +1505,12 @@ function renderPayout(){
   var q=[1,2,3,4].map(function(qi){
     var ds=base.filter(function(d){return d.month && quarterOf(d.month)===qi;});
     var f=function(d){return d.profit;};
-    // de-duplicated split so AA-only + DA-only + Both = combined
+    // de-duplicated split so front-side-only + back-side-only + Both = combined
     var aaOnly=ds.filter(function(d){return d.isAA && !d.isDA;});
     var daOnly=ds.filter(function(d){return d.isDA && !d.isAA;});
     var both=ds.filter(function(d){return d.isAA && d.isDA;});
     var aaOnlyRev=sum(aaOnly,f), daOnlyRev=sum(daOnly,f), bothRev=sum(both,f);
-    var combined=aaOnlyRev+daOnlyRev+bothRev;   // AA or DA, each deal once
+    var combined=aaOnlyRev+daOnlyRev+bothRev;   // Front Side or Back Side, each deal once
     return {q:qi,label:'Q'+qi,
             aaOnlyRev:aaOnlyRev,daOnlyRev:daOnlyRev,bothRev:bothRev,
             aaOnlyN:aaOnly.length,daOnlyN:daOnly.length,bothN:both.length,
@@ -1530,7 +1530,7 @@ function renderPayout(){
   document.getElementById('pay-qlabel').textContent=state.payoutQ+' '+YEAR;
   document.getElementById('pay-combined').textContent=money(sel.combined);
   document.getElementById('pay-components').innerHTML=
-    'AA '+money(sel.aaOnlyRev)+' ('+num(sel.aaOnlyN)+') &nbsp;·&nbsp; DA '+money(sel.daOnlyRev)+' ('+num(sel.daOnlyN)+') &nbsp;·&nbsp; AA &amp; DA '+money(sel.bothRev)+' ('+num(sel.bothN)+')';
+    'AA '+money(sel.aaOnlyRev)+' ('+num(sel.aaOnlyN)+') &nbsp;·&nbsp; DA '+money(sel.daOnlyRev)+' ('+num(sel.daOnlyN)+') &nbsp;·&nbsp; Front &amp; Back Side '+money(sel.bothRev)+' ('+num(sel.bothN)+')';
   var badge=document.getElementById('pay-badge');
   if(sel.tier.t>0){ badge.textContent='Tier '+sel.tier.t; badge.className='tier-badge'+(sel.tier.t===4?' t4':''); }
   else { badge.textContent='No tier yet'; badge.className='tier-badge t0'; }
@@ -1554,7 +1554,7 @@ function renderPayout(){
   }).join('');
   rows+='<tr class="total"><td>FY Total</td>'+tdn(money(totAA))+tdn(money(totDA))+tdn(money(totBoth))+tdn(money(totC))+tdn('')+tdn(money(totPay))+'</tr>';
   document.getElementById('pay-table').innerHTML=
-    '<thead><tr><th>Quarter</th><th class="num">AA Rev</th><th class="num">DA Rev</th><th class="num">AA &amp; DA Rev</th>'
+    '<thead><tr><th>Quarter</th><th class="num">Front Rev</th><th class="num">Back Rev</th><th class="num">Front &amp; Back Side Rev</th>'
     +'<th class="num">Combined</th><th class="num">Tier</th><th class="num">Payout</th></tr></thead><tbody>'+rows+'</tbody>';
 
   // combined-by-quarter chart with tier threshold lines (for the quarter in focus)
@@ -1850,7 +1850,7 @@ function renderBoost(){
     {label:'Qualifying Revenue',val:money(rev),sub:money(deals.length?rev/deals.length:0)+' avg',cls:'k-sage'},
     {label:'AA-Qualifying',val:num(aaN),sub:'deals',cls:'k-gold'},
     {label:'DA-Qualifying',val:num(daN),sub:'deals',cls:'k-teal'},
-    {label:'Qualifies Both',val:num(bothN),sub:'AA & DA',cls:'k-copper'}
+    {label:'Qualifies Both',val:num(bothN),sub:'Front &amp; Back Side',cls:'k-copper'}
   ]);
 
   var off=groupBy(deals,function(d){return d.office;}).slice(0,14);
@@ -1985,8 +1985,8 @@ function renderRulesEditor(){
     return '<div class="rulecard" data-i="'+i+'">'
       +'<div class="rc-head"><div><span class="lbl">Classify as</span> '
         +'<select data-f="side">'
-          +'<option value="AA"'+(r.side!=='DA'?' selected':'')+'>AA Side</option>'
-          +'<option value="DA"'+(r.side==='DA'?' selected':'')+'>DA Side</option>'
+          +'<option value="AA"'+(r.side!=='DA'?' selected':'')+'>Front Side</option>'
+          +'<option value="DA"'+(r.side==='DA'?' selected':'')+'>Back Side</option>'
         +'</select></div>'
         +'<button class="rc-remove" onclick="removeRuleRow('+i+')">Remove rule</button></div>'
       +'<div class="rc-conds">'+condHTML+'</div>'
@@ -2185,12 +2185,12 @@ function stackedBarOpts(){
           if(o){
             if(c.datasetIndex!==0) return null;   // one combined summary block
             return [
-              'AA Side: '+num(o.aaN[i])+' | '+money(o.aaRev[i]),
-              'DA Side: '+num(o.daN[i])+' | '+money(o.daRev[i]),
-              'Both AA & DA Side: '+num(o.bothN[i])+' | '+money(o.bothRev[i]),
-              'Non-Deal Ops: '+num(o.nonN[i])+' | '+money(o.nonRev[i]),
+              'Front Side: '+num(o.aaN[i])+' | '+money(o.aaRev[i]),
+              'Back Side: '+num(o.daN[i])+' | '+money(o.daRev[i]),
+              'Both Sides Side: '+num(o.bothN[i])+' | '+money(o.bothRev[i]),
+              'Field Deals: '+num(o.nonN[i])+' | '+money(o.nonRev[i]),
               '',
-              'Total Deal Ops: '+num(o.dopeN[i])+' | '+money(o.dopeRev[i]),
+              'Total Institutional Buyer: '+num(o.dopeN[i])+' | '+money(o.dopeRev[i]),
               'Total Partnerships: '+num(o.totN[i])+' | '+money(o.totRev[i])
             ];
           }

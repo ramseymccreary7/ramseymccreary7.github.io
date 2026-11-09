@@ -531,7 +531,7 @@ h1{font-size:22px;margin:0;font-weight:700}
         <option value="addr">Address A–Z</option>
       </select>
       <div class="seg" id="viewSeg" role="group" aria-label="View">
-        <button type="button" data-view="list" class="on">List</button><button type="button" data-view="map">Map</button>
+        <button type="button" data-view="list">List</button><button type="button" data-view="map" class="on">Map</button>
       </div>
       <label class="toggle" id="passedWrap"><input type="checkbox" id="showPassed"> Show passed</label>
       <button class="btn btn-ghost" id="btnExpand">Collapse all</button>
@@ -895,8 +895,8 @@ function sendStatus(id, next){
    the deals the list would (same tab, search and filters), as gold price
    bubbles that group into numbered clusters when zoomed out. Hover a bubble
    for a summary; click it to open that deal's card under the map. */
-var VIEW = 'list';
-try { if (localStorage.getItem('nwppView') === 'map') VIEW = 'map'; } catch (e) {}
+var VIEW = 'map';
+try { if (localStorage.getItem('nwppView') === 'list') VIEW = 'list'; } catch (e) {}
 var MAPLIB = '../../assets/vendor/maplibre/';
 var OFM_STYLE = 'https://tiles.openfreemap.org/styles/liberty';
 var MAP = null, MAP_EL = null, MAP_READY = false, MAP_FAILED = '', MAP_FELL_BACK = false;

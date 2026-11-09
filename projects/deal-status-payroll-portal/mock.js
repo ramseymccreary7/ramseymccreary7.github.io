@@ -1,5 +1,5 @@
 (function () {
-try { localStorage.setItem('nw_dealwire_token', JSON.stringify({ t: 'demo-token', exp: Date.now() + 864e5 })); } catch (e) {}
+try { ['nw_dealwire_token', 'co_dealwire_token'].forEach(function (k) { localStorage.setItem(k, JSON.stringify({ t: 'demo-token', exp: Date.now() + 864e5 })); }); } catch (e) {}
   var F = FAKE.seed(404), A = MOCK_API, now = new Date();
   var offices = ['Atlanta', 'Atlanta North', 'Denver', 'Denver South'];
   var buyers = ['Keystone Rentals LLC', 'Bluebird Homes LLC', 'Harbor Flip Co', 'Pinecrest Investments', 'Summit Path Holdings', 'Redwood Equity LLC'];

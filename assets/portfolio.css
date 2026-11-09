@@ -53,3 +53,8 @@ pre.code .c{color:#7f8a99}pre.code .s{color:#b5d99c}pre.code .k{color:#e0a84a}
 .otp .msg{font-size:13px;color:var(--muted);margin-top:8px;min-height:1.2em}
 .otp .ok{color:#15803d;font-weight:600}
 @media (max-width:640px){nav.top{display:none}.hero{padding:36px 0 24px}h1{font-size:34px}.lede{font-size:16.5px}}
+.tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-top:8px;position:sticky;top:0;background:var(--bg);z-index:5;padding-top:10px;overflow-x:auto}
+.tab{appearance:none;border:0;background:none;color:var(--muted);font:600 15px/1 inherit;font-family:inherit;padding:12px 14px 13px;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;white-space:nowrap}
+.tab:hover{color:var(--ink)}.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab .n{display:inline-block;font-size:12px;background:var(--chip);color:var(--muted);border-radius:999px;padding:2px 8px;margin-left:6px}
+section.panel-tab{padding-top:20px}
