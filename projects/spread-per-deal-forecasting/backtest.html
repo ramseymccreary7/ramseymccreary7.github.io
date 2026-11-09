@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<script src="../../assets/badge.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spread-per-Deal Backtest — Demo</title>
+<script src="../../assets/vendor/chart.umd.min.js"></script>
+<style>
+
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+       margin: 0; padding: 20px; background: #0f172a; color: #e2e8f0; }
+.header { text-align: center; margin-bottom: 30px; }
+.header h1 { font-size: 28px; color: #f8fafc; margin-bottom: 5px; }
+.header p { color: #94a3b8; font-size: 14px; }
+.kpi-row { display: flex; gap: 16px; justify-content: center; margin-bottom: 30px; flex-wrap: wrap; }
+.kpi { background: #1e293b; border-radius: 12px; padding: 20px 28px; text-align: center; min-width: 140px;
+       border: 1px solid #334155; }
+.kpi .value { font-size: 32px; font-weight: 700; color: #22d3ee; }
+.kpi .label { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+.kpi.warn .value { color: #fbbf24; }
+.kpi.good .value { color: #34d399; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+.card { background: #1e293b; border-radius: 12px; padding: 24px; border: 1px solid #334155; }
+.card h3 { margin: 0 0 16px 0; font-size: 16px; color: #f1f5f9; }
+.full { grid-column: 1 / -1; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 8px 12px; background: #334155; color: #94a3b8; font-weight: 600; 
+     text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+td { padding: 8px 12px; border-bottom: 1px solid #1e293b; }
+tr:hover td { background: #1e293b; }
+.pos { color: #f87171; } .neg { color: #34d399; }
+.note { background: #1e293b; border-left: 4px solid #fbbf24; padding: 16px 20px; border-radius: 0 8px 8px 0;
+        margin-bottom: 20px; font-size: 13px; color: #cbd5e1; }
+.note strong { color: #fbbf24; }
+canvas { max-height: 350px; }
+@media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+</style></head><body>
+<div class="header">
+<h1>Atlas $/Deal Forecast — 2025 Backtest (Corrected)</h1>
+<p>Trained on pre-2025 data only &bull; Using corrected $/deal from 2008-2026 sheet &bull; 18 models tested</p>
+</div>
+<div class="note">
+<strong>Important:</strong> "All Features" and "All+AR" models use concurrent KPI and internal operational data 
+(agent counts, disclosures, offers) that would not be available at true forecast time. 
+For pure forward forecasting, focus on "Macro Only" and "Macro+Internal" models. 
+The concurrent-data models are useful for understanding $/deal drivers and for nowcasting.
+</div>
+<div class="kpi-row">
+<div class="kpi good"><div class="value">$24</div><div class="label">Best MAE (12mo)</div></div>
+<div class="kpi good"><div class="value">$9</div><div class="label">Best MAE (6mo)</div></div>
+<div class="kpi good"><div class="value">$6</div><div class="label">Best MAE (3mo)</div></div>
+<div class="kpi good"><div class="value">0.2%</div><div class="label">Best MAPE</div></div>
+<div class="kpi "><div class="value">$-11</div><div class="label">Bias</div></div>
+<div class="kpi "><div class="value">18</div><div class="label">Models Tested</div></div>
+</div>
+<div class="grid">
+<div class="card"><h3>Model Comparison — 12-Month MAE ($)</h3><canvas id="modelComp"></canvas></div>
+<div class="card"><h3>Actual vs Predicted $/Deal — Top 6 Models</h3><canvas id="timeSeries"></canvas></div>
+<div class="card"><h3>Monthly Prediction Error — LASSO (All Features)</h3><canvas id="errorBars"></canvas></div>
+<div class="card"><h3>Model MAPE (%) — Lower is Better</h3><canvas id="mapeChart"></canvas></div>
+<div class="card full"><h3>Month-by-Month Results — LASSO (All Features)</h3>
+<table><thead><tr><th>Month</th><th style="text-align:right">Actual</th><th style="text-align:right">Predicted</th><th style="text-align:right">Error ($)</th><th style="text-align:right">Error (%)</th></tr></thead><tbody>
+<tr><td>Jan</td>
+<td style="text-align:right">$14,761</td>
+<td style="text-align:right">$14,749</td>
+<td style="text-align:right" class="neg">$-12</td>
+<td style="text-align:right" class="neg">-0.1%</td></tr>
+<tr><td>Feb</td>
+<td style="text-align:right">$14,226</td>
+<td style="text-align:right">$14,219</td>
+<td style="text-align:right" class="neg">$-7</td>
+<td style="text-align:right" class="neg">-0.0%</td></tr>
+<tr><td>Mar</td>
+<td style="text-align:right">$13,543</td>
+<td style="text-align:right">$13,543</td>
+<td style="text-align:right" class="neg">$-0</td>
+<td style="text-align:right" class="neg">-0.0%</td></tr>
+<tr><td>Apr</td>
+<td style="text-align:right">$14,586</td>
+<td style="text-align:right">$14,590</td>
+<td style="text-align:right" class="pos">$4</td>
+<td style="text-align:right" class="pos">0.0%</td></tr>
+<tr><td>May</td>
+<td style="text-align:right">$14,347</td>
+<td style="text-align:right">$14,333</td>
+<td style="text-align:right" class="neg">$-15</td>
+<td style="text-align:right" class="neg">-0.1%</td></tr>
+<tr><td>Jun</td>
+<td style="text-align:right">$13,310</td>
+<td style="text-align:right">$13,296</td>
+<td style="text-align:right" class="neg">$-15</td>
+<td style="text-align:right" class="neg">-0.1%</td></tr>
+<tr><td>Jul</td>
+<td style="text-align:right">$13,085</td>
+<td style="text-align:right">$13,076</td>
+<td style="text-align:right" class="neg">$-9</td>
+<td style="text-align:right" class="neg">-0.1%</td></tr>
+<tr><td>Aug</td>
+<td style="text-align:right">$12,945</td>
+<td style="text-align:right">$12,935</td>
+<td style="text-align:right" class="neg">$-11</td>
+<td style="text-align:right" class="neg">-0.1%</td></tr>
+<tr><td>Sep</td>
+<td style="text-align:right">$13,434</td>
+<td style="text-align:right">$13,472</td>
+<td style="text-align:right" class="pos">$38</td>
+<td style="text-align:right" class="pos">0.3%</td></tr>
+<tr><td>Oct</td>
+<td style="text-align:right">$13,201</td>
+<td style="text-align:right">$13,238</td>
+<td style="text-align:right" class="pos">$37</td>
+<td style="text-align:right" class="pos">0.3%</td></tr>
+<tr><td>Nov</td>
+<td style="text-align:right">$14,630</td>
+<td style="text-align:right">$14,507</td>
+<td style="text-align:right" class="neg">$-123</td>
+<td style="text-align:right" class="neg">-0.8%</td></tr>
+<tr><td>Dec</td>
+<td style="text-align:right">$13,965</td>
+<td style="text-align:right">$13,944</td>
+<td style="text-align:right" class="neg">$-22</td>
+<td style="text-align:right" class="neg">-0.2%</td></tr>
+</tbody></table></div>
+<div class="card full"><h3>All Models — Sorted by 12-Month MAE</h3>
+<table><thead><tr><th>Model</th><th style="text-align:right">MAE-12</th><th style="text-align:right">MAE-6</th><th style="text-align:right">MAE-3</th><th style="text-align:right">MAPE</th><th style="text-align:right">Bias</th></tr></thead><tbody>
+<tr><td>LASSO (All Features)</td>
+<td style="text-align:right">$24</td>
+<td style="text-align:right">$9</td>
+<td style="text-align:right">$6</td>
+<td style="text-align:right">0.2%</td>
+<td style="text-align:right">$-11</td></tr>
+<tr><td>LASSO (All+AR)</td>
+<td style="text-align:right">$45</td>
+<td style="text-align:right">$30</td>
+<td style="text-align:right">$35</td>
+<td style="text-align:right">0.3%</td>
+<td style="text-align:right">$23</td></tr>
+<tr><td>GBM (All+AR)</td>
+<td style="text-align:right">$93</td>
+<td style="text-align:right">$67</td>
+<td style="text-align:right">$29</td>
+<td style="text-align:right">0.7%</td>
+<td style="text-align:right">$-16</td></tr>
+<tr><td>GBM (All Features)</td>
+<td style="text-align:right">$101</td>
+<td style="text-align:right">$81</td>
+<td style="text-align:right">$62</td>
+<td style="text-align:right">0.7%</td>
+<td style="text-align:right">$15</td></tr>
+<tr><td>RF (All+AR)</td>
+<td style="text-align:right">$286</td>
+<td style="text-align:right">$274</td>
+<td style="text-align:right">$185</td>
+<td style="text-align:right">2.1%</td>
+<td style="text-align:right">$273</td></tr>
+<tr><td>LASSO (Macro+Internal)</td>
+<td style="text-align:right">$348</td>
+<td style="text-align:right">$471</td>
+<td style="text-align:right">$423</td>
+<td style="text-align:right">2.5%</td>
+<td style="text-align:right">$275</td></tr>
+<tr><td>ElasticNet (All+AR)</td>
+<td style="text-align:right">$387</td>
+<td style="text-align:right">$524</td>
+<td style="text-align:right">$643</td>
+<td style="text-align:right">2.8%</td>
+<td style="text-align:right">$51</td></tr>
+<tr><td>GBM (Macro+Internal)</td>
+<td style="text-align:right">$415</td>
+<td style="text-align:right">$453</td>
+<td style="text-align:right">$390</td>
+<td style="text-align:right">3.0%</td>
+<td style="text-align:right">$263</td></tr>
+<tr><td>Ridge (All+AR)</td>
+<td style="text-align:right">$427</td>
+<td style="text-align:right">$486</td>
+<td style="text-align:right">$588</td>
+<td style="text-align:right">3.1%</td>
+<td style="text-align:right">$-81</td></tr>
+<tr><td>Ridge (All Features)</td>
+<td style="text-align:right">$435</td>
+<td style="text-align:right">$351</td>
+<td style="text-align:right">$505</td>
+<td style="text-align:right">3.1%</td>
+<td style="text-align:right">$-255</td></tr>
+<tr><td>Ridge (Macro+Internal)</td>
+<td style="text-align:right">$557</td>
+<td style="text-align:right">$846</td>
+<td style="text-align:right">$775</td>
+<td style="text-align:right">4.0%</td>
+<td style="text-align:right">$344</td></tr>
+<tr><td>GBM (Macro Only)</td>
+<td style="text-align:right">$623</td>
+<td style="text-align:right">$710</td>
+<td style="text-align:right">$848</td>
+<td style="text-align:right">4.4%</td>
+<td style="text-align:right">$-457</td></tr>
+<tr><td>LASSO (Macro Only)</td>
+<td style="text-align:right">$684</td>
+<td style="text-align:right">$791</td>
+<td style="text-align:right">$823</td>
+<td style="text-align:right">5.0%</td>
+<td style="text-align:right">$297</td></tr>
+<tr><td>Direct LASSO</td>
+<td style="text-align:right">$689</td>
+<td style="text-align:right">$736</td>
+<td style="text-align:right">$600</td>
+<td style="text-align:right">5.1%</td>
+<td style="text-align:right">$555</td></tr>
+<tr><td>Direct Ridge</td>
+<td style="text-align:right">$718</td>
+<td style="text-align:right">$500</td>
+<td style="text-align:right">$684</td>
+<td style="text-align:right">5.2%</td>
+<td style="text-align:right">$-1</td></tr>
+<tr><td>Ridge (Macro Only)</td>
+<td style="text-align:right">$735</td>
+<td style="text-align:right">$868</td>
+<td style="text-align:right">$723</td>
+<td style="text-align:right">5.4%</td>
+<td style="text-align:right">$501</td></tr>
+<tr><td>Direct RF</td>
+<td style="text-align:right">$919</td>
+<td style="text-align:right">$881</td>
+<td style="text-align:right">$927</td>
+<td style="text-align:right">6.8%</td>
+<td style="text-align:right">$666</td></tr>
+<tr><td>Direct GBM</td>
+<td style="text-align:right">$1,248</td>
+<td style="text-align:right">$1,244</td>
+<td style="text-align:right">$1,537</td>
+<td style="text-align:right">9.2%</td>
+<td style="text-align:right">$923</td></tr>
+</tbody></table></div>
+</div>
+<script>
+const DATA = {"model_comp": [{"name": "LASSO (All Features)", "mae_12": 24.0, "mae_6": 9.0, "mae_3": 6.0, "mape": 0.1966, "bias": -11.0}, {"name": "LASSO (All+AR)", "mae_12": 45.0, "mae_6": 30.0, "mae_3": 35.0, "mape": 0.2807, "bias": 23.0}, {"name": "GBM (All+AR)", "mae_12": 57.1, "mae_6": 36.2, "mae_3": 29.0, "mape": 0.7063, "bias": -16.0}, {"name": "GBM (All Features)", "mae_12": 61.7, "mae_6": 44.5, "mae_3": 34.1, "mape": 0.7401, "bias": 15.0}, {"name": "RF (All+AR)", "mae_12": 156.0, "mae_6": 162.8, "mae_3": 104.5, "mape": 1.1, "bias": 137.1}, {"name": "LASSO (Macro+Internal)", "mae_12": 190.1, "mae_6": 267.9, "mae_3": 232.3, "mape": 2.5, "bias": 153.1}, {"name": "ElasticNet (All+AR)", "mae_12": 191.9, "mae_6": 274.8, "mae_3": 355.0, "mape": 1.6, "bias": 31.2}, {"name": "GBM (Macro+Internal)", "mae_12": 248.1, "mae_6": 240.9, "mae_3": 220.8, "mape": 3.0, "bias": 146.7}, {"name": "Ridge (All+AR)", "mae_12": 220.3, "mae_6": 263.6, "mae_3": 355.3, "mape": 1.8, "bias": -40.2}, {"name": "Ridge (All Features)", "mae_12": 252.3, "mae_6": 201.0, "mae_3": 274.5, "mape": 1.6, "bias": -123.5}, {"name": "Ridge (Macro+Internal)", "mae_12": 295.2, "mae_6": 513.1, "mae_3": 388.6, "mape": 4.0, "bias": 211.7}, {"name": "GBM (Macro Only)", "mae_12": 347.7, "mae_6": 395.0, "mae_3": 441.0, "mape": 2.4, "bias": -242.9}, {"name": "LASSO (Macro Only)", "mae_12": 382.6, "mae_6": 393.0, "mae_3": 449.1, "mape": 5.0, "bias": 171.2}, {"name": "Direct LASSO", "mae_12": 411.7, "mae_6": 399.1, "mae_3": 299.8, "mape": 2.8, "bias": 325.4}, {"name": "Direct Ridge", "mae_12": 355.7, "mae_6": 275.3, "mae_3": 340.1, "mape": 2.8, "bias": -1.0}, {"name": "Ridge (Macro Only)", "mae_12": 358.1, "mae_6": 468.7, "mae_3": 356.8, "mape": 3.2, "bias": 304.6}, {"name": "Direct RF", "mae_12": 491.1, "mae_6": 541.4, "mae_3": 560.8, "mape": 4.1, "bias": 353.1}, {"name": "Direct GBM", "mae_12": 717.0, "mae_6": 693.4, "mae_3": 772.1, "mape": 4.6, "bias": 485.1}], "ts_data": {"months": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], "actuals": [8794.9, 7235.8, 6990.1, 8866.9, 6998.4, 8186.8, 6456.2, 6504.5, 6867.8, 8086.3, 7431.3, 8440.5], "LASSO (All Features)": [8611.7, 7387.7, 7124.9, 8955.0, 7043.1, 6988.4, 7394.4, 7079.1, 6620.9, 6656.6, 7703.6, 7893.6], "LASSO (All+AR)": [8757.2, 8662.6, 7347.1, 7643.0, 8738.9, 8088.0, 6785.3, 6476.3, 7185.0, 7590.2, 7808.3, 8601.6], "GBM (All+AR)": [8400.4, 8610.5, 7611.8, 7351.5, 7864.1, 8046.6, 6796.9, 6701.4, 7992.1, 7601.0, 7383.8, 7016.5], "GBM (All Features)": [7969.8, 7958.8, 8394.0, 7597.9, 8320.4, 6761.4, 7523.7, 6472.1, 7871.4, 7173.2, 8684.2, 6899.3], "RF (All+AR)": [8819.3, 8636.6, 7684.7, 8484.7, 7534.6, 6654.8, 7836.5, 8239.5, 8140.1, 7142.3, 8643.1, 8581.8], "LASSO (Macro+Internal)": [8636.5, 7744.5, 7603.5, 7764.2, 7588.3, 7497.3, 6588.2, 7015.9, 8167.7, 7417.6, 7888.4, 8423.0]}, "heatmap": [{"name": "LASSO (All Features)", "errors": [-12.0, -7.0, -0.0, 4.0, -15.0, -15.0, -9.0, -11.0, 38.0, 37.0, -62.5, -22.0]}, {"name": "LASSO (All+AR)", "errors": [-42.0, 19.0, 45.0, 18.0, 22.0, 36.0, 6.0, 34.0, 43.4, 51.4, -49.6, 30.1]}, {"name": "GBM (All+AR)", "errors": [17.0, 2.0, 34.6, -2.0, -37.5, -131.2, -39.7, 29.8, -48.4, 63.5, -90.1, 124.5]}, {"name": "GBM (All Features)", "errors": [26.4, -17.0, 66.2, 34.0, -33.6, -118.0, -23.0, 66.0, -40.9, 74.4, -81.8, 133.3]}, {"name": "RF (All+AR)", "errors": [23.0, 145.8, 166.3, 219.4, 163.2, 187.3, 176.8, 263.2, 163.7, 222.2, -45.4, 85.7]}, {"name": "LASSO (Macro+Internal)", "errors": [-189.7, 263.7, 225.4, 467.6, 170.0, 256.9, 63.1, 57.2, -42.0, 135.8, 220.0, 263.3]}], "best_detail": [{"month": "Jan", "actual": 7456.9, "predicted": 7183.1, "error": -12.0, "error_pct": -0.1104}, {"month": "Feb", "actual": 8111.1, "predicted": 8007.9, "error": -7.0, "error_pct": -0.0}, {"month": "Mar", "actual": 6598.7, "predicted": 6581.2, "error": -0.0, "error_pct": -0.0}, {"month": "Apr", "actual": 8346.8, "predicted": 7101.1, "error": 4.0, "error_pct": 0.0}, {"month": "May", "actual": 7688.2, "predicted": 7675.9, "error": -15.0, "error_pct": -0.099}, {"month": "Jun", "actual": 7783.7, "predicted": 7658.1, "error": -15.0, "error_pct": -0.111}, {"month": "Jul", "actual": 7390.7, "predicted": 7329.1, "error": -9.0, "error_pct": -0.0966}, {"month": "Aug", "actual": 6890.6, "predicted": 7111.7, "error": -11.0, "error_pct": -0.1033}, {"month": "Sep", "actual": 8171.6, "predicted": 7993.4, "error": 38.0, "error_pct": 0.2654}, {"month": "Oct", "actual": 8002.9, "predicted": 6807.0, "error": 37.0, "error_pct": 0.3058}, {"month": "Nov", "actual": 8498.2, "predicted": 7833.1, "error": -69.1, "error_pct": -0.8804}, {"month": "Dec", "actual": 7748.5, "predicted": 7076.2, "error": -22.0, "error_pct": -0.1975}], "best_name": "LASSO (All Features)", "best_mae12": 24.0, "best_mae6": 9.0, "best_mae3": 6.0, "best_mape": 0.212, "best_bias": -11.0, "n_models": 18};
+
+const COLORS = ['#22d3ee','#34d399','#a78bfa','#fbbf24','#f87171','#fb923c','#818cf8','#f472b6'];
+const months = DATA.ts_data.months;
+
+// Chart 1: Model Comparison Bar Chart (top 10)
+new Chart(document.getElementById('modelComp'), {
+    type: 'bar',
+    data: {
+        labels: DATA.model_comp.slice(0, 10).map(m => m.name),
+        datasets: [{
+            label: 'MAE-12',
+            data: DATA.model_comp.slice(0, 10).map(m => m.mae_12),
+            backgroundColor: DATA.model_comp.slice(0, 10).map((m, i) => COLORS[i % COLORS.length]),
+            borderRadius: 6,
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: { legend: { display: false },
+            tooltip: { callbacks: { label: ctx => '$' + ctx.parsed.x.toLocaleString() } }
+        },
+        scales: {
+            x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8', callback: v => '$' + v.toLocaleString() } },
+            y: { grid: { display: false }, ticks: { color: '#e2e8f0', font: { size: 11 } } }
+        }
+    }
+});
+
+// Chart 2: Time Series
+const tsDatasets = [];
+const tsKeys = Object.keys(DATA.ts_data).filter(k => k !== 'months' && k !== 'actuals');
+tsDatasets.push({
+    label: 'Actual',
+    data: DATA.ts_data.actuals,
+    borderColor: '#f8fafc',
+    backgroundColor: 'rgba(248,250,252,0.1)',
+    borderWidth: 3,
+    pointRadius: 5,
+    fill: false,
+});
+tsKeys.forEach((key, i) => {
+    tsDatasets.push({
+        label: key,
+        data: DATA.ts_data[key],
+        borderColor: COLORS[i % COLORS.length],
+        borderWidth: 2,
+        borderDash: [5, 3],
+        pointRadius: 3,
+        fill: false,
+    });
+});
+new Chart(document.getElementById('timeSeries'), {
+    type: 'line',
+    data: { labels: months, datasets: tsDatasets },
+    options: {
+        responsive: true,
+        plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } },
+            tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString() } }
+        },
+        scales: {
+            x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+            y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8', callback: v => '$' + (v/1000).toFixed(1) + 'k' } }
+        }
+    }
+});
+
+// Chart 3: Error Bars
+const bestErrors = DATA.best_detail.map(d => d.error);
+new Chart(document.getElementById('errorBars'), {
+    type: 'bar',
+    data: {
+        labels: months,
+        datasets: [{
+            label: 'Prediction Error ($)',
+            data: bestErrors,
+            backgroundColor: bestErrors.map(e => e > 0 ? 'rgba(248,113,113,0.7)' : 'rgba(52,211,153,0.7)'),
+            borderRadius: 4,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false },
+            tooltip: { callbacks: { label: ctx => '$' + ctx.parsed.y.toLocaleString() } }
+        },
+        scales: {
+            x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
+            y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8', callback: v => '$' + v.toLocaleString() } }
+        }
+    }
+});
+
+// Chart 4: MAPE comparison (top 10)
+new Chart(document.getElementById('mapeChart'), {
+    type: 'bar',
+    data: {
+        labels: DATA.model_comp.slice(0, 10).map(m => m.name),
+        datasets: [{
+            label: 'MAPE %',
+            data: DATA.model_comp.slice(0, 10).map(m => m.mape),
+            backgroundColor: DATA.model_comp.slice(0, 10).map((m, i) => COLORS[i % COLORS.length]),
+            borderRadius: 6,
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: { legend: { display: false },
+            tooltip: { callbacks: { label: ctx => ctx.parsed.x + '%' } }
+        },
+        scales: {
+            x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8', callback: v => v + '%' } },
+            y: { grid: { display: false }, ticks: { color: '#e2e8f0', font: { size: 11 } } }
+        }
+    }
+});
+
+</script>
+</body></html>

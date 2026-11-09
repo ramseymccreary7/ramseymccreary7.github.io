@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Treasury & Lender Funding Automation — Case Study</title><meta name="description" content="For a bridge-lending business, each new loan has to be funded from internal cash or one of several outside lenders, each with its own limits. This wor">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/portfolio.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2314171f'/%3E%3Ctext x='16' y='22' font-family='Arial' font-weight='700' font-size='15' fill='%23e0a84a' text-anchor='middle'%3ERM%3C/text%3E%3C/svg%3E">
+</head><body>
+<header class="site"><div class="wrap"><a class="brand" href="../../index.html">Ramsey McCreary<span> · </span>Portfolio</a>
+<nav class="top"><a href="../../index.html#dashboards">Dashboards</a><a href="../../index.html#automation">Automation</a><a href="https://github.com/ramseymccreary7" rel="noopener">GitHub</a></nav></div></header>
+<main class="wrap"><div class="cs-head"><a class="back" href="../../index.html#automation">← All projects</a><div class="eyebrow" style="margin-top:18px">Lending treasury</div><h1>Treasury &amp; Lender Funding Automation</h1><p class="lede">For a bridge-lending business, each new loan has to be funded from internal cash or one of several outside lenders, each with its own limits. This workflow recommends the funder, tracks the money and builds the accounting entries.</p><div class="facts"><span class="chip">Google Apps Script</span><span class="chip">Bank treasury API</span><span class="chip">Loan-servicer GraphQL API</span><span class="chip">NetSuite</span></div></div><div class="cs"><div class="panel"><h2>How it flows</h2><div class="flow"><svg viewBox="0 0 1000 96" role="img" aria-label="New funded loans → Pipeline buffer → Lender recommendation → Approve → treasury ledger → Wire clears → NetSuite JE" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" style="fill:var(--muted)"/></marker></defs><rect x="0.0" y="14" width="172.8" height="68" rx="12" style="fill:var(--surface);stroke:var(--line);stroke-width:1.5"/><text x="86.4" y="53.0" text-anchor="middle" font-size="15" font-weight="600" style="fill:var(--ink)" font-family="Inter,system-ui,sans-serif">New funded loans</text><path d="M178.8 48 h20.0" style="stroke:var(--muted);stroke-width:1.6" marker-end="url(#ar)"/><rect x="206.8" y="14" width="172.8" height="68" rx="12" style="fill:var(--surface);stroke:var(--line);stroke-width:1.5"/><text x="293.2" y="53.0" text-anchor="middle" font-size="15" font-weight="600" style="fill:var(--ink)" font-family="Inter,system-ui,sans-serif">Pipeline buffer</text><path d="M385.6 48 h20.0" style="stroke:var(--muted);stroke-width:1.6" marker-end="url(#ar)"/><rect x="413.6" y="14" width="172.8" height="68" rx="12" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5"/><text x="500.0" y="44.0" text-anchor="middle" font-size="15" font-weight="600" style="fill:var(--ink)" font-family="Inter,system-ui,sans-serif">Lender</text><text x="500.0" y="62.0" text-anchor="middle" font-size="15" font-weight="600" style="fill:var(--ink)" font-family="Inter,system-ui,sans-serif">recommendation</text><path d="M592.4 48 h20.0" style="stroke:var(--muted);stroke-width:1.6" marker-end="url(#ar)"/><rect x="620.4" y="14" width="172.8" height="68" rx="12" style="fill:var(--surface);stroke:var(--line);stroke-width:1.5"/><text x="706.8" y="44.0" text-anchor="middle" font-size="15" font-weight="600" style="fill:var(--ink)" font-family="Inter,system-ui,sans-serif">Approve → treasury</text><text x="706.8" y="62.0" text-anchor="middle" font-size="15" font-weight="600" style="fill:var(--ink)" font-family="Inter,system-ui,sans-serif">ledger</text><path d="M799.2 48 h20.0" style="stroke:var(--muted);stroke-width:1.6" marker-end="url(#ar)"/><rect x="827.2" y="14" width="172.8" height="68" rx="12" style="fill:var(--surface);stroke:var(--line);stroke-width:1.5"/><text x="913.6" y="44.0" text-anchor="middle" font-size="15" font-weight="600" style="fill:var(--ink)" font-family="Inter,system-ui,sans-serif">Wire clears →</text><text x="913.6" y="62.0" text-anchor="middle" font-size="15" font-weight="600" style="fill:var(--ink)" font-family="Inter,system-ui,sans-serif">NetSuite JE</text></svg></div></div><div class="two"><div class="panel"><h2>What I built</h2><ul><li>Uses internal operating cash first while keeping a stage-weighted buffer for upcoming closings, then picks outside lenders by priority, room under their cap, minimum balance and state eligibility.</li><li>Approving moves the loan into that lender&#x27;s section of the treasury ledger and updates the live funding mix.</li><li>Pulls bank balances and incoming wires. A loan flagged &quot;funding pending&quot; clears automatically when the lender&#x27;s wire lands with the property address in the memo.</li><li>Pulls the loan servicer&#x27;s disbursement report through its GraphQL API and builds the daily NetSuite journal entry with a button.</li></ul></div><div class="panel"><h2>Outcome</h2><ul><li>Funding decisions follow written rules, and the rules are visible on every recommendation.</li><li>Replaced a formula-heavy treasury workbook with script-driven refreshes that others can run.</li></ul></div></div><div class="panel"><h2>Code excerpt</h2><pre class="code"><code><span class="k">function</span> tfPlan_(pending, lenders, freeStart) {
+  <span class="k">let</span> free = freeStart;
+  <span class="k">const</span> bal = {};
+  lenders.forEach(l =&gt; { bal[l.name] = l.balance; });
+  <span class="k">const</span> opf = lenders.find(l =&gt; l.isOpf);
+  <span class="k">const</span> outside = lenders.filter(l =&gt; !l.isOpf);
+  <span class="k">const</span> byName = {};
+  lenders.forEach(l =&gt; { byName[l.name.toLowerCase()] = l; });
+  <span class="k">const</span> room = l =&gt; (l.max === null || l.max === <span class="s">&#x27;&#x27;</span> || isNaN(l.max)) ? Infinity : l.max - bal[l.name];
+  <span class="k">const</span> fits = (l, p) =&gt; room(l) &gt;= (l.isOpf ? p.net : p.amount) &amp;&amp;
+                         (!l.maxSingle || p.amount &lt;= l.maxSingle) &amp;&amp;
+                         !(l.excluded || []).includes(String(p.state || <span class="s">&#x27;&#x27;</span>).toUpperCase());
+
+  <span class="k">const</span> order = pending.slice().sort((a, b) =&gt; (tfTime_(a.fundDate) - tfTime_(b.fundDate)) || (a.row - b.row));
+  <span class="k">const</span> recs = [];
+  order.forEach(p =&gt; {
+    <span class="k">let</span> pick = null, why = <span class="s">&#x27;&#x27;</span>, warn = false;
+    <span class="k">const</span> ov = p.override ? byName[String(p.override).toLowerCase()] : null;
+    <span class="k">if</span> (ov) {
+      pick = ov; why = <span class="s">&#x27;Override&#x27;</span>;
+      <span class="k">if</span> (!fits(ov, p)) { warn = true; why += ` ⚠ ${ov.name} lacks room/eligibility (room ${tfMoney_(room(ov))})`; }
+    } <span class="k">else</span> <span class="k">if</span> (opf &amp;&amp; free &gt;= 0 &amp;&amp; fits(opf, p)) {
+      pick = opf;
+      why = `Op Fund keeps it — free cash ${tfMoney_(free)} after pipeline buffer + min cash` +
+            (room(opf) === Infinity ? <span class="s">&#x27;&#x27;</span> : `; Op Fund room ${tfMoney_(room(opf))}`);
+    } <span class="k">else</span> {
+      <span class="k">const</span> reason = (opf &amp;&amp; free &lt; 0) ? `Op Fund short ${tfMoney_(-free)} vs buffer + min cash`
+                                        : `Op Fund at its cap (room ${tfMoney_(opf ? room(opf) : 0)})`;
+      <span class="k">const</span> elig = outside.filter(l =&gt; fits(l, p)).sort((a, b) =&gt; {
+        <span class="k">const</span> au = bal[a.name] &lt; (a.min || 0) ? 0 : 1, bu = bal[b.name] &lt; (b.min || 0) ? 0 : 1;
+        <span class="k">return</span> (au - bu) || ((a.priority || 99) - (b.priority || 99)) || (room(b) - room(a));
+      });
+      <span class="k">if</span> (!elig.length) {
+        pick = opf; warn = true;
+        why = reason + <span class="s">&#x27; — ⚠ no outside lender has room / eligibility; review&#x27;</span>;
+      } <span class="k">else</span> {
+        pick = elig[0];
+        why = reason + <span class="s">&#x27;; &#x27;</span> + (bal[pick.name] &lt; (pick.min || 0)
+          ? `${pick.name} is under its ${tfMoney_(pick.min)} minimum`
+          : `${pick.name} is priority ${pick.priority || <span class="s">&#x27;—&#x27;</span>} with ${tfMoney_(room(pick))} room`);
+      }
+    }
+    <span class="k">if</span> (pick.isOpf) bal[pick.name] += p.net;
+    <span class="k">else</span> { bal[pick.name] += p.amount; free += p.amount; }   <span class="c">// lender wires back the full loan amount</span>
+    recs.push({ row: p.row, loanNo: p.loanNo, lender: pick.name, why, warn, amount: p.amount, net: p.net });
+  });
+  <span class="k">return</span> { recs, balAfter: bal, freeAfter: free };
+}</code></pre><p class="caption">The recommendation pass: internal cash first, then outside lenders by eligibility, minimum balance, priority and room. Identifiers and internal names are anonymized.</p></div></div></main><footer><div class="wrap">Every company name, person, address and number on this site is fictional. The software is real: these are working copies of tools I built, with the original back-end swapped for generated demo data.</div></footer>
+</body></html>

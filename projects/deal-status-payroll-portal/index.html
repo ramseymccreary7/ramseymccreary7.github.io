@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../assets/gas-mock.js"></script>
+<script src="../../assets/fake.js"></script>
+<script src="mock.js"></script>
+
+<base target="_top">
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --lion:#C0985C; --lion-d:#9E7A45; --lion-l:#F3EBDD;
+    --jet:#2C2C2C; --ink:#2C2C2C; --muted:#6B6B6B; --faint:#9A9A9A;
+    --line:#E4E4E4; --bg:#F6F5F2; --card:#FFFFFF;
+    --good:#1E7B34; --good-bg:#E3F2E6; --bad:#A1111C; --bad-bg:#FBE4E6;
+    --warn:#8A5A00; --warn-bg:#FFF1CC; --na:#8A8A8A; --na-bg:#EFEFEF;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 "Source Sans 3","Source Sans Pro",Arial,sans-serif}
+  button{font:inherit;cursor:pointer}
+  input,select,textarea{font:inherit;color:inherit}
+  .hidden{display:none!important}
+
+  /* ── top bar ── */
+  .bar{background:var(--jet);color:#fff;padding:0 20px;height:56px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:5}
+  .brand{font-weight:700;letter-spacing:.14em;font-size:13px;color:var(--lion)}
+  .brand + .app{font-weight:600;font-size:15px;opacity:.95}
+  .bar .sp{flex:1}
+  .bar .who{font-size:13px;opacity:.85;text-align:right;line-height:1.2}
+  .bar .who small{display:block;opacity:.7}
+  .ghost{background:transparent;border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:6px;padding:6px 12px;font-size:13px}
+  .ghost:hover{border-color:var(--lion);color:var(--lion)}
+
+  /* ── sign-in ── */
+  .signin{max-width:400px;margin:10vh auto;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:0 6px 24px rgba(0,0,0,.06)}
+  .signin .hd{background:var(--jet);color:#fff;padding:18px 22px}
+  .signin .hd .brand{display:block;margin-bottom:4px}
+  .signin .bd{padding:22px}
+  .signin label{display:block;font-weight:600;margin:0 0 6px}
+  .field{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .field:focus{outline:2px solid var(--lion-l);border-color:var(--lion)}
+  .code{letter-spacing:.5em;font-size:22px;text-align:center;font-weight:700}
+  .btn{background:var(--lion);color:#fff;border:0;border-radius:8px;padding:10px 16px;font-weight:600}
+  .btn:hover{background:var(--lion-d)}
+  .btn[disabled]{opacity:.6;cursor:default}
+  .btn.full{width:100%;margin-top:14px}
+  .btn.line{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .btn.line:hover{border-color:var(--lion)}
+  .btn.sf{background:#0176D3;color:#fff;display:inline-flex;align-items:center;gap:8px;text-decoration:none}
+  .btn.sf:hover{background:#014486}
+  .btn.sf .sf-logo{height:18px;width:auto;display:block}
+  .btn.sf .ext{width:14px;height:14px;opacity:.9}
+  .toggle{background:none;border:0;padding:6px 0 2px;font-size:13px;font-weight:600;color:var(--lion-d);display:flex;align-items:center;gap:6px;cursor:pointer}
+  .toggle .car{display:inline-block;transition:transform .15s;font-size:11px}
+  .toggle .car.o{transform:rotate(90deg)}
+  .toggle .cnt{color:var(--faint);font-weight:400}
+  .more{margin-top:8px}
+  .fgroup{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--lion-d);margin:12px 0 6px}
+  .msg{margin-top:12px;font-size:13px;color:var(--muted)}
+  .msg.err{color:var(--bad)}
+  .link{background:none;border:0;color:var(--lion-d);padding:0;font-size:13px;text-decoration:underline}
+
+  /* ── main ── */
+  main{max-width:1180px;margin:0 auto;padding:20px}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;cursor:pointer;text-align:left}
+  .kpi:hover{border-color:var(--lion)}
+  .kpi.on{border-color:var(--lion);box-shadow:inset 0 0 0 1px var(--lion)}
+  .kpi .n{font-size:26px;font-weight:700;line-height:1.1}
+  .kpi .l{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .kpi.bad .n{color:var(--bad)} .kpi.warn .n{color:var(--warn)}
+  .tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .tools .field{width:auto}
+  .tools .grow{flex:1;min-width:220px}
+  .meta{font-size:12px;color:var(--faint);margin-left:auto}
+
+  .deal{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden}
+  .deal .top{display:flex;gap:14px;align-items:flex-start;padding:14px 16px;border-bottom:1px solid var(--line)}
+  .deal h3{margin:0;font-size:17px}
+  .deal .sub{color:var(--muted);font-size:13px;margin-top:2px}
+  .deal .prices{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;font-weight:400;color:var(--text,#2C2C2C);margin-top:4px}
+  .deal .prices .l{color:var(--muted);margin-right:5px}
+  .deal .acts{margin-left:auto;display:flex;gap:8px;flex-shrink:0}
+  .deal .body{padding:12px 16px 14px}
+  .row{display:flex;gap:24px;flex-wrap:wrap;font-size:13px;margin-bottom:10px}
+  .row b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);font-weight:600}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 12px}
+  .chip{font-size:12px;font-weight:600;border-radius:999px;padding:3px 10px;border:1px solid transparent}
+  .chip.yes{background:var(--good-bg);color:var(--good)}
+  .chip.no{background:var(--bad-bg);color:var(--bad)}
+  .chip.na{background:var(--na-bg);color:var(--na);font-style:italic}
+  table{border-collapse:collapse;width:100%;font-size:13px}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);text-align:left;font-weight:600;padding:6px 8px;border-bottom:1px solid var(--line)}
+  td{padding:7px 8px;border-bottom:1px solid #F0F0F0;vertical-align:top}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  .tag{font-size:11px;font-weight:700;border-radius:4px;padding:2px 7px;white-space:nowrap}
+  .tag.t-dp{background:var(--lion);color:var(--jet)} .tag.t-emd{background:var(--jet);color:#fff}
+  .tag.t-admin{background:#EFE3CE;color:var(--jet)} .tag.t-other{background:#E4E4E4;color:var(--jet)}
+  .st{font-size:12px;font-weight:600}
+  .st.Approved{color:var(--good)} .st.In{color:var(--warn)} .st.Flagged{color:var(--bad)} .st.Posted{color:#2F4A6D;font-weight:600}
+  .var0{color:var(--good)} .varneg{color:var(--bad);font-weight:600} .varpos{color:var(--warn);font-weight:600}
+  .note{font-size:12px;color:var(--muted);margin-top:2px}
+  .sec{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:14px 0 6px}
+  .empty{color:var(--faint);font-size:13px;padding:6px 0}
+  details summary{cursor:pointer;font-size:13px;color:var(--lion-d);font-weight:600;margin-top:10px}
+  .grid2{display:grid;grid-template-columns:repeat(3,1fr);gap:4px 18px;margin-top:8px;font-size:12px}
+  .grid2 div span{color:var(--faint);display:block;font-size:11px}
+  .none{text-align:center;color:var(--muted);padding:40px}
+  .req-st{font-weight:700;font-size:12px}
+  .qa{border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin:6px 0;font-size:13px}
+  .qa-hd{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+  .qa-topic{font-weight:700}
+  .qa-meta{color:var(--faint);font-size:12px;margin-left:auto}
+  .qa-q{margin-top:4px;white-space:pre-wrap}
+  .qa-a{margin-top:6px;background:#FAF7F1;border:1px solid var(--lion-l);border-radius:6px;padding:6px 10px;white-space:pre-wrap}
+  .qa-wait{margin-top:6px;color:var(--warn);font-size:12px;font-style:italic}
+  .req-st.New{color:var(--warn)} .req-st.Completed{color:var(--good)} .req-st.Rejected{color:var(--bad)}
+
+  /* ── views (Deals | My requests & questions) ── */
+  .views{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--line)}
+  .view{background:none;border:0;border-bottom:3px solid transparent;padding:8px 14px;font-weight:600;color:var(--muted);margin-bottom:-1px}
+  .view:hover{color:var(--ink)}
+  .view.on{color:var(--ink);border-bottom-color:var(--lion)}
+  .badge{display:inline-block;min-width:20px;padding:0 6px;border-radius:999px;background:var(--lion);color:#fff;font-size:11px;line-height:18px;text-align:center;margin-left:4px}
+  .badge:empty{display:none}
+
+  /* ── a change request / question with its conversation ── */
+  .item-card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0;font-size:13px}
+  .item-card.closed{background:#FCFCFB}
+  .ic-ft{display:flex;align-items:center;gap:12px;margin-top:6px}
+  .ic-arch{margin-left:auto;color:var(--muted)}
+  .ic-archived{margin-left:auto;font-size:12px;color:var(--faint)}
+  .ic-archived + .ic-arch{margin-left:0}
+  .arch-note{text-align:center;color:var(--muted);font-size:13px;margin:14px 0}
+  .ic-hd{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+  .ic-kind{font-size:11px;font-weight:700;border-radius:4px;padding:2px 7px;background:var(--jet);color:#fff}
+  .ic-kind.q{background:var(--lion-l);color:var(--jet)}
+  .ic-title{font-weight:700}
+  .ic-meta{color:var(--faint);font-size:12px;margin-left:auto}
+  .ic-deal{color:var(--muted);font-size:12px;margin-top:2px}
+  .wait{font-size:11px;font-weight:700;border-radius:999px;padding:1px 8px}
+  .wait.acct{background:var(--warn-bg);color:var(--warn)} .wait.req{background:#E3ECF7;color:#2F4A6D}
+  .ic-body{margin-top:6px}
+  .ic-body table{margin-top:4px}
+  .thread{margin-top:8px;border-top:1px dashed var(--line);padding-top:6px}
+  .tmsg{margin:6px 0;padding:6px 10px;border-radius:8px;max-width:92%}
+  .tmsg.acct{background:#FAF7F1;border:1px solid var(--lion-l)}
+  .tmsg.req{background:#F2F4F7;border:1px solid #E1E5EB;margin-left:auto}
+  .tmsg .mh{font-size:11px;color:var(--faint);margin-bottom:2px}
+  .tmsg .mt{white-space:pre-wrap}
+  .reply-box{margin-top:8px}
+  .reply-box textarea{width:100%}
+  .reply-box .rb-ft{display:flex;gap:8px;justify-content:flex-end;align-items:center;margin-top:6px}
+
+  /* ── Deal Payroll tab ── */
+  .pay-tbl{margin-top:2px}
+  .pay-tbl td.who{font-weight:600}
+  .atype{font-size:11px;font-weight:700;border-radius:4px;padding:2px 7px;white-space:nowrap}
+  .atype.AA{background:var(--jet);color:#fff} .atype.DA{background:var(--lion);color:var(--jet)}
+  .pay-total td{font-weight:700;border-bottom:0}
+  .pay-wrap{overflow-x:auto}
+  .pay-tbl td.num{white-space:nowrap}
+  .pay-tbl td.estc{background:#EEF4FF}
+  .vtag{display:inline-block;margin-left:6px;font-size:10px;font-weight:700;line-height:1;border-radius:3px;padding:2px 4px;vertical-align:1px;letter-spacing:.02em}
+  .vtag.act{background:var(--good-bg);color:var(--good)}
+  .vtag.est{background:#DCE8FD;color:#1A56B8}
+  .pay-legend{font-size:12px;color:var(--muted);margin:6px 2px 0;white-space:pre-wrap}
+  .pay-legend .vtag{margin-left:0}
+  .vchip{font-size:12px;font-weight:700;border-radius:999px;padding:2px 10px;margin-left:8px;vertical-align:3px;white-space:nowrap}
+  .vchip.valid{background:var(--good-bg);color:var(--good)} .vchip.issues{background:var(--bad-bg);color:var(--bad)}
+  .vchip.review,.vchip.changed{background:var(--warn-bg);color:var(--warn)} .vchip.none{background:var(--na-bg);color:var(--na)}
+  .vlist{font-size:13px;margin:4px 0 0} .vlist div{padding:3px 0;border-bottom:1px solid #F0F0F0}
+  .vlist span{color:var(--faint);display:inline-block;min-width:150px}
+
+  /* ── modal ── */
+  .veil{position:fixed;inset:0;background:rgba(20,20,20,.45);display:flex;align-items:flex-start;justify-content:center;padding:6vh 16px;z-index:20;overflow:auto}
+  .modal{background:#fff;border-radius:12px;width:100%;max-width:720px;overflow:hidden}
+  .modal .hd{background:var(--jet);color:#fff;padding:14px 18px;display:flex;align-items:center}
+  .modal .hd .x{margin-left:auto;background:none;border:0;color:#fff;font-size:20px}
+  .modal .bd{padding:16px 18px}
+  .modal .ft{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;align-items:center}
+  .line-item{display:grid;grid-template-columns:1.2fr 1fr 1fr 28px;gap:8px;align-items:end;margin-bottom:10px}
+  .line-item label,.lbl{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);font-weight:600;display:block;margin-bottom:4px}
+  .cur{padding:10px 12px;border:1px dashed var(--line);border-radius:8px;color:var(--muted);min-height:42px;background:#FAFAFA;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rm{background:none;border:0;color:var(--faint);font-size:18px;padding-bottom:10px}
+  .item{border-bottom:1px dashed var(--line);margin-bottom:10px}
+  .item:last-child{border-bottom:0}
+  label.chk{font-size:13px;text-transform:none;letter-spacing:0;color:var(--ink);display:flex;gap:6px;align-items:center;padding-bottom:12px;font-weight:600}
+  .rm:hover{color:var(--bad)}
+  .ask-grid{display:grid;grid-template-columns:1.2fr .9fr 1.35fr;gap:10px;align-items:end}
+  @media (max-width:640px){ .ask-grid{grid-template-columns:1fr} }
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--jet);color:#fff;padding:10px 16px;border-radius:8px;z-index:30;font-size:13px;max-width:90vw}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(0,0,0,.15);border-top-color:var(--lion);border-radius:50%;animation:s .8s linear infinite;vertical-align:-2px}
+  @keyframes s{to{transform:rotate(360deg)}}
+  @media (max-width:760px){
+    .kpis{grid-template-columns:repeat(2,1fr)} .grid2{grid-template-columns:1fr 1fr}
+    .deal .top{flex-direction:column} .deal .acts{margin-left:0}
+    .line-item{grid-template-columns:1fr} .bar .who{display:none}
+    .wires{display:block;overflow-x:auto}
+  }
+
+  /* ── payroll request cutoff ── */
+  .cutalert{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-radius:10px;padding:10px 14px;margin:14px 0 2px;font-size:14px;border:1px solid transparent}
+  .cutalert .ca-ico{font-size:18px}
+  .cutalert .ca-cd{font-variant-numeric:tabular-nums;font-size:16px}
+  .cutalert .ca-go{margin-left:auto;background:#fff;border:1px solid currentColor;color:inherit;border-radius:8px;padding:6px 12px;font-weight:600}
+  .paycut{display:flex;align-items:center;gap:16px;border-radius:12px;padding:16px 20px;margin:14px 0 4px;border:2px solid transparent}
+  .paycut .pc-ico{font-size:34px;line-height:1}
+  .paycut .pc-t{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+  .paycut .pc-cd{font-size:38px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;letter-spacing:.01em}
+  .paycut .pc-s{font-size:13px;opacity:.9;margin-top:2px}
+  .cutbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 18px;font-size:13px;border-top:1px solid var(--line)}
+  .cutbar .cut-ico{font-size:15px}
+  .cutbar .cut-cd{font-weight:800;font-size:15px;font-variant-numeric:tabular-nums}
+  .cutbar .cut-when{margin-left:auto;opacity:.85}
+  .cutalert.ok,.paycut.ok,.cutbar.ok{background:var(--lion-l);color:var(--lion-d);border-color:#E8D9BF}
+  .cutalert.soon,.paycut.soon,.cutbar.soon{background:var(--warn-bg);color:var(--warn);border-color:#F1D98A}
+  .cutalert.urgent,.paycut.urgent,.cutbar.urgent{background:var(--bad-bg);color:var(--bad);border-color:#F2B8BE}
+  .cutalert.crit,.paycut.crit,.cutbar.crit{background:#B3141F;color:#fff;border-color:#B3141F;animation:cutpulse 1.6s ease-in-out infinite}
+  .cutalert.closed,.paycut.closed,.cutbar.closed{background:#2C2C2C;color:#fff;border-color:#2C2C2C}
+  @keyframes cutpulse{0%,100%{box-shadow:0 0 0 0 rgba(179,20,31,.45)}50%{box-shadow:0 0 0 6px rgba(179,20,31,0)}}
+  .deal.locked{border-color:#2C2C2C}
+  .modal-cut{margin:-6px 0 14px}
+  .modal-cut .cutbar{border:0;border-radius:8px}
+  .btn.locked,.btn.locked:hover{background:#2C2C2C;color:#fff;opacity:1;cursor:not-allowed}
+  @media (max-width:640px){ .paycut .pc-cd{font-size:28px} .cutbar .cut-when{margin-left:0} .cutalert .ca-go{margin-left:0} }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <span class="brand">Atlas</span><span class="app">Deal Status and Payroll Portal</span>
+  <span class="sp"></span>
+  <span class="who hidden" id="who"></span>
+  <button class="ghost hidden" id="btnRefresh">Refresh</button>
+  <button class="ghost hidden" id="btnOut">Sign out</button>
+</div>
+
+<!-- ── sign-in ── -->
+<div class="signin" id="signin">
+  <div class="hd"><span class="brand">Atlas</span>Sign in to see your office's deals and wires</div>
+  <div class="bd">
+    <div id="stepEmail">
+      <label for="email">Work email</label>
+      <input class="field" id="email" type="email" autocomplete="email" placeholder="demo.viewer@example.com">
+      <button class="btn full" id="btnSend">Email me a code</button>
+    </div>
+    <div id="stepCode" class="hidden">
+      <label for="code">6-digit code</label>
+      <input class="field code" id="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="••••••">
+      <button class="btn full" id="btnVerify">Sign in</button>
+      <div class="msg"><button class="link" id="btnBack">Use a different email</button> · <button class="link" id="btnResend">Send a new code</button></div>
+    </div>
+    <div class="msg" id="signMsg"></div>
+  </div>
+</div>
+
+<!-- ── dashboard ── -->
+<main id="app" class="hidden">
+  <div id="cutAlert" class="hidden"></div>
+  <div class="views">
+    <button class="view on" id="vDeals" type="button">Deal Status</button>
+    <button class="view hidden" id="vPay" type="button">Deal Payroll</button>
+    <button class="view" id="vItems" type="button">My requests &amp; questions<span class="badge" id="itemsBadge"></span></button>
+  </div>
+  <div id="dealsView">
+  <div class="kpis" id="kpis"></div>
+  <div class="tools">
+    <input class="field grow" id="q" placeholder="Search address, buyer, deal ID…">
+    <select class="field" id="fOffice"></select>
+    <select class="field" id="fStage"></select>
+    <select class="field" id="fSort">
+      <option value="close-desc">Closing date — newest</option>
+      <option value="close-asc">Closing date — oldest</option>
+      <option value="name">Address A–Z</option>
+    </select>
+    <button class="btn line" id="btnExpandAll" type="button">Expand all</button>
+    <span class="meta" id="meta"></span>
+  </div>
+  <div id="list"></div>
+  </div>
+  <div id="payView" class="hidden">
+    <div id="pcut"></div>
+    <div class="kpis" id="pkpis"></div>
+    <div class="tools">
+      <input class="field grow" id="pq" placeholder="Search address, agent, payroll ID, deal ID…">
+      <select class="field" id="pOffice"></select>
+      <select class="field" id="pSort">
+        <option value="close-desc">Closing date — newest</option>
+        <option value="close-asc">Closing date — oldest</option>
+        <option value="name">Address A–Z</option>
+      </select>
+      <button class="btn line" id="btnPayExpand" type="button">Expand all</button>
+      <span class="meta" id="pmeta"></span>
+    </div>
+    <div id="plist"></div>
+  </div>
+  <div id="itemsView" class="hidden">
+    <div class="tools">
+      <input class="field grow" id="iq" placeholder="Search address, ID, field, question…">
+      <select class="field" id="iScope">
+        <option value="mine">Submitted by me</option>
+        <option value="all">Everything in my offices</option>
+      </select>
+      <select class="field" id="iState">
+        <option value="all">Open &amp; resolved</option>
+        <option value="open">Open</option>
+        <option value="closed">Resolved</option>
+        <option value="archived">Archived</option>
+      </select>
+      <select class="field" id="iKind">
+        <option value="">Requests &amp; questions</option>
+        <option value="request">Change requests</option>
+        <option value="question">Questions</option>
+      </select>
+    </div>
+    <div id="ilist"></div>
+  </div>
+</main>
+
+<div id="veil" class="veil hidden"></div>
+<div id="toast" class="toast hidden"></div>
+
+<script>
+(function(){
+  var TOKEN_KEY = 'co_dealwire_token';
+  var S = { token:null, data:null, filter:'all', open:{}, view:'deals',   // open: deal id → details expanded
+            itemMap:{}, replyOpen:{}, drafts:{}, threadAll:{},
+            pay:null, payLoading:false, payOpen:{}, payFilter:'all' };          // Deal Payroll tab (Admins + GMs only)
+
+  // ── tiny DOM helpers (textContent only — nothing from the sheet is ever parsed as HTML) ──
+  function $(id){ return document.getElementById(id); }
+  function el(tag, attrs, kids){
+    var n = document.createElement(tag);
+    if (attrs) for (var k in attrs){
+      if (k === 'text') n.textContent = attrs[k];
+      else if (k === 'cls') n.className = attrs[k];
+      else if (k.slice(0,2) === 'on') n.addEventListener(k.slice(2), attrs[k]);
+      else n.setAttribute(k, attrs[k]);
+    }
+    (kids || []).forEach(function(c){ if (c == null) return; n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
+    return n;
+  }
+  function money(v){
+    if (v === null || v === undefined || v === '' || isNaN(v)) return '—';
+    var n = Number(v), s = Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    return (n < 0 ? '-$' : '$') + s;
+  }
+  // Accounting format for the deal-field list: $X,XXX.XX and ($X,XXX.XX).
+  function acct(v){
+    var n=Number(v); if (isNaN(n)) return '—';
+    var s=Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    return n<0 ? '($'+s+')' : '$'+s;
+  }
+  function toast(t){ var x=$('toast'); x.textContent=t; x.classList.remove('hidden'); clearTimeout(toast._t); toast._t=setTimeout(function(){x.classList.add('hidden');}, 4500); }
+
+  // ── session storage (per browser; wrapped — some browsers block it) ──
+  function saveToken(t, exp){ S.token=t; try{ localStorage.setItem(TOKEN_KEY, JSON.stringify({t:t,exp:exp})); }catch(e){} }
+  function loadToken(){ try{ var o=JSON.parse(localStorage.getItem(TOKEN_KEY)||'null'); if (o && o.exp > Date.now()) return o.t; }catch(e){} return null; }
+  function clearToken(){ S.token=null; try{ localStorage.removeItem(TOKEN_KEY); }catch(e){} }
+
+  function call(fn, args, ok, fail){
+    var r = google.script.run.withSuccessHandler(function(res){
+      if (res && res.signin){ signOut('Your session ended — sign in again.'); return; }
+      ok(res);
+    }).withFailureHandler(function(err){ (fail || function(e){ toast('Something went wrong: ' + (e && e.message || e)); })(err); });
+    r[fn].apply(r, args);
+  }
+
+  // ── sign-in flow ──
+  function signMsg(t, err){ var m=$('signMsg'); m.textContent=t||''; m.className='msg'+(err?' err':''); }
+  function sendCode(){
+    var email = $('email').value.trim();
+    if (!email){ signMsg('Enter your work email.', true); return; }
+    $('btnSend').disabled = true; signMsg('Sending…');
+    call('dashRequestCode', [email], function(res){
+      $('btnSend').disabled = false;
+      if (!res.ok){ signMsg(res.message, true); return; }
+      $('stepEmail').classList.add('hidden'); $('stepCode').classList.remove('hidden');
+      signMsg(res.message); $('code').value=''; $('code').focus();
+    }, function(e){ $('btnSend').disabled=false; signMsg('Could not send the code: ' + (e && e.message || e), true); });
+  }
+  function verify(){
+    var code = $('code').value.replace(/\D/g,'');
+    if (code.length !== 6){ signMsg('The code is 6 digits.', true); return; }
+    $('btnVerify').disabled = true; signMsg('Checking…');
+    call('dashVerifyCode', [$('email').value.trim(), code], function(res){
+      $('btnVerify').disabled = false;
+      if (!res.ok){ signMsg(res.message, true); return; }
+      saveToken(res.token, res.expires); signMsg(''); load();
+    }, function(e){ $('btnVerify').disabled=false; signMsg('Could not sign in: ' + (e && e.message || e), true); });
+  }
+  function signOut(msg){
+    clearToken(); S.data=null;
+    $('app').classList.add('hidden'); $('signin').classList.remove('hidden');
+    ['who','btnRefresh','btnOut'].forEach(function(i){ $(i).classList.add('hidden'); });
+    $('stepEmail').classList.remove('hidden'); $('stepCode').classList.add('hidden');
+    signMsg(msg || '');
+  }
+
+  // ── load + render ──
+  function load(){
+    $('signin').classList.add('hidden'); $('app').classList.remove('hidden');
+    $('list').innerHTML=''; $('list').appendChild(el('div',{cls:'none'},[el('span',{cls:'spin'}),' Loading your deals…']));
+    if (S.view==='items'){ $('ilist').innerHTML=''; $('ilist').appendChild(el('div',{cls:'none'},[el('span',{cls:'spin'}),' Loading…'])); }
+    call('dashGetData', [S.token], function(res){
+      S.data=res; S.itemMap={};
+      (res.items||[]).forEach(function(i){ S.itemMap[i.id]=i; });
+      if (!res.user.payroll && S.view==='payroll') S.view='deals';
+      renderShell(); render();
+      if (res.user.payroll) loadPay();          // also gives "Go to payroll" links on My requests & questions
+    });
+  }
+
+  // ── Deal Payroll tab ──
+  function loadPay(){
+    if (S.payLoading) return;
+    S.payLoading=true;
+    if (!S.pay){ $('plist').innerHTML=''; $('plist').appendChild(el('div',{cls:'none'},[el('span',{cls:'spin'}),' Loading payroll…'])); }
+    call('dashGetPayroll', [S.token], function(res){
+      S.payLoading=false;
+      if (res.denied){ S.pay=null; $('vPay').classList.add('hidden'); if (S.view==='payroll'){ S.view='deals'; render(); } return; }
+      if (res.error){ $('plist').innerHTML=''; $('plist').appendChild(el('div',{cls:'none',text:res.error})); return; }
+      S.pay=res;
+      S.clockOffset = res.now ? res.now - Date.now() : 0;
+      var fo=$('pOffice'), keep=fo.value; fo.innerHTML='';
+      fo.appendChild(el('option',{value:'',text:'All my offices'}));
+      res.offices.forEach(function(o){ fo.appendChild(el('option',{value:o,text:o})); });
+      fo.value=keep; fo.classList.toggle('hidden', res.offices.length < 2);
+      $('pmeta').textContent='Updated '+res.refreshed;
+      renderCutAlert();
+      if (S.view==='payroll' || S.view==='items') rerender();
+    }, function(e){ S.payLoading=false; $('plist').innerHTML=''; $('plist').appendChild(el('div',{cls:'none',text:'Could not load payroll: '+(e&&e.message||e)})); });
+  }
+
+  // ── Payroll request cutoff: noon CT the first Monday after the payroll record was created ──
+  function nowTs(){ return Date.now() + (S.clockOffset||0); }
+  function payLocked(r){ return !!(r.cutoffTs && nowTs() >= r.cutoffTs && !(S.pay && S.pay.cutoffExempt)); }
+  function cutCls(ms){ return ms<=0?'closed':ms<3*36e5?'crit':ms<24*36e5?'urgent':ms<72*36e5?'soon':'ok'; }
+  function fmtLeft(ms){
+    if (ms<=0) return '0:00:00';
+    var t=Math.floor(ms/1000), d=Math.floor(t/86400); t-=d*86400;
+    var h=Math.floor(t/3600); t-=h*3600; var m=Math.floor(t/60), sec=t-m*60;
+    var p=function(n){ return (n<10?'0':'')+n; };
+    return (d ? d+(d===1?' day ':' days ') : '') + p(h)+':'+p(m)+':'+p(sec);
+  }
+  // The strip on each payroll card: a live countdown, or a lock once the window has closed.
+  function cutoffBar(r){
+    if (!r.cutoffTs) return null;
+    var ms=r.cutoffTs-nowTs(), cls=cutCls(ms), closed=ms<=0;
+    if (closed) return el('div',{cls:'cutbar closed','data-cut':r.cutoffTs,'data-closed':'1'},[
+      el('span',{cls:'cut-ico',text:'🔒'}),
+      el('span',{cls:'cut-msg'},[ el('b',{text:'Requests closed '+r.cutoffLabel+'.'}),
+        ' This payroll is locked — no more questions or change requests can be submitted.' +
+        (S.pay && S.pay.cutoffExempt ? ' (Admin: you can still submit.)' : '') ]) ]);
+    return el('div',{cls:'cutbar '+cls,'data-cut':r.cutoffTs,'data-closed':'0'},[
+      el('span',{cls:'cut-ico',text:'⏱'}),
+      el('span',{cls:'cut-msg',text:'Questions & change requests close in'}),
+      el('span',{cls:'cut-cd','data-cd':r.cutoffTs,text:fmtLeft(ms)}),
+      el('span',{cls:'cut-when',text:r.cutoffLabel}) ]);
+  }
+  // The next cutoff across the user's payroll records: {ts, label, n, closed}
+  function nextCut(){
+    var rows=(S.pay&&S.pay.rows)||[], now=nowTs(), best=null, closed=0;
+    rows.forEach(function(r){
+      if (!r.cutoffTs) return;
+      if (r.cutoffTs<=now){ closed++; return; }
+      if (!best || r.cutoffTs<best.ts) best={ts:r.cutoffTs,label:r.cutoffLabel,n:0};
+    });
+    if (best) rows.forEach(function(r){ if (r.cutoffTs===best.ts) best.n++; });
+    return { next:best, closed:closed, any: rows.some(function(r){ return r.cutoffTs; }) };
+  }
+  // Big countdown at the top of the Deal Payroll tab.
+  function renderPayCut(){
+    var box=$('pcut'); box.innerHTML='';
+    var c=nextCut();
+    box.removeAttribute('data-cut');
+    if (!c.any){ box.className=''; return; }
+    if (!c.next){
+      box.className='paycut closed';
+      box.appendChild(el('div',{cls:'pc-ico',text:'🔒'}));
+      box.appendChild(el('div',null,[ el('div',{cls:'pc-t',text:'Payroll requests are closed'}),
+        el('div',{cls:'pc-s',text:'The request window has closed on every payroll record shown here — no more questions or change requests can be submitted.'}) ]));
+      return;
+    }
+    var ms=c.next.ts-nowTs();
+    box.className='paycut '+cutCls(ms);
+    box.setAttribute('data-cut', c.next.ts);
+    box.appendChild(el('div',{cls:'pc-ico',text:'⏱'}));
+    box.appendChild(el('div',{cls:'pc-main'},[
+      el('div',{cls:'pc-t',text:'Payroll questions & change requests close in'}),
+      el('div',{cls:'pc-cd','data-cd':c.next.ts,text:fmtLeft(ms)}),
+      el('div',{cls:'pc-s',text:c.next.label+' · '+c.next.n+' payroll record'+(c.next.n===1?'':'s')+
+        ' · after this they are locked and can\'t be changed'+(c.closed?' · '+c.closed+' already closed':'')}) ]));
+  }
+  // The alert strip above the tabs (every tab) for anyone who sees payroll.
+  function renderCutAlert(){
+    var box=$('cutAlert'), c=S.pay ? nextCut() : null;
+    if (!c || !c.next){ box.className='hidden'; box.innerHTML=''; box.removeAttribute('data-cut'); return; }
+    var ms=c.next.ts-nowTs();
+    box.className='cutalert '+cutCls(ms); box.innerHTML='';
+    box.setAttribute('data-cut', c.next.ts);
+    box.appendChild(el('span',{cls:'ca-ico',text:'⏱'}));
+    box.appendChild(el('span',{cls:'ca-t'},[ 'Payroll requests close in ', el('b',{cls:'ca-cd','data-cd':c.next.ts,text:fmtLeft(ms)}),
+      ' — '+c.next.label+' · '+c.next.n+' record'+(c.next.n===1?'':'s') ]));
+    if (S.view!=='payroll') box.appendChild(el('button',{cls:'ca-go',text:'Review payroll',onclick:function(){ setView('payroll'); render(); window.scrollTo(0,0); }}));
+  }
+  // Every second: update the countdowns; re-render when one hits zero (the card locks).
+  setInterval(function(){
+    if (!S.pay) return;
+    var now=nowTs(), crossed=false;
+    document.querySelectorAll('[data-cd]').forEach(function(n){ n.textContent=fmtLeft(Number(n.getAttribute('data-cd'))-now); });
+    document.querySelectorAll('[data-cut]').forEach(function(n){
+      var ts=Number(n.getAttribute('data-cut')), ms=ts-now, cls=cutCls(ms);
+      if (n.getAttribute('data-closed')==='0' && ms<=0) crossed=true;
+      ['ok','soon','urgent','crit','closed'].forEach(function(k){ if (k!==cls) n.classList.remove(k); });
+      n.classList.add(cls);
+      if (n.id && ms<=0) crossed=true;                             // banner / alert strip ran out
+    });
+    if (crossed){ renderCutAlert(); if (S.view==='payroll') rerender(); }
+  }, 1000);
+
+  // Validated = run through the Payroll Validation tool (its Validation Log) and payroll unchanged since.
+  function vState(r){ return (r.validation && r.validation.state) || 'none'; }
+  function visiblePay(){
+    var q=$('pq').value.trim().toLowerCase(), off=$('pOffice').value, f=S.payFilter;
+    var list=(S.pay?S.pay.rows:[]).filter(function(r){
+      if (off && r.office!==off) return false;
+      if (f==='valid' && vState(r)!=='valid') return false;
+      if (f==='issues' && vState(r)!=='issues') return false;
+      if (f==='pending' && ['none','changed','review'].indexOf(vState(r))<0) return false;
+      if (q){
+        var hay=[r.name,r.id,r.payroll,r.payrollId,r.office].concat(r.agents.map(function(a){ return a.name; })).join(' ').toLowerCase();
+        if (hay.indexOf(q)<0) return false;
+      }
+      return true;
+    });
+    var s=$('pSort').value;
+    list.sort(function(a,b){
+      if (s==='name') return String(a.name).localeCompare(String(b.name));
+      if (s==='close-asc') return (a.dispTs||9e15)-(b.dispTs||9e15);
+      return (b.dispTs||0)-(a.dispTs||0);
+    });
+    return list;
+  }
+
+  function renderPayKpis(){
+    var rows=S.pay.rows, k=$('pkpis'); k.innerHTML='';
+    var n=function(fn){ return rows.filter(fn).length; };
+    [{f:'all', n:rows.length, l:'Payroll records'},
+     {f:'valid', n:n(function(r){ return vState(r)==='valid'; }), l:'Validated'},
+     {f:'issues', n:n(function(r){ return vState(r)==='issues'; }), l:'Validation issues', c:'bad'},
+     {f:'pending', n:n(function(r){ return ['none','changed','review'].indexOf(vState(r))>=0; }), l:'Not validated yet', c:'warn'}
+    ].forEach(function(t){
+      k.appendChild(el('button',{cls:'kpi '+(t.c||'')+(S.payFilter===t.f?' on':''), onclick:function(){ S.payFilter=(S.payFilter===t.f&&t.f!=='all')?'all':t.f; render(); }},
+        [el('div',{cls:'n',text:String(t.n)}), el('div',{cls:'l',text:t.l})]));
+    });
+  }
+
+  function renderPay(){
+    var list=$('plist');
+    if (!S.pay){ if (!S.payLoading) loadPay(); return; }
+    renderPayCut();
+    renderPayKpis();
+    list.innerHTML='';
+    var v=visiblePay();
+    if (!v.length){ list.appendChild(el('div',{cls:'none',text: S.pay.rows.length ? 'Nothing matches.' : 'No submitted payroll for your office(s) right now.'})); return; }
+    v.forEach(function(r){ list.appendChild(payCard(r)); });
+    $('btnPayExpand').textContent = v.every(function(r){ return S.payOpen[r.payrollId]; }) ? 'Collapse all' : 'Expand all';
+  }
+
+  // Collapsed: deal, agents + type, profit after holdback, each agent's pay. Expanded: requests & questions + every field.
+  function payCard(r){
+    var top = el('div',{cls:'top'},[
+      el('div',null,[
+        el('h3',null,[ r.name, el('span',{cls:'vchip '+vState(r),
+          text:(vState(r)==='valid'?'✔ ':vState(r)==='issues'?'✘ ':vState(r)==='none'?'':'⚠ ')+((r.validation&&r.validation.label)||'Not validated'),
+          title:(r.validation&&r.validation.at?'Payroll Validation tool, '+r.validation.at+(r.validation.by?' by '+r.validation.by:''):'')+
+                (r.validation&&r.validation.notes?'\n'+r.validation.notes:'')}) ]),
+        el('div',{cls:'prices'},[ el('span',null,[el('span',{cls:'l',text:'Profit after Holdback'}), r.pah===null?'—':acct(r.pah)]) ]),
+        el('div',{cls:'sub',text:[r.office, r.dispClose?'Closed '+r.dispClose:'', r.submitted?'Submitted '+r.submitted:'', r.payroll+(r.recordType?' ('+r.recordType+')':'')].filter(Boolean).join(' · ')})
+      ]),
+      el('div',{cls:'acts'},[
+        r.link ? sfButton(r.link) : null ].concat(payLocked(r) ? [
+        el('button',{cls:'btn locked',disabled:'disabled',text:'🔒 Requests closed',
+          title:'Questions and change requests on this payroll record closed '+r.cutoffLabel+'.'}) ] : [
+        el('button',{cls:'btn line',text:'Ask Accounting',onclick:function(){ openAsk(r,{topics:r.askTopics,fn:'dashAskPayroll',key:'payrollId',id:r.payrollId,title:'Ask Accounting — payroll'}); }}),
+        el('button',{cls:'btn',text:'Request a change',onclick:function(){ openChange(r,{fields:S.pay.changeFields,fn:'dashSubmitPayrollChange',key:'payrollId',id:r.payrollId,title:'Request a payroll change'}); }})
+      ]))
+    ]);
+    var cutBar = cutoffBar(r);
+    // Base = actual (payroll record). Bonus = actual on a Bonus record that pays it, else the Payroll Validation
+    // tool's estimate (bonus is paid at month end) — estimated cells are highlighted and tagged "est.".
+    // An agent whose bonus can't be worked out (e.g. not on the T4M tab) comes from the server as a $0 estimate.
+    var tb=el('tbody'), sum={bp:0,b$:0,xp:0,x$:0,tp:0,t$:0}, anyEst=false, anyBonus=false;
+    var pctTxt=function(x){ return x===null||x===undefined?'—':(Math.round(x*100)/100)+'%'; };
+    var amtTxt=function(x){ return x===null||x===undefined?'—':acct(x); };
+    var cellV=function(text,est,title){
+      var tag = text==='—' ? null : el('span',{cls:est?'vtag est':'vtag act',text:est?'est.':'actual'});
+      return el('td',{cls:'num'+(est?' estc':''),title:title||''},[el('span',{text:text}), tag]);
+    };
+    var r2=function(x){ return Math.round(x*100)/100; };
+    r.agents.forEach(function(a){
+      var b=a.bonus, t=a.total||{pct:a.pct,pay:a.pay,est:false};
+      // No estimate to show (agent not found, or not estimated yet) → a $0 estimate, never blank / actual.
+      if (b && b.est && (b.pay===null||b.pay===undefined)) b={pct:0,pay:0,est:true,why:b.why||'Couldn\'t be calculated — estimated as $0',win:b.win};
+      if (!b || b.est) t={pct:r2((a.pct||0)+((b&&b.pct)||0)), pay:(a.pay===null||a.pay===undefined)&&!b?null:r2((a.pay||0)+((b&&b.pay)||0)), est:true};
+      var bEst = !!(b && b.est), bTitle = b ? (b.est ? 'Estimated from the agent\'s T3M'+(b.win?' ('+b.win+')':'')+' — bonus is paid at month end'+(b.why?'. '+b.why:'') : 'Actual — from this Bonus payroll record') : 'No bonus field for this role';
+      if (b && b.est) anyEst = true;
+      if (b && b.pay!==null) anyBonus = true;
+      sum.bp+=a.pct||0; sum.b$+=a.pay||0; sum.xp+=(b&&b.pct)||0; sum.x$+=(b&&b.pay)||0; sum.tp+=t.pct||0; sum.t$+=t.pay||0;
+      tb.appendChild(el('tr',null,[
+        el('td',{cls:'who',text:a.name}),
+        el('td',null,[el('span',{cls:'atype '+a.type,text:a.type})]),
+        el('td',{text:a.role}),
+        cellV(pctTxt(a.pct),false,'Actual — from the payroll record'),
+        cellV(amtTxt(a.pay),false,'Actual — from the payroll record'),
+        cellV(pctTxt(b?b.pct:null),bEst,bTitle),
+        cellV(amtTxt(b?b.pay:null),bEst,bTitle),
+        cellV(pctTxt(t.pct),t.est,t.est?'Base (actual) + bonus (estimated)':'Base + bonus, both actual'),
+        cellV(amtTxt(t.pay),t.est,t.est?'Base (actual) + bonus (estimated)':'Base + bonus, both actual')
+      ]));
+    });
+    if (r.agents.length>1) tb.appendChild(el('tr',{cls:'pay-total'},[el('td',{text:'Total'}),el('td'),el('td'),
+      cellV(pctTxt(r2(sum.bp)),false), cellV(acct(r2(sum.b$)),false),
+      cellV(anyBonus?pctTxt(r2(sum.xp)):'—',anyEst), cellV(anyBonus?acct(r2(sum.x$)):'—',anyEst),
+      cellV(pctTxt(r2(sum.tp)),anyEst), cellV(acct(r2(sum.t$)),anyEst)]));
+    var legend = el('div',{cls:'pay-legend'},[
+      el('span',{cls:'vtag act',text:'actual'}), el('span',{text:' from the payroll record   '}),
+      el('span',{cls:'vtag est',text:'est.'}), el('span',{text:' estimated by Payroll Validation from the agent\'s T3M — bonus is paid at month end'}) ]);
+    var agents = r.agents.length ? el('div',{cls:'pay-wrap'},[ el('table',{cls:'pay-tbl'},[
+      el('thead',null,[el('tr',null,['Agent','Type','Role','Base %','Base $','Bonus %','Bonus $','Total %','Total $'].map(function(h,i){ return el('th',{cls:i>=3?'num':'',text:h}); }))]), tb ]), legend ])
+      : el('div',{cls:'empty',text:'No agents on this payroll record.'});
+
+    var its=(r.itemIds||[]).map(function(id){ return S.itemMap[id]; }).filter(Boolean);
+    var itemsSec = its.length ? el('div',null,[ el('div',{cls:'sec',text:'Payroll requests & questions'}) ].concat(its.map(function(i){ return itemCard(i,false); }))) : null;
+    var cell=function(f){ return el('div',null,[el('span',{text:f.label}), f.amount!==undefined&&f.amount!==null ? acct(f.amount) : (f.value||'—')]); };
+    var v=r.validation||{checks:[]};
+    var vSec = el('div',null,[
+      el('div',{cls:'fgroup',text:'Validation'}),
+      el('div',{cls:'note',text: v.at ? (v.label+' — Payroll Validation tool, '+v.at+(v.by?' by '+v.by:'')) : (v.notes||'Not validated')}),
+      (v.at && v.notes) ? el('div',{cls:'note',text:v.notes}) : null,
+      v.checks.length ? el('div',{cls:'vlist'}, v.checks.map(function(c){ return el('div',null,[el('span',{text:c.label}), c.text]); })) : null ]);
+    var more = el('div',{cls:'more'+(S.payOpen[r.payrollId]?'':' hidden')},[
+      vSec,
+      itemsSec,
+      el('div',{cls:'fgroup',text:'Payroll record'}), el('div',{cls:'grid2'}, r.payrollFields.map(cell)),
+      r.payrollLink ? el('div',{style:'margin-top:8px'},[el('a',{cls:'link',href:r.payrollLink,target:'_blank',rel:'noopener',text:'Open payroll record in Salesforce'})]) : null,
+      el('div',{cls:'fgroup',text:'Deal'}),
+      r.dealFields.length ? el('div',{cls:'grid2'}, r.dealFields.map(cell)) : el('div',{cls:'empty',text:'This deal is not on the closed-deal pull yet.'})
+    ]);
+    var bits=[r.agents.length+(r.agents.length===1?' agent':' agents')];
+    var openN=its.filter(function(i){ return !i.closed; }).length;
+    if (its.length) bits.push(its.length+(its.length===1?' request / question':' requests & questions')+(openN?' ('+openN+' open)':''));
+    var replied=its.filter(function(i){ return !i.closed && i.waitingOn==='Requester'; }).length;
+    if (replied) bits.push(replied+' with a reply from accounting');
+    var tog=el('button',{cls:'toggle'});
+    function paint(){ var o=!!S.payOpen[r.payrollId]; tog.innerHTML='';
+      tog.appendChild(el('span',{cls:'car'+(o?' o':''),text:'▸'}));
+      tog.appendChild(document.createTextNode(o?'Hide details':'Show details'));
+      tog.appendChild(el('span',{cls:'cnt',text:' · '+bits.join(' · ')})); tog.setAttribute('aria-expanded',o?'true':'false'); }
+    paint();
+    tog.addEventListener('click',function(){ S.payOpen[r.payrollId]=!S.payOpen[r.payrollId]; more.classList.toggle('hidden',!S.payOpen[r.payrollId]); paint(); });
+    return el('div',{cls:'deal'+(payLocked(r)?' locked':'')},[ top, cutBar, el('div',{cls:'body'},[ agents, tog, more ]) ]);
+  }
+
+  function goToPay(dealId){
+    S.view='payroll'; $('pq').value=dealId; $('pOffice').value='';
+    (S.pay?S.pay.rows:[]).forEach(function(r){ if (r.id===dealId) S.payOpen[r.payrollId]=true; });
+    render(); window.scrollTo(0,0);
+  }
+
+  function renderShell(){
+    var d=S.data, u=d.user;
+    var who=$('who'); who.innerHTML=''; who.appendChild(document.createTextNode(u.name));
+    who.appendChild(el('small',{text:(u.offices||[]).join(' · ')}));
+    ['who','btnRefresh','btnOut'].forEach(function(i){ $(i).classList.remove('hidden'); });
+    var fo=$('fOffice'); fo.innerHTML='';
+    fo.appendChild(el('option',{value:'',text:'All my offices'}));
+    d.offices.forEach(function(o){ fo.appendChild(el('option',{value:o,text:o})); });
+    fo.classList.toggle('hidden', d.offices.length < 2);
+    // Deal status filter (Sold, Pre Close, …) — built from the deals' Property_Stage__c; keeps the choice on refresh.
+    var fs=$('fStage'), keep=fs.value, stages={};
+    (d.deals||[]).forEach(function(x){ if (x.stage) stages[x.stage]=true; });
+    fs.innerHTML='';
+    fs.appendChild(el('option',{value:'',text:'All deal statuses'}));
+    Object.keys(stages).sort(function(a,b){ return a==='Sold'?-1:b==='Sold'?1:a.localeCompare(b); })
+      .forEach(function(st){ fs.appendChild(el('option',{value:st,text:st})); });
+    fs.value = stages[keep] ? keep : '';
+    $('meta').textContent = 'Updated ' + d.refreshed;
+    $('vPay').classList.toggle('hidden', !u.payroll);
+    var openMine = (d.items||[]).filter(function(i){ return i.mine && !i.closed && !i.archived; }).length;
+    $('itemsBadge').textContent = openMine ? String(openMine) : '';
+  }
+
+  function visibleDeals(){
+    var d=S.data, q=$('q').value.trim().toLowerCase(), off=$('fOffice').value, stg=$('fStage').value;
+    var list = d.deals.filter(function(x){
+      if (off && x.office !== off) return false;
+      if (stg && x.stage !== stg) return false;
+      if (q && (x.name+' '+x.buyer+' '+x.id+' '+x.office).toLowerCase().indexOf(q) < 0) return false;
+      if (S.filter==='missing' && !x.missing) return false;
+      if (S.filter==='flagged' && !x.wires.some(function(w){return w.status==='Flagged';})) return false;
+      if (S.filter==='requests' && !x.requests.some(function(r){return !/completed|rejected/i.test(r.status);})) return false;
+      return true;
+    });
+    var s=$('fSort').value;
+    list.sort(function(a,b){
+      if (s==='name') return String(a.name).localeCompare(String(b.name));
+      if (s==='close-asc') return (a.dispTs||9e15)-(b.dispTs||9e15);
+      return (b.dispTs||0)-(a.dispTs||0);
+    });
+    return list;
+  }
+
+  function renderKpis(){
+    // Tiles count the deals in the selected office and deal status (search and tile filters aside).
+    var off=$('fOffice').value, stg=$('fStage').value;
+    var d=S.data.deals.filter(function(x){ return (!off || x.office===off) && (!stg || x.stage===stg); }), k=$('kpis'); k.innerHTML='';
+    var tiles=[
+      {f:'all', n:d.length, l:'Deals'},
+      {f:'missing', n:d.filter(function(x){return x.missing;}).length, l:'Waiting on money', c:'bad'},
+      {f:'flagged', n:d.filter(function(x){return x.wires.some(function(w){return w.status==='Flagged';});}).length, l:'Flagged wires', c:'warn'},
+      {f:'requests', n:d.filter(function(x){return x.requests.some(function(r){return !/completed|rejected/i.test(r.status);});}).length, l:'Open change requests', c:'warn'}
+    ];
+    tiles.forEach(function(t){
+      k.appendChild(el('button',{cls:'kpi '+(t.c||'')+(S.filter===t.f?' on':''), onclick:function(){ S.filter=(S.filter===t.f&&t.f!=='all')?'all':t.f; render(); }},
+        [el('div',{cls:'n',text:String(t.n)}), el('div',{cls:'l',text:t.l})]));
+    });
+  }
+
+  function typeTag(t){
+    var u=String(t).toUpperCase(), c=/EMD/.test(u)?'t-emd':/ADMIN/.test(u)?'t-admin':/^DP/.test(u)?'t-dp':'t-other';
+    return el('span',{cls:'tag '+c,text:t});
+  }
+
+  // "Open in Salesforce" — Salesforce blue. Shows the logo image only when
+  // SF_LOGO_URL is set in Dashboard.gs; otherwise a plain external-link icon.
+  function sfButton(href){
+    var a = el('a',{cls:'btn sf',href:href,target:'_blank',rel:'noopener'});
+    if (S.data && S.data.sfLogo) a.appendChild(el('img',{src:S.data.sfLogo,alt:'',cls:'sf-logo'}));
+    a.appendChild(document.createTextNode('Open in Salesforce'));
+    var ns='http://www.w3.org/2000/svg', svg=document.createElementNS(ns,'svg');
+    svg.setAttribute('viewBox','0 0 16 16'); svg.setAttribute('class','ext'); svg.setAttribute('aria-hidden','true');
+    var p=document.createElementNS(ns,'path');
+    p.setAttribute('d','M9 2h5v5M14 2L7.5 8.5M12 9.5V13a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3.5');
+    p.setAttribute('fill','none'); p.setAttribute('stroke','currentColor'); p.setAttribute('stroke-width','1.6');
+    p.setAttribute('stroke-linecap','round'); p.setAttribute('stroke-linejoin','round');
+    svg.appendChild(p); a.appendChild(svg);
+    return a;
+  }
+
+  function dealCard(x){
+    var top = el('div',{cls:'top'},[
+      el('div',null,[
+        el('h3',{text:x.name}),
+        (x.prices && x.prices.length) ? el('div',{cls:'prices'}, x.prices.map(function(p){
+          return el('span',null,[el('span',{cls:'l',text:p.label}), p.amount === null || p.amount === undefined ? '—' : acct(p.amount)]);
+        })) : null,
+        el('div',{cls:'sub',text:[x.office, x.stage].filter(Boolean).join(' · ')})
+      ]),
+      el('div',{cls:'acts'},[
+        x.link ? sfButton(x.link) : null,
+        el('button',{cls:'btn line',text:'Ask Accounting',onclick:function(){ openAsk(x); }}),
+        el('button',{cls:'btn',text:'Request a change',onclick:function(){ openChange(x); }})
+      ])
+    ]);
+
+    var info = el('div',{cls:'row'},[
+      el('div',null,[el('b',{text:'Closeout type'}), x.closeout||'—']),
+      el('div',null,[el('b',{text:'Buyer'}), x.buyer||'—']),
+      el('div',null,[el('b',{text:'Acq close'}), x.acqClose||'—']),
+      el('div',null,[el('b',{text:'Disp close'}), x.dispClose||'—']),
+      el('div',null,[el('b',{text:'Down payment'}), money(x.expected.dp)]),
+      el('div',null,[el('b',{text:'Earnest money'}), money(x.expected.em)]),
+      el('div',null,[el('b',{text:'Admin fee'}), money(x.expected.admin)])
+    ]);
+
+    var chips = el('div',{cls:'chips'}, x.coverage.map(function(c){
+      var cls = c.state==='Yes'?'yes':c.state==='No'?'no':'na';
+      var t = c.label + ': ' + (c.state==='Yes' ? (c.count>1?'Received ('+c.count+')':'Received') : c.state==='No'?'Not received':'N/A');
+      return el('span',{cls:'chip '+cls,text:t,title:c.why||''});
+    }));
+
+    var wires;
+    if (!x.wires.length){ wires = el('div',{cls:'empty',text:'No wires matched to this deal yet.'}); }
+    else {
+      var tb = el('tbody');
+      x.wires.forEach(function(w){
+        var vcls = w.variance===null?'':w.variance===0?'var0':w.variance<0?'varneg':'varpos';
+        var st = el('td',null,[el('span',{cls:'st '+w.status.split(' ')[0],text:w.status})]);
+        if (w.flag) st.appendChild(el('div',{cls:'note',text:w.flag}));
+        if (w.note) st.appendChild(el('div',{cls:'note',text:'Accounting: '+w.note}));
+        tb.appendChild(el('tr',null,[
+          el('td',{text:w.date}), el('td',null,[typeTag(w.type)]),
+          el('td',{cls:'num',text:money(w.amount)}),
+          el('td',{cls:'num',text:w.seq && w.seq!=='1 of 1' ? money(w.total)+' ('+w.seq+')' : money(w.total)}),
+          el('td',{cls:'num',text:money(w.expected)}),
+          el('td',{cls:'num '+vcls,text:w.variance===null?'—':money(w.variance)}),
+          st
+        ]));
+      });
+      wires = el('div',{cls:'wires'},[el('table',null,[
+        el('thead',null,[el('tr',null,['Date','Type','Wire','Total of type','SF expected','Variance','Status'].map(function(h,i){
+          return el('th',{cls:(i>=2&&i<=5)?'num':'',text:h}); }))]), tb ])]);
+    }
+
+    // Change requests and questions on this deal, each with its conversation and a Reply box.
+    var its = (x.itemIds||[]).map(function(id){ return S.itemMap[id]; }).filter(Boolean);
+    var itemsSec = its.length ? el('div',null,[ el('div',{cls:'sec',text:'Change requests & questions'}) ]
+      .concat(its.map(function(i){ return itemCard(i, false); }))) : null;
+    var qList = x.questions || [];
+
+    // All deal fields — the deal team (all six AA/DA roles) first, then every
+    // other field from the Salesforce pull.
+    var fieldCell = function(label, amount, value){
+      return el('div',null,[el('span',{text:label}), amount !== undefined && amount !== null ? acct(amount) : (value||'—')]); };
+    var det = el('details',null,[ el('summary',{text:'All deal fields'}),
+      (x.team && x.team.length) ? el('div',{cls:'fgroup',text:'Deal team'}) : null,
+      (x.team && x.team.length) ? el('div',{cls:'grid2'}, x.team.map(function(t){ return fieldCell(t.label, t.amount, t.value); })) : null,
+      el('div',{cls:'fgroup',text:'Deal fields'}),
+      el('div',{cls:'grid2'}, x.fields.map(function(f){ return fieldCell(f.label, f.amount, f.value); })) ]);
+
+    // Collapsed by default: everything below the wire-type chips opens on click.
+    var more = el('div',{cls:'more'+(S.open[x.id]?'':' hidden')},[ el('div',{cls:'sec',text:'Wires'}), wires, itemsSec, det ]);
+    var bits = [x.wires.length + (x.wires.length===1?' wire':' wires')];
+    if (x.requests.length) bits.push(x.requests.length + (x.requests.length===1?' change request':' change requests'));
+    if (qList.length){
+      var openQ = its.filter(function(i){ return i.kind==='question' && !i.closed; }).length;
+      bits.push(qList.length + (qList.length===1?' question':' questions') + (openQ ? ' (' + openQ + ' open)' : ''));
+    }
+    var replied = its.filter(function(i){ return !i.closed && i.waitingOn==='Requester'; }).length;
+    if (replied) bits.push(replied + ' with a reply from accounting');
+    var tog = el('button',{cls:'toggle','aria-expanded':S.open[x.id]?'true':'false'});
+    function paintTog(){ var o=!!S.open[x.id];
+      tog.innerHTML=''; tog.appendChild(el('span',{cls:'car'+(o?' o':''),text:'▸'}));
+      tog.appendChild(document.createTextNode(o ? 'Hide details' : 'Show details'));
+      tog.appendChild(el('span',{cls:'cnt',text:' · '+bits.join(' · ')}));
+      tog.setAttribute('aria-expanded', o?'true':'false'); }
+    paintTog();
+    tog.addEventListener('click',function(){ S.open[x.id]=!S.open[x.id]; more.classList.toggle('hidden',!S.open[x.id]); paintTog(); });
+
+    return el('div',{cls:'deal'},[ top, el('div',{cls:'body'},[ info, chips, tog, more ]) ]);
+  }
+
+  // ── a change request / question card, with its conversation and Reply box ──
+  function itemCard(it, showDeal){
+    var isReq = it.kind==='request';
+    var nm = function(s){ return it.payroll ? String(s||'').replace(/^Payroll · /,'') : s; };   // the Payroll tag says it
+    var stTxt = isReq ? (it.status||'New') : (/^(answered|closed)$/i.test(it.status) ? 'Answered' : (it.status||'New'));
+    var stCls = /rejected/i.test(it.status) && it.closed ? 'Rejected' : it.closed ? 'Completed' : 'New';
+    var wait = it.closed ? null : it.waitingOn==='Requester' ? el('span',{cls:'wait req',text:'Accounting replied'})
+             : it.waitingOn==='Accounting' ? el('span',{cls:'wait acct',text:'Waiting on accounting'}) : null;
+    var hd = el('div',{cls:'ic-hd'},[
+      el('span',{cls:'ic-kind'+(isReq?'':' q'),text:isReq?'Change request':'Question'}),
+      el('span',{cls:'ic-title',text: isReq ? it.lines.map(function(L){ return nm(L.field); }).join(', ') : nm(it.topic) + (it.type ? ' · ' + it.type : '')}),
+      it.payroll ? el('span',{cls:'atype DA',text:'Payroll'}) : null,
+      el('span',{cls:'req-st '+stCls,text:stTxt}), wait,
+      el('span',{cls:'ic-meta',text:it.by + ' · ' + it.submitted + ' · ' + it.id})
+    ]);
+    var dealLine = null;
+    if (showDeal){
+      var inList = !it.payroll && S.data.deals.some(function(d){ return d.id===it.dealId; });
+      var inPay = it.payroll && S.pay && S.pay.rows.some(function(r){ return r.id===it.dealId; });
+      dealLine = el('div',{cls:'ic-deal'},[ [it.payroll?'Payroll':'', it.deal, it.office].filter(Boolean).join(' · ') + ' ',
+        inList ? el('button',{cls:'link',text:'Go to deal',onclick:function(){ goToDeal(it.dealId); }}) : null,
+        inPay ? el('button',{cls:'link',text:'Go to payroll',onclick:function(){ goToPay(it.dealId); }}) : null ]);
+    }
+    var body;
+    if (isReq){
+      var tb = el('tbody');
+      it.lines.forEach(function(L){
+        tb.appendChild(el('tr',null,[ el('td',{text:nm(L.field)}), el('td',{text:(L.from||'—')+' → '+L.to}),
+          el('td',null,[el('span',{cls:'req-st '+String(L.status).split(' ')[0],text:L.status})]),
+          el('td',{text:L.response||'—'}) ]));
+      });
+      body = el('div',{cls:'ic-body'},[
+        el('table',null,[ el('thead',null,[el('tr',null,['Field','Change','Status','Accounting response'].map(function(h){ return el('th',{text:h}); }))]), tb ]),
+        it.reason ? el('div',{cls:'note',text:'Reason: '+it.reason}) : null,
+        it.notes ? el('div',{cls:'note',text:'Notes: '+it.notes}) : null ]);
+    } else {
+      body = el('div',{cls:'ic-body'},[ el('div',{cls:'qa-q',text:it.question}) ]);
+    }
+    // Conversation: the last 3 messages, with the rest one click away.
+    var th = it.thread||[], thread = null;
+    if (th.length){
+      var showAll = S.threadAll[it.id] || th.length <= 3, shown = showAll ? th : th.slice(-3);
+      thread = el('div',{cls:'thread'},[
+        !showAll ? el('button',{cls:'link',text:'Show '+(th.length-3)+' earlier message'+(th.length-3===1?'':'s'),
+          onclick:function(){ S.threadAll[it.id]=true; rerender(); }}) : null ].concat(shown.map(function(m){
+        return el('div',{cls:'tmsg '+(m.side==='Accounting'?'acct':'req')},[
+          el('div',{cls:'mh',text:[m.from || (m.side==='Accounting'?'Accounting':''), m.at, m.via].filter(Boolean).join(' · ')}),
+          el('div',{cls:'mt',text:m.text}) ]);
+      })));
+    } else if (!isReq || !it.closed) {
+      thread = el('div',{cls:'qa-wait',text:'No replies yet — accounting answers by email, and the reply shows up here.'});
+    }
+    // Reply / follow up
+    var box = el('div',{cls:'reply-box'+(S.replyOpen[it.id]?'':' hidden')});
+    var ta = el('textarea',{cls:'field',rows:'3',maxlength:'2000',placeholder:'Reply or follow up — it is emailed to accounting and added to this conversation'});
+    ta.value = S.drafts[it.id] || '';
+    ta.addEventListener('input',function(){ S.drafts[it.id]=ta.value; });
+    var err = el('span',{cls:'msg err',style:'margin:0 auto 0 0'});
+    var send = el('button',{cls:'btn',text:'Send reply'});
+    send.addEventListener('click',function(){
+      if (!ta.value.trim()){ err.textContent='Type your reply.'; return; }
+      send.disabled=true; send.textContent='Sending…'; err.textContent='';
+      call('dashFollowUp',[S.token,{id:it.id,text:ta.value}],function(res){
+        send.disabled=false; send.textContent='Send reply';
+        if (!res.ok){ err.textContent=res.message; return; }
+        delete S.drafts[it.id]; S.replyOpen[it.id]=false; S.threadAll[it.id]=true;
+        if (it.dealId) S.open[it.dealId]=true;
+        if (it.payroll && S.pay) S.pay.rows.forEach(function(r){ if (r.id===it.dealId) S.payOpen[r.payrollId]=true; });
+        toast('Reply sent. '+res.message); load();
+      },function(e){ send.disabled=false; send.textContent='Send reply'; err.textContent='Could not send: '+(e&&e.message||e); });
+    });
+    box.appendChild(ta);
+    box.appendChild(el('div',{cls:'rb-ft'},[ err,
+      el('button',{cls:'btn line',text:'Cancel',onclick:function(){ S.replyOpen[it.id]=false; box.classList.add('hidden'); replyBtn.classList.remove('hidden'); }}),
+      send ]));
+    var replyBtn = el('button',{cls:'link'+(S.replyOpen[it.id]?' hidden':''),
+      text: it.closed ? 'Follow up' : 'Reply / follow up',
+      onclick:function(){ S.replyOpen[it.id]=true; box.classList.remove('hidden'); replyBtn.classList.add('hidden'); ta.focus(); }});
+    // Archive: only on the My requests & questions page. Hides it from this person's list; nothing is deleted.
+    var archBtn = showDeal ? el('button',{cls:'link ic-arch',text: it.archived ? 'Unarchive' : 'Archive thread',
+      title: it.archived ? 'Put this back in your list' : 'Hide this thread from your list — it stays in the logs, and a new reply brings it back',
+      onclick:function(){ archiveItem(it, !it.archived, archBtn); }}) : null;
+    var ft = el('div',{cls:'ic-ft'},[ replyBtn, it.archived ? el('span',{cls:'ic-archived',text:'Archived '+(it.archivedAt||'')}) : null, archBtn ]);
+    return el('div',{cls:'item-card'+(it.closed?' closed':'')},[ hd, dealLine, body, thread, ft, box ]);
+  }
+
+  function archiveItem(it, archive, btn){
+    if (btn){ btn.disabled=true; btn.textContent = archive ? 'Archiving…' : 'Restoring…'; }
+    call('dashArchiveItem',[S.token,{id:it.id,archive:archive}],function(res){
+      if (!res.ok){ if (btn){ btn.disabled=false; btn.textContent = it.archived ? 'Unarchive' : 'Archive thread'; } toast(res.message||'Could not archive.'); return; }
+      it.archived = archive; it.archivedAt = archive ? new Date().toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'}) : '';
+      var om=(S.data.items||[]).filter(function(i){ return i.mine && !i.closed && !i.archived; }).length;
+      $('itemsBadge').textContent = om ? String(om) : '';
+      rerender(); toast(res.message);
+    },function(e){ if (btn){ btn.disabled=false; btn.textContent = it.archived ? 'Unarchive' : 'Archive thread'; } toast('Could not archive: '+(e&&e.message||e)); });
+  }
+
+  function goToDeal(id){
+    setView('deals'); S.filter='all'; $('q').value=id; $('fOffice').value=''; $('fStage').value=''; S.open[id]=true; render();
+    window.scrollTo(0,0);
+  }
+
+  function setView(v){
+    S.view=v;
+    $('vDeals').classList.toggle('on', v==='deals'); $('vItems').classList.toggle('on', v==='items'); $('vPay').classList.toggle('on', v==='payroll');
+    $('dealsView').classList.toggle('hidden', v!=='deals'); $('itemsView').classList.toggle('hidden', v!=='items');
+    $('payView').classList.toggle('hidden', v!=='payroll');
+    if (S.pay) renderCutAlert();
+  }
+
+  function renderItems(){
+    var list=$('ilist'); list.innerHTML='';
+    var q=$('iq').value.trim().toLowerCase(), scope=$('iScope').value, state=$('iState').value, kind=$('iKind').value;
+    var inScope=(S.data.items||[]).filter(function(i){ return scope!=='mine' || i.mine; });
+    var nArch=inScope.filter(function(i){ return i.archived; }).length;
+    var items=(S.data.items||[]).filter(function(i){
+      if (scope==='mine' && !i.mine) return false;
+      if (state==='archived' ? !i.archived : i.archived) return false;
+      if (state==='open' && i.closed) return false;
+      if (state==='closed' && !i.closed) return false;
+      if (kind && i.kind!==kind) return false;
+      if (q){
+        var hay=[i.id,i.deal,i.office,i.by,i.topic,i.type,i.question,i.reason,i.notes]
+          .concat((i.lines||[]).map(function(L){ return L.field+' '+L.to; }))
+          .concat((i.thread||[]).map(function(m){ return m.text; })).join(' ').toLowerCase();
+        if (hay.indexOf(q)<0) return false;
+      }
+      return true;
+    });
+    var archNote = state!=='archived' && nArch ? el('div',{cls:'arch-note'},[ nArch+' archived thread'+(nArch===1?'':'s')+' hidden · ',
+      el('button',{cls:'link',text:'Show archived',onclick:function(){ $('iState').value='archived'; render(); }}) ]) : null;
+    if (!items.length){
+      list.appendChild(el('div',{cls:'none',text: state==='archived' ? 'No archived threads.'
+        : inScope.some(function(i){ return !i.archived; }) ? 'Nothing matches.'
+        : nArch ? 'Everything here is archived.'
+        : (scope==='mine' ? 'You have not sent any change requests or questions yet.' : 'No change requests or questions in your offices yet.')}));
+      if (archNote) list.appendChild(archNote);
+      return;
+    }
+    items.forEach(function(i){ list.appendChild(itemCard(i, true)); });
+    if (archNote) list.appendChild(archNote);
+  }
+
+  function rerender(){ var y=window.scrollY; render(); window.scrollTo(0,y); }
+
+  function render(){
+    setView(S.view);
+    if (S.view==='items'){ renderItems(); return; }
+    if (S.view==='payroll'){ renderPay(); return; }
+    renderKpis();
+    var list=$('list'); list.innerHTML='';
+    var v=visibleDeals();
+    if (!v.length){ list.appendChild(el('div',{cls:'none',text: S.data.deals.length ? 'No deals match.' : 'No deals for your office(s) right now.'})); return; }
+    v.forEach(function(x){ list.appendChild(dealCard(x)); });
+    $('btnExpandAll').textContent = v.every(function(x){ return S.open[x.id]; }) ? 'Collapse all' : 'Expand all';
+  }
+
+  // ── change request form ──
+  // opts (Deal Payroll tab): { fields, fn, key, id, title } — same form, payroll fields, dashSubmitPayrollChange.
+  function openChange(deal, opts){
+    opts = opts || {};
+    var fields = opts.fields || S.data.changeFields;
+    var veil=$('veil'); veil.innerHTML=''; veil.classList.remove('hidden');
+    var items = el('div');
+    function addItem(){
+      if (items.children.length >= 20) return;
+      var sel = el('select',{cls:'field'},[el('option',{value:'',text:'Pick a field…'})].concat(
+        fields.map(function(f){ return el('option',{value:f.label,text:f.label.replace(/^Payroll · /,'')}); })));
+      var cur = el('div',{cls:'cur',text:'—'});
+      var inp = el('input',{cls:'field',placeholder:'New value'});
+      // Agent fields: a second line for pay, and a Remove option.
+      var curPay = el('div',{cls:'cur',text:'—'});
+      var pay = el('input',{cls:'field',type:'number',step:'0.01',placeholder:'New pay (optional)'});
+      var rmChk = el('input',{type:'checkbox'});
+      var curPayLbl = el('label',{text:'Current pay'}), payLbl = el('label',{text:'Change pay to'});
+      var agentExtra = el('div',{cls:'line-item hidden',style:'margin-top:-4px'},[
+        el('div',null,[el('label',{cls:'chk'},[rmChk,' Remove this agent'])]),
+        el('div',null,[curPayLbl, curPay]),
+        el('div',null,[payLbl, pay]),
+        el('span')
+      ]);
+      rmChk.addEventListener('change',function(){ inp.disabled=pay.disabled=rmChk.checked; if (rmChk.checked){ inp.value=''; pay.value=''; } });
+      sel.addEventListener('change',function(){
+        var f = fields.filter(function(z){return z.label===sel.value;})[0];
+        var isAgent = !!(f && /agent/i.test(f.input));
+        agentExtra.classList.toggle('hidden', !isAgent);
+        rmChk.checked=false; inp.disabled=pay.disabled=false;
+        if (isAgent){
+          var byPct = !f.paySf && !!f.pctSf;                       // Additional AA: no $ field — change its Base %
+          curPayLbl.textContent = byPct ? 'Current base %' : 'Current pay';
+          payLbl.textContent = byPct ? 'Change base % to' : 'Change pay to';
+          pay.placeholder = byPct ? 'New base % (optional)' : 'New pay (optional)';
+          var pv = f.paySf ? deal.values[f.paySf] : byPct ? deal.values[f.pctSf] : '';
+          if (!byPct && pv !== '' && pv != null && !isNaN(Number(String(pv).replace(/[$,]/g,'')))) pv = money(Number(String(pv).replace(/[$,]/g,'')));
+          if (byPct && pv !== '' && pv != null) pv = pv + '%';
+          curPay.textContent = (f.paySf || byPct) ? (pv || '(blank)') : '(not in the sheet)';
+        }
+        var cv = f && f.sf ? deal.values[f.sf] : '';
+        if (f && /amount/i.test(f.input) && cv !== '' && !isNaN(Number(String(cv).replace(/[$,]/g,'')))) cv = money(Number(String(cv).replace(/[$,]/g,'')));
+        cur.textContent = f && f.sf ? (cv || '(blank)') : (f ? '(not in the sheet)' : '—');
+        cur.title = cur.textContent;
+        inp.type = f && /amount/i.test(f.input) ? 'number' : f && /date/i.test(f.input) ? 'date' : 'text';
+        if (inp.type==='number') inp.step='0.01';
+        inp.placeholder = isAgent ? 'New agent (optional)' : f && /name/i.test(f.input) ? 'Full name' : 'New value';
+      });
+      var line = el('div',{cls:'line-item'},[
+        el('div',null,[el('label',{text:'Field'}), sel]),
+        el('div',null,[el('label',{text:'Current'}), cur]),
+        el('div',null,[el('label',{text:'Change to'}), inp]),
+        el('button',{cls:'rm',title:'Remove',text:'×',onclick:function(){ if (items.children.length>1) row.remove(); }})
+      ]);
+      var row = el('div',{cls:'item'},[line, agentExtra]);
+      row._isAgent = function(){ return !agentExtra.classList.contains('hidden'); };
+      row._get = function(){ return { field: sel.value, value: inp.value, pay: pay.value, remove: rmChk.checked }; };
+      items.appendChild(row);
+    }
+    addItem();
+    var reason = el('input',{cls:'field',placeholder:'Why does this need to change?',maxlength:'500'});
+    var notes = el('textarea',{cls:'field',rows:'3',placeholder:'Anything accounting should know (optional)',maxlength:'2000'});
+    var err = el('div',{cls:'msg err'});
+    var submit = el('button',{cls:'btn',text:'Submit request'});
+    function close(){ veil.classList.add('hidden'); veil.innerHTML=''; }
+    submit.addEventListener('click',function(){
+      var payload = { dealId: deal.id, reason: reason.value, notes: notes.value,
+        items: Array.prototype.map.call(items.children,function(r){ return r._get(); }).filter(function(i){ return i.field; }) };
+      if (opts.key) payload[opts.key] = opts.id;
+      if (!payload.items.length){ err.textContent='Pick at least one field.'; return; }
+      var rows = Array.prototype.slice.call(items.children).filter(function(r){ return r._get().field; });
+      var blank = rows.some(function(r){ var g=r._get();
+        return r._isAgent() ? (!g.remove && !String(g.value).trim() && !String(g.pay).trim()) : !String(g.value).trim(); });
+      if (blank){ err.textContent='Enter a new value for every field (for an agent: new agent, new pay, or both).'; return; }
+      if (!payload.reason.trim()){ err.textContent='Add a reason.'; return; }
+      submit.disabled=true; submit.textContent='Sending…'; err.textContent='';
+      call(opts.fn || 'dashSubmitChange',[S.token,payload],function(res){
+        submit.disabled=false; submit.textContent='Submit request';
+        if (res.closed){ close(); toast(res.message); rerender(); return; }
+        if (!res.ok){ err.textContent=res.message; return; }
+        if (opts.key) S.payOpen[opts.id]=true;
+        close(); toast('Request '+res.id+' submitted. '+res.message); load();
+      },function(e){ submit.disabled=false; submit.textContent='Submit request'; err.textContent='Could not submit: '+(e&&e.message||e); });
+    });
+    veil.appendChild(el('div',{cls:'modal'},[
+      el('div',{cls:'hd'},[el('b',{text:opts.title || 'Request a change'}), el('button',{cls:'x',text:'×',title:'Close',onclick:close})]),
+      el('div',{cls:'bd'},[
+        el('div',{cls:'sub',text:deal.name+' · '+deal.office+' · '+deal.id,style:'margin-bottom:14px;color:#6B6B6B'}),
+        opts.key==='payrollId' && deal.cutoffTs ? el('div',{cls:'modal-cut'},[cutoffBar(deal)]) : null,
+        items,
+        el('button',{cls:'link',text:'+ Add another field',onclick:addItem}),
+        el('div',{style:'margin-top:14px'},[el('span',{cls:'lbl',text:'Reason (required)'}), reason]),
+        el('div',{style:'margin-top:10px'},[el('span',{cls:'lbl',text:'Notes'}), notes]),
+        err
+      ]),
+      el('div',{cls:'ft'},[ el('button',{cls:'btn line',text:'Cancel',onclick:close}), submit ])
+    ]));
+  }
+
+  // ── ask accounting (a question, not a change) ──
+  // opts (Deal Payroll tab): { topics, fn, key, id, title }
+  function openAsk(deal, opts){
+    opts = opts || {};
+    var topics = opts.topics || S.data.askTopics || [], types = S.data.questionTypes || [];
+    var veil=$('veil'); veil.innerHTML=''; veil.classList.remove('hidden');
+    var topic = el('select',{cls:'field'},[el('option',{value:'',text:'Pick a topic…'})].concat(
+      topics.map(function(t){ return el('option',{value:t.label,text:t.label.replace(/^Payroll · /,'')}); })));
+    var cur = el('div',{cls:'cur',text:'—'});
+    var type = el('select',{cls:'field',disabled:'disabled'},[el('option',{value:'',text:'Pick a topic first'})]);
+    var q = el('textarea',{cls:'field',rows:'4',maxlength:'1000',placeholder:'Your question about this figure or part of the deal'});
+    var count = el('div',{cls:'meta',style:'margin:4px 0 0;text-align:right',text:'0 / 1000'});
+    var err = el('div',{cls:'msg err'});
+    var submit = el('button',{cls:'btn',text:'Send to Accounting'});
+    function close(){ veil.classList.add('hidden'); veil.innerHTML=''; }
+    q.addEventListener('input',function(){ count.textContent = q.value.length + ' / 1000'; });
+    topic.addEventListener('change',function(){
+      var t = topics.filter(function(z){ return z.label===topic.value; })[0];
+      var cv = t && t.sf ? deal.values[t.sf] : '';
+      var num = Number(String(cv==null?'':cv).replace(/[$,()]/g,''));
+      if (t && t.sf && cv !== '' && cv != null && !isNaN(num) && /price|fee|money|payment|amount|pay|commission|cost|profit|proceeds|holdback/i.test(t.label+' '+t.sf))
+        cv = acct(String(cv).indexOf('(')>=0 ? -Math.abs(num) : num);
+      cur.textContent = !t ? '—' : t.sf ? (cv || '(blank)') : '(not a single field)';
+      cur.title = cur.textContent;
+      type.innerHTML='';
+      if (!t){ type.disabled=true; type.appendChild(el('option',{value:'',text:'Pick a topic first'})); return; }
+      type.disabled=false;
+      type.appendChild(el('option',{value:'',text:'Pick a question type…'}));
+      types.forEach(function(x){ type.appendChild(el('option',{value:x,text:x})); });
+    });
+    submit.addEventListener('click',function(){
+      if (!topic.value){ err.textContent='Pick a topic.'; return; }
+      if (!type.value){ err.textContent='Pick a question type.'; return; }
+      if (!q.value.trim()){ err.textContent='Type your question.'; return; }
+      submit.disabled=true; submit.textContent='Sending…'; err.textContent='';
+      var qp = {dealId:deal.id, topic:topic.value, type:type.value, question:q.value};
+      if (opts.key) qp[opts.key] = opts.id;
+      call(opts.fn || 'dashAskAccounting',[S.token,qp],function(res){
+        submit.disabled=false; submit.textContent='Send to Accounting';
+        if (res.closed){ close(); toast(res.message); rerender(); return; }
+        if (!res.ok){ err.textContent=res.message; return; }
+        if (opts.key) S.payOpen[opts.id]=true; else S.open[deal.id]=true;
+        close(); toast('Question '+res.id+' sent. '+res.message); load();
+      },function(e){ submit.disabled=false; submit.textContent='Send to Accounting'; err.textContent='Could not send: '+(e&&e.message||e); });
+    });
+    veil.appendChild(el('div',{cls:'modal'},[
+      el('div',{cls:'hd'},[el('b',{text:opts.title || 'Ask Accounting'}), el('button',{cls:'x',text:'×',title:'Close',onclick:close})]),
+      el('div',{cls:'bd'},[
+        el('div',{cls:'sub',text:deal.name+' · '+deal.office+' · '+deal.id,style:'margin-bottom:14px;color:#6B6B6B'}),
+        opts.key==='payrollId' && deal.cutoffTs ? el('div',{cls:'modal-cut'},[cutoffBar(deal)]) : null,
+        el('div',{cls:'ask-grid'},[
+          el('div',null,[el('span',{cls:'lbl',text:'Topic'}), topic]),
+          el('div',null,[el('span',{cls:'lbl',text:'Current value'}), cur]),
+          el('div',null,[el('span',{cls:'lbl',text:'Question type'}), type])
+        ]),
+        el('div',{style:'margin-top:14px'},[el('span',{cls:'lbl',text:'Question'}), q, count]),
+        el('div',{cls:'meta',style:'margin:8px 0 0',text:'This is a question, not a change — use Request a change to have a field updated. Accounting replies to you by email.'}),
+        err
+      ]),
+      el('div',{cls:'ft'},[ el('button',{cls:'btn line',text:'Cancel',onclick:close}), submit ])
+    ]));
+  }
+
+  // ── wiring ──
+  $('btnSend').addEventListener('click',sendCode);
+  $('email').addEventListener('keydown',function(e){ if(e.key==='Enter') sendCode(); });
+  $('btnVerify').addEventListener('click',verify);
+  $('code').addEventListener('keydown',function(e){ if(e.key==='Enter') verify(); });
+  $('btnBack').addEventListener('click',function(){ $('stepCode').classList.add('hidden'); $('stepEmail').classList.remove('hidden'); signMsg(''); });
+  $('btnResend').addEventListener('click',sendCode);
+  $('btnOut').addEventListener('click',function(){ signOut('Signed out.'); });
+  $('btnRefresh').addEventListener('click',load);
+  $('btnExpandAll').addEventListener('click',function(){
+    var v = visibleDeals(), allOpen = v.length && v.every(function(x){ return S.open[x.id]; });
+    v.forEach(function(x){ S.open[x.id] = !allOpen; });
+    render();
+  });
+  ['q','fOffice','fStage','fSort'].forEach(function(i){ $(i).addEventListener(i==='q'?'input':'change',render); });
+  ['iq','iScope','iState','iKind'].forEach(function(i){ $(i).addEventListener(i==='iq'?'input':'change',render); });
+  $('vDeals').addEventListener('click',function(){ S.view='deals'; render(); });
+  $('vItems').addEventListener('click',function(){ S.view='items'; render(); });
+  $('vPay').addEventListener('click',function(){ S.view='payroll'; render(); });
+  ['pq','pOffice','pSort'].forEach(function(i){ $(i).addEventListener(i==='pq'?'input':'change',render); });
+  $('btnPayExpand').addEventListener('click',function(){
+    var v = visiblePay(), allOpen = v.length && v.every(function(r){ return S.payOpen[r.payrollId]; });
+    v.forEach(function(r){ S.payOpen[r.payrollId] = !allOpen; });
+    render();
+  });
+  $('veil').addEventListener('click',function(e){ if (e.target===$('veil')){ $('veil').classList.add('hidden'); $('veil').innerHTML=''; } });
+
+  var t = loadToken();
+  if (t){ S.token=t; load(); }
+})();
+</script>
+</body>
+</html>

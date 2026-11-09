@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Reusable Dashboard Framework — Case Study</title><meta name="description" content="Every dashboard on this site sits on the same foundation: email one-time-code sign-in, an access list, server-side field allow-lists, and row-level fi">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/portfolio.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2314171f'/%3E%3Ctext x='16' y='22' font-family='Arial' font-weight='700' font-size='15' fill='%23e0a84a' text-anchor='middle'%3ERM%3C/text%3E%3C/svg%3E">
+</head><body>
+<header class="site"><div class="wrap"><a class="brand" href="../../index.html">Ramsey McCreary<span> · </span>Portfolio</a>
+<nav class="top"><a href="../../index.html#dashboards">Dashboards</a><a href="../../index.html#automation">Automation</a><a href="https://github.com/ramseymccreary7" rel="noopener">GitHub</a></nav></div></header>
+<main class="wrap"><div class="cs-head"><a class="back" href="../../index.html#automation">← All projects</a><div class="eyebrow" style="margin-top:18px">Secure-by-default web apps</div><h1>Reusable Dashboard Framework</h1><p class="lede">Every dashboard on this site sits on the same foundation: email one-time-code sign-in, an access list, server-side field allow-lists, and row-level filtering by role and office. I packaged it as templates and a build skill so each new dashboard starts out secure.</p><div class="facts"><span class="chip">Google Apps Script</span><span class="chip">HtmlService</span><span class="chip">Cache &amp; Properties services</span><span class="chip">Claude skill packaging</span></div></div><div class="cs"><div class="panel"><h2>How it flows</h2><div class="flow"><svg viewBox="0 0 1000 96" role="img" aria-label="Email on access list → 6-digit code (10 min) → Opaque session token → Per-call checks → Allow-listed payload" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" style="fill:var(--muted)"/></marker></defs><rect x="0.0" y="14" width="172.8" height="68" rx="12" style="fill:var(--surface);stroke:var(--line);stroke-width:1.5"/><text x="86.4" y="44.0" text-anchor="middle" font-size="15" font-weight="600" style="fill:var(--ink)" font-family="Inter,system-ui,sans-serif">Email on access</text><text x="86.4" y="62.0" text-anchor="middle" font-size="15" font-weight="600" style="fill:var(--ink)" font-family="Inter,system-ui,sans-serif">list</text><path d="M178.8 48 h20.0" style="stroke:var(--muted);stroke-width:1.6" marker-end="url(#ar)"/><rect x="206.8" y="14" width="172.8" height="68" rx="12" style="fill:var(--surface);stroke:var(--line);stroke-width:1.5"/><text x="293.2" y="44.0" text-anchor="middle" font-size="15" font-weight="600" style="fill:var(--ink)" font-family="Inter,system-ui,sans-serif">6-digit code (10</text><text x="293.2" y="62.0" text-anchor="middle" font-size="15" font-weight="600" style="fill:var(--ink)" font-family="Inter,system-ui,sans-serif">min)</text><path d="M385.6 48 h20.0" style="stroke:var(--muted);stroke-width:1.6" marker-end="url(#ar)"/><rect x="413.6" y="14" width="172.8" height="68" rx="12" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5"/><text x="500.0" y="44.0" text-anchor="middle" font-size="15" font-weight="600" style="fill:var(--ink)" font-family="Inter,system-ui,sans-serif">Opaque session</text><text x="500.0" y="62.0" text-anchor="middle" font-size="15" font-weight="600" style="fill:var(--ink)" font-family="Inter,system-ui,sans-serif">token</text><path d="M592.4 48 h20.0" style="stroke:var(--muted);stroke-width:1.6" marker-end="url(#ar)"/><rect x="620.4" y="14" width="172.8" height="68" rx="12" style="fill:var(--surface);stroke:var(--line);stroke-width:1.5"/><text x="706.8" y="53.0" text-anchor="middle" font-size="15" font-weight="600" style="fill:var(--ink)" font-family="Inter,system-ui,sans-serif">Per-call checks</text><path d="M799.2 48 h20.0" style="stroke:var(--muted);stroke-width:1.6" marker-end="url(#ar)"/><rect x="827.2" y="14" width="172.8" height="68" rx="12" style="fill:var(--surface);stroke:var(--line);stroke-width:1.5"/><text x="913.6" y="44.0" text-anchor="middle" font-size="15" font-weight="600" style="fill:var(--ink)" font-family="Inter,system-ui,sans-serif">Allow-listed</text><text x="913.6" y="62.0" text-anchor="middle" font-size="15" font-weight="600" style="fill:var(--ink)" font-family="Inter,system-ui,sans-serif">payload</text></svg></div></div><div class="two"><div class="panel"><h2>What I built</h2><ul><li>Sign-in uses an emailed 6-digit code, so viewers need no Google account. Codes are throttled per email and capped per hour globally, wrong guesses are limited, and the page never reveals whether an email is on the list.</li><li>Sessions are opaque random tokens with an expiry, checked on every server call along with per-person rate limits.</li><li>Payloads are built from an explicit field allow-list, so internal columns can&#x27;t leak even if the sheet grows, and a second check trips on anything that should never leave the server.</li><li>An audit log records sign-ins, views and denials. The kit includes templates, an access-tab spec, render tests and a build checklist.</li></ul></div><div class="panel"><h2>Outcome</h2><ul><li>More than ten production dashboards share it, from internal finance tools to an external partner portal.</li></ul></div></div><div class="panel"><h2>Try the sign-in flow</h2><p class="caption" style="margin:0 0 12px">A front-end replica of the gate for illustration. Any email works, and the demo code is <b>123456</b>.</p>
+<div class="otp" id="otp"><div id="s1"><label for="em">Work email</label><input id="em" type="email" placeholder="you@example.com"><button id="b1">Email me a code</button></div>
+<div id="s2" hidden><label for="cd">6-digit code</label><input id="cd" inputmode="numeric" maxlength="6" placeholder="123456"><button id="b2">Verify</button></div><div class="msg" id="m"></div></div></div>
+<script>(function(){var t=0,em='';function $(i){return document.getElementById(i)}
+$('b1').onclick=function(){em=$('em').value.trim();if(!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(em)){$('m').textContent='Enter a valid email.';return}$('m').textContent='If '+em+' is on the access list, a code is on its way (expires in 10 minutes).';$('s1').hidden=true;$('s2').hidden=false;$('cd').focus()};
+$('b2').onclick=function(){t++;if(t>6){$('m').textContent='Too many attempts. Request a new code.';return}if($('cd').value.trim()==='123456'){$('m').innerHTML='<span class="ok">Signed in.</span> Session token issued; it expires in 24 hours.';$('s2').hidden=true}else{$('m').textContent='That code is not right ('+(6-t)+' attempts left).'}}})();</script><div class="panel"><h2>Code excerpt</h2><pre class="code"><code><span class="k">function</span> requestAccessCode(email) {
+  email = String(email || <span class="s">&#x27;&#x27;</span>).toLowerCase().trim();
+  <span class="k">var</span> cache = CacheService.getScriptCache();
+  <span class="k">try</span> {
+    <span class="k">if</span> (!EMAIL_RE_.test(email)) <span class="k">return</span> { ok: true };
+    <span class="k">if</span> (cache.get(<span class="s">&#x27;THROTTLE_&#x27;</span> + email)) <span class="k">return</span> { ok: true };
+
+    <span class="k">var</span> used = Number(cache.get(<span class="s">&#x27;GLOBAL_CODES&#x27;</span>) || 0);
+    <span class="k">if</span> (used &gt;= GLOBAL_CODES_PER_HOUR) {   <span class="c">// a drained mail quota also kills notifications</span>
+      audit_(<span class="s">&#x27;code_global_cap&#x27;</span>, email, <span class="s">&#x27;&#x27;</span>, <span class="s">&#x27;global hourly cap reached&#x27;</span>);
+      <span class="k">return</span> { ok: true };
+    }
+
+    <span class="k">var</span> access = getAccessMap_();
+    <span class="k">if</span> (!access[email]) <span class="k">return</span> { ok: true };   <span class="c">// silent: do not confirm membership</span>
+
+    <span class="k">var</span> code = sixDigitCode_();
+    cache.put(<span class="s">&#x27;CODE_&#x27;</span> + email, code, CODE_TTL_S);
+    cache.put(<span class="s">&#x27;THROTTLE_&#x27;</span> + email, <span class="s">&#x27;1&#x27;</span>, THROTTLE_S);
+    cache.put(<span class="s">&#x27;GLOBAL_CODES&#x27;</span>, String(used + 1), 3600);
+    <span class="c">// NOTE: do NOT reset ATT_ here. Resetting it turns a 6-attempt cap into</span>
+    <span class="c">// 6 attempts per throttle window, forever.</span>
+
+    MailApp.sendEmail({
+      to: email,
+      subject: CONFIG.title + <span class="s">&#x27; — your access code&#x27;</span>,
+      body: <span class="s">&#x27;Your access code is &#x27;</span> + code + <span class="s">&#x27;\n\nIt expires in 10 minutes.\n\n&#x27;</span>
+          + <span class="s">&#x27;If you did not request this, you can ignore this email.&#x27;</span>
+    });
+    audit_(<span class="s">&#x27;code_sent&#x27;</span>, email, <span class="s">&#x27;&#x27;</span>, <span class="s">&#x27;&#x27;</span>);
+  } <span class="k">catch</span> (err) {
+    audit_(<span class="s">&#x27;code_send_failed&#x27;</span>, email, <span class="s">&#x27;&#x27;</span>, String(err));
+    <span class="k">try</span> {
+      MailApp.sendEmail(CONFIG.notifyEmail,
+        CONFIG.title + <span class="s">&#x27; — access code send FAILED&#x27;</span>,
+        <span class="s">&#x27;Address: &#x27;</span> + email + <span class="s">&#x27;\nError: &#x27;</span> + String(err));
+    } <span class="k">catch</span> (e2) {}
+  }
+  <span class="k">return</span> { ok: true };     <span class="c">// same answer on every path</span>
+}
+
+<span class="k">function</span> verifyAccessCode(email, code) {
+  email = String(email || <span class="s">&#x27;&#x27;</span>).toLowerCase().trim();
+  <span class="k">var</span> cache = CacheService.getScriptCache();
+  <span class="k">var</span> att   = Number(cache.get(<span class="s">&#x27;ATT_&#x27;</span> + email) || 0);
+  <span class="k">if</span> (att &gt;= MAX_ATTEMPTS) { audit_(<span class="s">&#x27;code_attempts_exceeded&#x27;</span>, email, <span class="s">&#x27;&#x27;</span>, <span class="s">&#x27;&#x27;</span>); <span class="k">return</span> { ok: false }; }
+  cache.put(<span class="s">&#x27;ATT_&#x27;</span> + email, String(att + 1), CODE_TTL_S);
+
+  <span class="k">var</span> want = cache.get(<span class="s">&#x27;CODE_&#x27;</span> + email);
+  <span class="k">if</span> (!want || String(code).trim() !== String(want)) <span class="k">return</span> { ok: false };
+
+  <span class="k">var</span> access = getAccessMap_();
+  <span class="k">if</span> (!access[email]) <span class="k">return</span> { ok: false };
+
+  <span class="k">var</span> token = Utilities.getUuid();
+  <span class="k">var</span> hours = Math.min(CONFIG.sessionHours, CONFIG.sessionHoursMax);
+  PropertiesService.getScriptProperties()
+    .setProperty(tokenKey_(token), email + <span class="s">&#x27;|&#x27;</span> + (Date.now() + hours * 3600 * 1000));
+  cache.remove(<span class="s">&#x27;CODE_&#x27;</span> + email);
+  cache.remove(<span class="s">&#x27;ATT_&#x27;</span> + email);
+  audit_(<span class="s">&#x27;sign_in&#x27;</span>, email, <span class="s">&#x27;&#x27;</span>, <span class="s">&#x27;otp&#x27;</span>);
+  <span class="k">return</span> { ok: true, token: token, email: email };
+}</code></pre><p class="caption">Issuing and verifying the one-time code. Identifiers and internal names are anonymized.</p></div></div></main><footer><div class="wrap">Every company name, person, address and number on this site is fictional. The software is real: these are working copies of tools I built, with the original back-end swapped for generated demo data.</div></footer>
+</body></html>

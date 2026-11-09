@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../../assets/gas-mock.js"></script>
+<script src="../../assets/fake.js"></script>
+<script src="mock.js"></script>
+
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loan Officer Pay Dashboard — Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Atlas Lending palette: Dark Blue #1B184C, Light Blue #3E70B6, White, Black.
+     Muted text / borders are Dark Blue at reduced opacity (no extra grays). */
+  :root{
+    --dk:#1B184C; --lt:#3E70B6; --wh:#FFFFFF; --bk:#000000;
+    --ink:#1B184C; --muted:rgba(27,24,76,.62); --faint:rgba(27,24,76,.40);
+    --line:rgba(27,24,76,.12); --wash:rgba(62,112,182,.06); --wash2:rgba(62,112,182,.12);
+    --r:10px;
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html{background:#fff}
+  body{margin:0;font-family:'Poppins',sans-serif;color:var(--ink);background:var(--wash);min-height:100vh;font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  button,input,select{font-family:inherit;font-size:inherit;color:inherit}
+  .num{font-variant-numeric:tabular-nums}
+
+  /* ---------- login gate ---------- */
+  #gate{min-height:100vh;background:var(--dk);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px}
+  #gate .brand{width:min(320px,80vw);margin-bottom:28px}
+  #gate .brand svg{display:block;width:100%;height:auto}
+  .card-login{background:#fff;border-radius:14px;padding:28px 26px;width:100%;max-width:400px;box-shadow:0 18px 50px rgba(0,0,0,.35)}
+  .card-login h1{font-size:19px;font-weight:600;margin:0 0 4px}
+  .card-login p{margin:0 0 18px;color:var(--muted);font-size:13px}
+  .field{display:block;width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:8px;background:#fff;outline:none;font-size:15px}
+  .field:focus{border-color:var(--lt);box-shadow:0 0 0 3px var(--wash2)}
+  .field.code{letter-spacing:8px;font-size:22px;text-align:center;font-weight:600}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:8px;padding:11px 16px;font-weight:600;cursor:pointer;background:var(--lt);color:#fff;transition:filter .15s}
+  .btn:hover{filter:brightness(1.08)}
+  .btn:disabled{opacity:.55;cursor:default}
+  .btn.block{width:100%;margin-top:12px}
+  .btn.ghost{background:transparent;color:var(--lt);padding:8px 4px}
+  .btn.outline{background:transparent;border:1px solid rgba(255,255,255,.45);color:#fff;padding:7px 12px;font-weight:500}
+  .msg{min-height:20px;margin-top:10px;font-size:13px}
+  .msg.err{color:var(--dk);font-weight:600}
+  .msg.err::before{content:"! ";color:var(--lt)}
+  .fine{margin-top:16px;font-size:12px;color:var(--faint)}
+
+  /* ---------- app shell ---------- */
+  header.top{background:var(--dk);color:#fff}
+  .top-in{max-width:1240px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .top-in .logo{height:26px;width:auto;flex:0 0 auto}
+  .top-in .logo svg{height:26px;width:auto;display:block}
+  .top-in .ttl{font-weight:500;opacity:.85;padding-left:16px;border-left:1px solid rgba(255,255,255,.25);font-size:14px}
+  .top-in .who{margin-left:auto;display:flex;align-items:center;gap:12px;font-size:13px}
+  .badge{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:var(--lt);color:#fff}
+  .badge.soft{background:var(--wash2);color:var(--dk)}
+
+  main{max-width:1240px;margin:0 auto;padding:18px 16px 48px}
+  .bar{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:16px}
+  .ctl{display:flex;flex-direction:column;gap:4px}
+  .ctl label{font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
+  .sel{padding:8px 34px 8px 12px;border:1px solid var(--line);border-radius:8px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%231B184C'/%3E%3C/svg%3E") no-repeat right 12px center;appearance:none;-webkit-appearance:none;min-width:170px;cursor:pointer}
+  .bar .spacer{flex:1}
+  .asof{font-size:12px;color:var(--faint)}
+  .hello{font-size:22px;font-weight:600;margin:4px 0 2px}
+  .sub{color:var(--muted);margin:0 0 16px;font-size:13px}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+  @media (max-width:900px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  .kpi.est{border-color:var(--lt);border-style:dashed}
+  .ests{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+  .est-card{border:1px dashed var(--lt);border-radius:var(--r);padding:16px;background:#fff}
+  .est-card .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  .est-card .mo{font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+  .est-card .amt{font-size:28px;font-weight:600;margin:6px 0 2px}
+  .est-card dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:12px 0 0;font-size:13px}
+  .est-card dt{color:var(--muted)}
+  .est-card dd{margin:0;text-align:right;font-weight:500}
+  .next{margin-top:12px;padding:10px 12px;border-radius:8px;background:var(--wash);font-size:13px}
+  .next b{color:var(--lt)}
+  .ladder{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  .ladder span{font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+  .ladder span.on{background:var(--dk);border-color:var(--dk);color:#fff}
+  .fine2{font-size:12px;color:var(--muted);margin:12px 0 0}
+  .chip.warn{background:#1B184C;color:#fff}
+  .disclaimer{border:1px solid var(--lt);border-left:4px solid var(--lt);background:var(--wash);border-radius:8px;padding:10px 12px;margin:0 0 14px;font-size:13px;color:var(--ink)}
+  .disclaimer b{font-weight:600}
+  .estmark{display:block;font-size:10px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--lt)}
+  tr.estrow td{background:rgba(62,112,182,.04);color:var(--muted)}
+  tr.estrow td .prop{color:var(--ink)}
+  .chk{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer;user-select:none}
+  .chk input{accent-color:#3E70B6;width:15px;height:15px}
+  .est-card .sum{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-size:13px}
+  .est-card .sum b{font-size:16px}
+  .chip.soft{background:transparent;border:1px solid var(--line);color:var(--muted)}
+  .checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+  .ck{border:1px dashed var(--lt);border-radius:var(--r);padding:14px 16px;background:#fff}
+  .ck .d{font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+  .ck .v{font-size:22px;font-weight:600;margin:4px 0 2px}
+  .ck .s{font-size:12px;color:var(--muted)}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+  .kpi .k{font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
+  .kpi .v{font-size:24px;font-weight:600;margin-top:4px;line-height:1.2;white-space:nowrap}
+  .kpi .d{font-size:12px;color:var(--muted);margin-top:4px}
+  .kpi.hero{background:var(--dk);border-color:var(--dk);color:#fff}
+  .kpi.hero .k,.kpi.hero .d{color:rgba(255,255,255,.72)}
+
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:4px 0 16px;overflow-x:auto}
+  .tab{background:none;border:0;padding:10px 14px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px;white-space:nowrap}
+  .tab.on{color:var(--dk);border-bottom-color:var(--lt);font-weight:600}
+
+  .grid2{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:16px;margin-bottom:16px}
+  .grid2>.panel{margin-bottom:0}
+  @media (max-width:900px){.grid2{grid-template-columns:minmax(0,1fr)}}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:16px;min-width:0}
+  .panel h2{font-size:15px;font-weight:600;margin:0 0 2px}
+  .panel .hint{font-size:12px;color:var(--muted);margin:0 0 12px}
+  .legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-bottom:6px;flex-wrap:wrap}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+
+  #chart{position:relative}
+  #chart svg{display:block;width:100%;height:auto}
+  #chart .gl{stroke:var(--line);stroke-width:1}
+  #chart .ax{font-size:11px;fill:var(--muted);font-family:'Poppins',sans-serif}
+  #chart rect.hit{fill:transparent;cursor:pointer}
+  #chart rect.hit:hover{fill:var(--wash)}
+  .tip{position:absolute;pointer-events:none;background:var(--dk);color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;white-space:nowrap;box-shadow:0 6px 20px rgba(0,0,0,.25);transform:translate(-50%,-100%);z-index:5}
+  .tip b{display:block;font-weight:600;margin-bottom:2px}
+
+  .rates{list-style:none;margin:0;padding:0}
+  .rates li{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+  .rates li:first-child{border-top:0}
+  .rates .rt{font-size:20px;font-weight:600;color:var(--lt)}
+  .rates .rd{font-size:12px;color:var(--muted);text-align:right}
+  .rates .now{font-size:10px;margin-left:6px;vertical-align:3px}
+
+  .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -16px;padding:0 16px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap;background:#fff;position:sticky;top:0}
+  th.s{cursor:pointer;user-select:none}
+  th.s:hover{color:var(--dk)}
+  th .ar{color:var(--lt);margin-left:3px}
+  td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  td.r,th.r{text-align:right;white-space:nowrap}
+  tr.click{cursor:pointer}
+  tr.click:hover td{background:var(--wash)}
+  tr.tot td{font-weight:600;border-top:2px solid var(--dk);border-bottom:0}
+  .prop{font-weight:500}
+  td.pc{min-width:220px}
+  .note{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+  .chip{display:inline-block;font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;background:var(--wash2);color:var(--dk);margin-left:6px;white-space:nowrap}
+  .caret{display:inline-block;width:14px;color:var(--lt);transition:transform .15s}
+  tr.open .caret{transform:rotate(90deg)}
+  tr.sub td{background:var(--wash);padding:0}
+  tr.sub table{margin:0}
+  tr.sub td td{background:transparent;border-bottom-color:rgba(27,24,76,.08);padding:7px 10px}
+  tr.sub th{background:transparent;font-size:10px;padding:7px 10px}
+  .search{padding:8px 12px;border:1px solid var(--line);border-radius:8px;min-width:240px;background:#fff}
+  .search:focus{outline:none;border-color:var(--lt);box-shadow:0 0 0 3px var(--wash2)}
+  .row-h{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .empty{padding:40px 16px;text-align:center;color:var(--muted)}
+  .link{color:var(--lt);font-weight:500;cursor:pointer;background:none;border:0;padding:0}
+
+  #loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.7);z-index:20}
+  .spin{width:34px;height:34px;border:3px solid var(--wash2);border-top-color:var(--lt);border-radius:50%;animation:sp 0.8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .alert{background:#fff;border:1px solid var(--line);border-left:4px solid var(--lt);border-radius:8px;padding:12px 14px;margin-bottom:16px}
+  footer{max-width:1240px;margin:0 auto;padding:0 16px 30px;font-size:11px;color:var(--faint)}
+  @media (max-width:600px){
+    .top-in .ttl{display:none}
+    .kpi .v{font-size:20px}
+    .search{min-width:0;width:100%}
+    .sel{min-width:0;width:100%}
+    .ctl{flex:1 1 140px}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================ LOGIN GATE ============================ -->
+<section id="gate" hidden>
+  <div class="brand" aria-label="Atlas Lending"><img src="../../assets/logo-light.svg" alt="Atlas" style="height:30px;width:auto;display:block"></div>
+  <div class="card-login">
+    <div id="stepEmail">
+      <h1>Pay Dashboard</h1>
+      <p>Enter your work email and we'll send you a 6-digit sign-in code.</p>
+      <form id="fEmail" autocomplete="on">
+        <input class="field" id="inEmail" type="email" placeholder="demo.viewer@example.com" autocomplete="email" required>
+        <button class="btn block" id="bSend" type="submit">Send code</button>
+      </form>
+      <div class="msg" id="mEmail"></div>
+    </div>
+    <div id="stepCode" hidden>
+      <h1>Check your email</h1>
+      <p id="codeSent">If <b></b> has access, a code is on its way. It expires in 10 minutes.</p>
+      <form id="fCode" autocomplete="off">
+        <input class="field code" id="inCode" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="••••••" autocomplete="one-time-code" required>
+        <button class="btn block" id="bVerify" type="submit">Sign in</button>
+      </form>
+      <div class="msg" id="mCode"></div>
+      <button class="btn ghost" id="bBack" type="button">Use a different email</button>
+      <button class="btn ghost" id="bResend" type="button">Resend code</button>
+    </div>
+    <div class="fine">You'll stay signed in on this device for 24 hours.</div>
+  </div>
+</section>
+
+<!-- ============================== APP ============================== -->
+<section id="app" hidden>
+  <header class="top">
+    <div class="top-in">
+      <div class="logo" aria-label="Atlas Lending"><img src="../../assets/logo-light.svg" alt="Atlas" style="height:30px;width:auto;display:block"></div>
+      <div class="ttl">Pay Dashboard</div>
+      <div class="who">
+        <span id="whoName"></span>
+        <span class="badge" id="whoLevel"></span>
+        <button class="btn outline" id="bOut" type="button">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="bar">
+      <div>
+        <div class="hello" id="hello"></div>
+        <div class="asof" id="asof"></div>
+      </div>
+      <div class="spacer"></div>
+      <div class="ctl" id="ctlAgent" hidden>
+        <label for="selAgent">Agent</label>
+        <select class="sel" id="selAgent"></select>
+      </div>
+      <div class="ctl">
+        <label for="selYear">Period</label>
+        <select class="sel" id="selYear"></select>
+      </div>
+      <div class="ctl">
+        <label>&nbsp;</label>
+        <button class="btn" id="bRefresh" type="button" style="padding:8px 14px">Refresh</button>
+      </div>
+    </div>
+
+    <div id="alertBox" class="alert" hidden></div>
+    <div class="kpis" id="kpis"></div>
+
+    <div class="tabs" role="tablist">
+      <button class="tab on" data-tab="overview" role="tab">Overview</button>
+      <button class="tab" data-tab="upcoming" role="tab">Upcoming pay</button>
+      <button class="tab" data-tab="paychecks" role="tab">Paychecks</button>
+      <button class="tab" data-tab="bonuses" role="tab">Bonuses</button>
+      <button class="tab" data-tab="deals" role="tab">Pay by loan</button>
+    </div>
+
+    <!-- Overview -->
+    <div data-pane="overview">
+      <div class="grid2">
+        <div class="panel">
+          <h2>Pay by paycheck</h2>
+          <p class="hint">Hover or tap a bar for the detail.</p>
+          <div class="legend"><span><i style="background:var(--dk)"></i>Commission (net)</span><span id="lgBonus"><i style="background:var(--lt)"></i>Bonus</span><span id="lgDraw"><i style="background:rgba(62,112,182,.35)"></i>Commission applied to draw</span><span id="lgFc"><i style="background:rgba(62,112,182,.12);outline:1px dashed #3E70B6;outline-offset:-1px"></i>Forecast (not yet paid)</span></div>
+          <div id="chart"></div>
+        </div>
+        <div class="panel" id="ratesPanel">
+          <h2>Commission rate</h2>
+          <p class="hint" id="ratesHint">By loan close date.</p>
+          <ul class="rates" id="rates"></ul>
+        </div>
+      </div>
+      <div class="panel" id="agentsPanel" hidden>
+        <div class="row-h"><div><h2>By agent</h2><p class="hint" style="margin:0">Click an agent to open their dashboard.</p></div></div>
+        <div class="tw"><table id="tAgents"></table></div>
+      </div>
+      <div class="panel">
+        <div class="row-h"><div><h2>Recent loans</h2><p class="hint" style="margin:0">The last 8 loans paid.</p></div>
+          <button class="link" data-goto="deals">See all loans &rarr;</button></div>
+        <div class="tw"><table id="tRecent"></table></div>
+      </div>
+    </div>
+
+    <!-- Upcoming pay -->
+    <div data-pane="upcoming" hidden>
+      <div class="panel">
+        <h2>Expected paychecks</h2>
+        <div class="disclaimer"><b>Estimates only — not actual pay.</b> Estimated commission and bonus amounts are calculated from funded loans and the current plan tiers. Actual pay is determined by payroll and may vary.</div>
+        <p class="hint">Commission on loans that have funded but are not on a paycheck yet, grouped by the paycheck they should land on.</p>
+        <div id="upChecks"></div>
+      </div>
+      <div class="panel">
+        <div class="row-h"><div><h2>Funded loans not yet paid</h2><p class="hint" style="margin:0" id="upCount"></p></div></div>
+        <div class="tw"><table id="tUp"></table></div>
+        <p class="fine2">From the Salesforce funded-loans feed. Commission = loan amount × your current commission rate. Expected paycheck = the first bi-weekly paycheck on or after the loan's payroll date in Salesforce (or at least 14 days after closing when no payroll date is set yet). Final amounts are set by payroll.</p>
+      </div>
+    </div>
+
+    <!-- Paychecks -->
+    <div data-pane="paychecks" hidden>
+      <div class="panel">
+        <h2>Paycheck history</h2>
+        <p class="hint">Click a paycheck to see the loans and bonuses on it.</p>
+        <div class="tw"><table id="tChecks"></table></div>
+      </div>
+    </div>
+
+    <!-- Bonuses -->
+    <div data-pane="bonuses" hidden>
+      <div class="panel">
+        <h2 id="estTitle">Estimated bonus — not yet paid</h2>
+        <div class="disclaimer"><b>Estimates only — not actual pay.</b> Estimated commission and bonus amounts are calculated from funded loans and the current plan tiers. Actual pay is determined by payroll and may vary.</div>
+        <p class="hint" id="estHint"></p>
+        <div id="ests"></div>
+        <p class="fine2">Estimates use the Atlas Lending plan tiers and the loans recorded so far, grouped by close date. They update as commissions are entered. The final amount is set by payroll after month end.</p>
+      </div>
+      <div class="panel">
+        <h2>Bonus history</h2>
+        <p class="hint">Monthly bonuses paid, by paycheck.</p>
+        <div class="tw"><table id="tBonus"></table></div>
+      </div>
+    </div>
+
+    <!-- Deals -->
+    <div data-pane="deals" hidden>
+      <div class="panel">
+        <div class="row-h">
+          <div><h2>Pay by loan</h2><p class="hint" style="margin:0" id="dealsCount"></p></div>
+          <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+            <label class="chk" id="estToggleWrap"><input type="checkbox" id="estToggle" checked> Include loans not paid yet (estimated commission)</label>
+            <input class="search" id="q" type="search" placeholder="Search address, loan #, lender, office…">
+          </div>
+        </div>
+        <div id="dealsDisc" hidden><div class="disclaimer"><b>Estimates only — not actual pay.</b> Estimated commission and bonus amounts are calculated from funded loans and the current plan tiers. Actual pay is determined by payroll and may vary.</div></div>
+        <p class="hint" id="dealsBonusHint">Bonus % is your AE monthly bonus rate for the month the loan closed — the rate payroll paid, or the estimated rate for months not paid yet. Bonus $ = loan amount × bonus %. Mentor bonuses are not per loan and are not included here.</p>
+        <div class="tw"><table id="tDeals"></table></div>
+      </div>
+    </div>
+  </main>
+  <footer id="foot"></footer>
+</section>
+
+<div id="loading" hidden><div class="spin"></div></div>
+
+<script>
+(function(){
+  'use strict';
+  var TOKEN_KEY = 'atlasBridgePayToken';
+  var ALL = '__all__';
+
+  /* ------------------------------ helpers ------------------------------ */
+  function $(id){ return document.getElementById(id); }
+  function esc(v){ return String(v == null ? '' : v).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function lsGet(){ try { return localStorage.getItem(TOKEN_KEY) || ''; } catch(e){ return ''; } }
+  function lsSet(v){ try { v ? localStorage.setItem(TOKEN_KEY, v) : localStorage.removeItem(TOKEN_KEY); } catch(e){} }
+  function call(fn){
+    var args = Array.prototype.slice.call(arguments, 1);
+    return new Promise(function(res, rej){
+      var r = google.script.run.withSuccessHandler(res).withFailureHandler(rej);
+      r[fn].apply(r, args);
+    });
+  }
+  function busy(on){ $('loading').hidden = !on; }
+  function errText(e){ return (e && e.message) ? e.message.replace(/^Exception:\s*/, '') : String(e); }
+
+  var MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function fdate(iso){ if(!iso) return '—'; var p = iso.split('-'); return MON[+p[1]-1] + ' ' + (+p[2]) + ', ' + p[0]; }
+  /* Paycheck and close dates display as MM-DD-YYYY. */
+  function fcd(iso){ if(!iso) return '—'; var p = iso.split('-'); return p[1] + '-' + p[2] + '-' + p[0]; }
+  function fdateShort(iso){ if(!iso) return ''; var p = iso.split('-'); return (+p[1]) + '/' + (+p[2]); }
+  function money(n, cents){
+    if (n == null || isNaN(n)) return '—';
+    var neg = n < 0; n = Math.abs(n);
+    var s = n.toLocaleString('en-US', {minimumFractionDigits: cents ? 2 : 0, maximumFractionDigits: cents ? 2 : 0});
+    return (neg ? '-$' : '$') + s;
+  }
+  function moneyShort(n){
+    if (n >= 1e6) return '$' + (n/1e6).toFixed(n >= 1e7 ? 0 : 1) + 'M';
+    if (n >= 1e3) return '$' + (n/1e3).toFixed(n >= 1e4 ? 0 : 1) + 'K';
+    return '$' + Math.round(n);
+  }
+  function pct(f){ if (f == null || isNaN(f)) return '—'; var v = f * 100; return (Math.round(v * 1000) / 1000).toFixed(3).replace(/0+$/, '').replace(/\.$/, '') + '%'; }
+  function nUnits(rs){ return rs.reduce(function(t, r){ return t + (r.units || 1); }, 0); }
+  function sum(a, k){ var t = 0; for (var i = 0; i < a.length; i++){ var v = a[i][k]; if (typeof v === 'number') t += v; } return t; }
+  function drawApplied(r){ var c = r.commission || 0, n = r.netPay == null ? c : r.netPay; return c > n ? c - n : 0; }
+  function nameKey(s){ return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); }
+  function bNet(b){ return b.netPay != null ? b.netPay : (b.amount || 0); }
+  function monthLabel(mk){ if (!mk) return '—'; var p = String(mk).split('-'); return MON[+p[1]-1] + ' ' + p[0]; }
+  function isMentor(t){ return /mentor/i.test(t || ''); }
+  /* Junior AE paid rows read "July Commissions: 37 Loans x $70 each" and carry no loan amount */
+  function juniorUnits(r){
+    if (r.loanAmount > 0) return 0;
+    var m = /(\d+)\s*loans?\s*x/i.exec(String(r.property || ''));
+    return m ? +m[1] : 0;
+  }
+  function isJunior(t){ return /junior/i.test(t || ''); }
+  function typeLabel(t){ return isJunior(t) ? 'Junior AE commission' : isMentor(t) ? 'MSM mentor bonus' : 'AE monthly bonus'; }
+  /* a tier "rate": % of volume for bonuses, $ per loan for the Junior AE plan */
+  function rateTxt(e, r){ return e.perLoan ? money(r, false) + '/loan' : pct(r); }
+
+  /* ------------------------------ state ------------------------------ */
+  var S = { token: lsGet(), email: '', data: null, viewer: null,
+            agent: ALL, year: '', tab: 'overview', q: '',
+            sort: { key: 'paycheckDate', dir: -1 }, open: {}, showEst: true };
+
+  /* ------------------------------ auth ------------------------------ */
+  function showGate(message){
+    $('app').hidden = true; $('gate').hidden = false;
+    $('stepEmail').hidden = false; $('stepCode').hidden = true;
+    var m = $('mEmail'); m.textContent = message || ''; m.className = 'msg' + (message ? ' err' : '');
+    setTimeout(function(){ $('inEmail').focus(); }, 50);
+  }
+  function sendCode(){
+    var email = $('inEmail').value.trim();
+    if (!email) return;
+    $('bSend').disabled = true; $('mEmail').textContent = ''; $('mEmail').className = 'msg';
+    call('requestAccessCode', email).then(function(r){
+      $('bSend').disabled = false;
+      if (!r || !r.ok){ $('mEmail').textContent = (r && r.error) || 'Something went wrong.'; $('mEmail').className = 'msg err'; return; }
+      S.email = email;
+      $('codeSent').querySelector('b').textContent = email;
+      $('stepEmail').hidden = true; $('stepCode').hidden = false;
+      $('inCode').value = ''; $('mCode').textContent = ''; $('mCode').className = 'msg';
+      setTimeout(function(){ $('inCode').focus(); }, 50);
+    }).catch(function(e){ $('bSend').disabled = false; $('mEmail').textContent = errText(e); $('mEmail').className = 'msg err'; });
+  }
+  function verify(){
+    var code = $('inCode').value.replace(/\D/g, '');
+    if (code.length !== 6){ $('mCode').textContent = 'Enter the 6-digit code.'; $('mCode').className = 'msg err'; return; }
+    $('bVerify').disabled = true;
+    call('verifyAccessCode', S.email, code).then(function(r){
+      $('bVerify').disabled = false;
+      if (!r || !r.ok){ $('mCode').textContent = (r && r.error) || 'Could not sign in.'; $('mCode').className = 'msg err'; return; }
+      S.token = r.token; lsSet(r.token);
+      load();
+    }).catch(function(e){ $('bVerify').disabled = false; $('mCode').textContent = errText(e); $('mCode').className = 'msg err'; });
+  }
+  function signOut(){
+    busy(true);
+    var t = S.token;
+    call('signOut', t).then(function(r){
+      busy(false);
+      if (r && r.ok === false){ alertBox('We could not end your session on the server. Please try again.'); return; }
+      finishSignOut();
+    }).catch(function(){ busy(false); alertBox('We could not reach the server to sign you out. Please try again.'); });
+  }
+  function finishSignOut(msg){ S.token = ''; lsSet(''); S.data = null; showGate(msg); }
+
+  /* ------------------------------ load ------------------------------ */
+  function load(){
+    busy(true);
+    call('getDashboardData', S.token).then(function(d){
+      busy(false);
+      S.data = d; S.viewer = d.viewer;
+      /* Junior AE paid rows carry only net pay: treat it as the commission and count the loans in the text */
+      (d.rows || []).forEach(function(x){ x.units = juniorUnits(x) || 1; if (juniorUnits(x) && x.commission == null) x.commission = x.netPay; });
+      if (!S.year) S.year = defaultYear();
+      $('gate').hidden = true; $('app').hidden = false;
+      setupControls(); render();
+    }).catch(function(e){
+      busy(false);
+      var m = errText(e);
+      if (/access denied|sign in/i.test(m)) finishSignOut(S.data ? 'Your session ended. Please sign in again.' : '');
+      else if (S.data) alertBox(m);
+      else finishSignOut(m);
+    });
+  }
+
+  function alertBox(t){ var a = $('alertBox'); a.textContent = t; a.hidden = !t; }
+
+  /* ------------------------------ filters ------------------------------ */
+  function years(){
+    var set = {};
+    S.data.rows.forEach(function(r){ if (r.paycheckDate) set[r.paycheckDate.slice(0,4)] = 1; });
+    (S.data.bonuses || []).forEach(function(b){ if (b.paycheckDate) set[b.paycheckDate.slice(0,4)] = 1; });
+    (S.data.estimates || []).forEach(function(e){ if (e.month) set[e.month.slice(0,4)] = 1; });
+    (S.data.forecast || []).forEach(function(f){ var d = f.expectedPaycheck || f.closeDate; if (d) set[d.slice(0,4)] = 1; });
+    return Object.keys(set).sort().reverse();
+  }
+  function defaultYear(){ var y = years(); return y.length ? y[0] : 'all'; }
+  function isMgr(){ return S.viewer && S.viewer.level === 'manager'; }
+  function agentMode(){ return !isMgr() || S.agent !== ALL; }   // viewing one person?
+
+  function inScope(sp, date){
+    if (isMgr() && S.agent !== ALL && nameKey(sp) !== S.agent) return false;
+    if (S.year !== 'all' && String(date || '').slice(0,4) !== S.year) return false;
+    return true;
+  }
+  function scoped(){ return S.data.rows.filter(function(r){ return inScope(r.salesperson, r.paycheckDate); }); }
+  function scopedBonus(){ return (S.data.bonuses || []).filter(function(b){ return inScope(b.salesperson, b.paycheckDate); }); }
+  function scopedFc(){ return (S.data.forecast || []).filter(function(f){ return inScope(f.salesperson, f.expectedPaycheck || f.closeDate); }); }
+  function scopedEst(){ return (S.data.estimates || []).filter(function(e){ return inScope(e.salesperson, e.month); }); }
+
+  function setupControls(){
+    $('whoName').textContent = S.viewer.name || '';
+    $('whoLevel').textContent = isMgr() ? 'Manager' : 'Personal';
+    $('foot').textContent = isMgr() ? 'Confidential — manager view of all agent commission and bonus pay. Do not share or screenshot outside the team.'
+      : 'Confidential — your commission and bonus pay only. Questions about a paycheck? Contact your manager.';
+    $('ctlAgent').hidden = !isMgr();
+    if (isMgr()){
+      var names = {};
+      S.data.rows.concat(S.data.bonuses || [], S.data.forecast || []).forEach(function(r){ var k = nameKey(r.salesperson); if (!names[k]) names[k] = r.salesperson; });
+      var keys = Object.keys(names).sort(function(a, b){ return names[a].localeCompare(names[b]); });
+      if (S.agent !== ALL && !names[S.agent]) S.agent = ALL;
+      $('selAgent').innerHTML = '<option value="' + ALL + '">All agents</option>' +
+        keys.map(function(k){ return '<option value="' + esc(k) + '">' + esc(names[k]) + '</option>'; }).join('');
+      $('selAgent').value = S.agent;
+    }
+    var ys = years();
+    if (S.year !== 'all' && ys.indexOf(S.year) < 0) S.year = ys[0] || 'all';
+    $('selYear').innerHTML = ys.map(function(y){ return '<option value="' + y + '">' + y + '</option>'; }).join('') +
+      '<option value="all">All time</option>';
+    $('selYear').value = S.year;
+    var t = new Date(S.data.generatedAt);
+    $('asof').textContent = 'Updated ' + t.toLocaleString('en-US', {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'});
+  }
+
+  /* ------------------------------ render ------------------------------ */
+  function render(){
+    alertBox('');
+    var rows = scoped(), bons = scopedBonus(), ests = scopedEst(), fcs = scopedFc();
+    var agentName = isMgr() ? (S.agent === ALL ? 'All agents' : $('selAgent').options[$('selAgent').selectedIndex].text) : S.viewer.name;
+    var first = String(S.viewer.name || '').split(' ')[0];
+    $('hello').textContent = isMgr() ? agentName : ('Hi ' + first);
+    renderKpis(rows, bons, ests, fcs);
+    renderChart(rows, bons, fcs);
+    renderRates(rows);
+    renderAgents(rows, bons, ests, fcs);
+    renderUpcoming(fcs, ests);
+    renderRecent(rows);
+    renderChecks(rows, bons);
+    renderBonuses(bons, ests);
+    renderDeals(rows);
+    showTab(S.tab);
+  }
+
+  function renderKpis(rows, bons, ests, fcs){
+    var net = sum(rows, 'netPay'), vol = sum(rows, 'loanAmount');
+    var comm = sum(rows, 'commission'), loanComm = rows.reduce(function(t, r){ return t + (r.loanAmount > 0 ? (+r.commission || 0) : 0); }, 0);
+    var units = rows.reduce(function(t, r){ return t + (juniorUnits(r) || 1); }, 0), jUnits = rows.reduce(function(t, r){ return t + juniorUnits(r); }, 0);
+    var jEst = ests.filter(function(e){ return e.perLoan; }), bEst = ests.filter(function(e){ return !e.perLoan; });
+    var bonus = bons.reduce(function(t, b){ return t + bNet(b); }, 0);
+    var draw = rows.reduce(function(t, r){ return t + drawApplied(r); }, 0);
+    var checks = groupChecks(rows, bons);
+    var last = checks[0];
+    var period = S.year === 'all' ? 'all time' : S.year;
+    var estTotal = sum(ests, 'estimate');
+    var estMonths = {}; ests.forEach(function(e){ estMonths[e.month] = 1; });
+    var estLabel = Object.keys(estMonths).sort().map(monthLabel).join(', ');
+    var estLoans = ests.filter(function(e){ return !isMentor(e.bonusType); }).reduce(function(t, e){ return t + e.loanCount; }, 0);
+    var html = '';
+    html += kpi('Total net pay', money(net + bonus, true), 'Commission ' + money(net, true) + ' · Bonus ' + money(bonus, true), 'hero');
+    html += kpi('Commission earned', money(comm, true), draw > 0 ? money(draw, true) + ' applied to draw' : period);
+    html += kpi('Bonuses paid', money(bonus, true), bons.length ? bons.length + ' bonus payment' + (bons.length === 1 ? '' : 's') + ' · ' + period : 'None in ' + period);
+    var fcTotal = sum(fcs, 'commission');
+    html += kpi('Forecasted pay', (fcs.length || ests.length) ? money(fcTotal + estTotal, true) : '—',
+      (fcs.length || ests.length) ? [
+        fcs.length || !jEst.length ? 'Commission ' + money(fcTotal, true) + ' on ' + fcs.length + ' loan' + (fcs.length === 1 ? '' : 's') : '',
+        jEst.length ? 'Junior AE commission est. ' + money(sum(jEst, 'estimate'), true) : '',
+        bEst.length || !jEst.length ? 'Bonus est. ' + money(sum(bEst, 'estimate'), true) : ''
+      ].filter(Boolean).join(' · ') + (estLabel ? ' (' + estLabel + ')' : '') + ' · Estimate — actual pay may vary' : 'Nothing pending', 'est');
+    html += kpi('Loans paid', units.toLocaleString(), checks.length + ' paycheck' + (checks.length === 1 ? '' : 's'));
+    if (!vol && jUnits){
+      var jPend = jEst.reduce(function(t, e){ return t + e.loanCount; }, 0);
+      html += kpi('Avg pay per loan', money(comm / jUnits, true), 'Junior AE commission ÷ loans paid');
+      html += kpi('Loans not paid yet', jPend.toLocaleString(), jEst.length ? 'Underwritten, closed — est. ' + money(sum(jEst, 'estimate'), true) : 'None pending');
+    } else {
+      var nLoanRows = rows.filter(function(r){ return r.loanAmount > 0; }).length;
+      html += kpi('Loan volume', money(vol), nLoanRows ? 'Avg ' + money(vol / nLoanRows) + ' per loan' : '—');
+      html += kpi('Effective rate', vol ? pct(loanComm / vol) : '—', 'Commission ÷ loan volume');
+    }
+    var lastN = last ? last.rows.reduce(function(t, r){ return t + (juniorUnits(r) || 1); }, 0) : 0;
+    html += kpi('Last paycheck', last ? money(last.net, true) : '—', last ? fcd(last.date) + ' · ' + lastN + ' loan' + (lastN === 1 ? '' : 's') + (last.bonusRows.length ? ' + bonus' : '') : 'None in period');
+    $('kpis').innerHTML = html;
+  }
+  function kpi(k, v, d, cls){
+    return '<div class="kpi' + (cls ? ' ' + cls : '') + '"><div class="k">' + esc(k) + '</div><div class="v num">' + esc(v) + '</div><div class="d">' + esc(d) + '</div></div>';
+  }
+
+  /* One entry per paycheck date. net = commission net + bonus net. */
+  function groupChecks(rows, bons){
+    var m = {};
+    function g0(k){ return m[k] || (m[k] = { date: k, rows: [], bonusRows: [], net: 0, commNet: 0, comm: 0, vol: 0, draw: 0, bonus: 0 }); }
+    rows.forEach(function(r){
+      var g = g0(r.paycheckDate || ''); g.rows.push(r);
+      g.net += r.netPay || 0; g.commNet += r.netPay || 0; g.comm += r.commission || 0; g.vol += r.loanAmount || 0; g.draw += drawApplied(r);
+    });
+    (bons || []).forEach(function(b){
+      var g = g0(b.paycheckDate || ''); g.bonusRows.push(b);
+      g.bonus += bNet(b); g.net += bNet(b);
+    });
+    return Object.keys(m).map(function(k){ return m[k]; }).sort(function(a, b){ return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
+  }
+
+  /* ---- chart: stacked bars per paycheck (inline SVG, no libraries) ---- */
+  function renderChart(rows, bons, fcs){
+    var el = $('chart');
+    var g = groupChecks(rows, bons);
+    var gi = {}; g.forEach(function(x){ gi[x.date] = x; x.fc = 0; x.fcN = 0; });
+    (fcs || []).forEach(function(f){
+      var k = f.expectedPaycheck; if (!k) return;
+      if (!gi[k]){ gi[k] = { date: k, rows: [], bonusRows: [], net: 0, commNet: 0, comm: 0, vol: 0, draw: 0, bonus: 0, fc: 0, fcN: 0 }; g.push(gi[k]); }
+      gi[k].fc += f.commission || 0; gi[k].fcN++;
+    });
+    g.sort(function(a, b){ return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+    $('lgFc').hidden = !(fcs || []).length;
+    if (!g.length){ el.innerHTML = '<div class="empty">No paychecks in this period.</div>'; return; }
+    var anyDraw = g.some(function(x){ return x.draw > 0.004; });
+    $('lgDraw').hidden = !anyDraw;
+    $('lgBonus').hidden = !g.some(function(x){ return x.bonus > 0.004; });
+    var W = Math.max(340, Math.min(900, el.clientWidth || 760)), H = W < 560 ? 240 : 280, L = 56, R = 10, T = 12, B = 34;
+    var max = Math.max.apply(null, g.map(function(x){ return x.net + x.draw + x.fc; })) || 1;
+    var step = niceStep(max / 4), top = Math.ceil(max / step) * step;
+    var iw = W - L - R, ih = H - T - B, bw = iw / g.length, bar = Math.max(3, Math.min(46, bw * 0.64));
+    var y = function(v){ return T + ih - (v / top) * ih; };
+    var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Net pay by paycheck">';
+    for (var t = 0; t <= top + 1e-9; t += step){
+      s += '<line class="gl" x1="' + L + '" x2="' + (W - R) + '" y1="' + y(t) + '" y2="' + y(t) + '"/>';
+      s += '<text class="ax" x="' + (L - 8) + '" y="' + (y(t) + 4) + '" text-anchor="end">' + moneyShort(t) + '</text>';
+    }
+    var every = Math.ceil(g.length / Math.max(4, Math.floor(W / 64)));
+    g.forEach(function(x, i){
+      var cx = L + bw * i + bw / 2, x0 = cx - bar / 2;
+      var hc = Math.max(0, y(0) - y(Math.max(0, x.commNet)));
+      var hb = Math.max(0, y(0) - y(Math.max(0, x.commNet) + Math.max(0, x.bonus))) - hc;
+      var hd = Math.max(0, y(0) - y(x.net + x.draw)) - hc - hb;
+      if (hc > 0) s += '<rect x="' + x0 + '" y="' + (y(0) - hc) + '" width="' + bar + '" height="' + hc + '" fill="#1B184C"/>';
+      if (hb > 0.5) s += '<rect x="' + x0 + '" y="' + (y(0) - hc - hb) + '" width="' + bar + '" height="' + hb + '" fill="#3E70B6"/>';
+      if (hd > 0.5) s += '<rect x="' + x0 + '" y="' + (y(0) - hc - hb - hd) + '" width="' + bar + '" height="' + hd + '" fill="rgba(62,112,182,.35)"/>';
+      var hf = Math.max(0, y(0) - y(x.net + x.draw + x.fc)) - hc - hb - Math.max(0, hd);
+      if (hf > 0.5) s += '<rect x="' + (x0 + 0.5) + '" y="' + (y(0) - hc - hb - Math.max(0, hd) - hf + 0.5) + '" width="' + (bar - 1) + '" height="' + (hf - 1) + '" fill="rgba(62,112,182,.12)" stroke="#3E70B6" stroke-dasharray="3 2"/>';
+      if (i % every === 0)
+        s += '<text class="ax" x="' + cx + '" y="' + (H - 12) + '" text-anchor="middle">' + fdateShort(x.date) + '</text>';
+      s += '<rect class="hit" data-i="' + i + '" x="' + (L + bw * i) + '" y="' + T + '" width="' + bw + '" height="' + ih + '"/>';
+    });
+    s += '</svg><div class="tip" id="tip" hidden></div>';
+    el.innerHTML = s;
+    var tip = $('tip');
+    function show(ev){
+      var i = +ev.target.getAttribute('data-i'); var x = g[i]; if (!x) return;
+      var box = el.getBoundingClientRect(), rb = ev.target.getBoundingClientRect();
+      tip.innerHTML = '<b>Paycheck ' + esc(fcd(x.date)) + '</b>' + (x.rows.length || x.bonusRows.length ? 'Net pay ' + esc(money(x.net, true)) : '') +
+        (x.fc > 0 ? (x.rows.length || x.bonusRows.length ? '<br>' : '') + 'Forecast ' + esc(money(x.fc, true)) + ' (' + x.fcN + ' loan' + (x.fcN === 1 ? '' : 's') + ')' : '') +
+        (x.rows.length ? '<br>Commission ' + esc(money(x.comm, true)) : '') + (x.bonus > 0.004 ? '<br>Bonus ' + esc(money(x.bonus, true)) : '') +
+        (x.draw > 0.004 ? '<br>Applied to draw ' + esc(money(x.draw, true)) : '') +
+        (x.rows.length ? '<br>' + nUnits(x.rows) + ' loan' + (nUnits(x.rows) === 1 ? '' : 's') : '');
+      tip.hidden = false;
+      var left = rb.left - box.left + rb.width / 2;
+      left = Math.max(80, Math.min(box.width - 80, left));
+      tip.style.left = left + 'px';
+      tip.style.top = Math.max(60, (y(x.net + x.draw + x.fc) / H) * box.height - 6) + 'px';
+    }
+    Array.prototype.forEach.call(el.querySelectorAll('rect.hit'), function(r){
+      r.addEventListener('mouseenter', show);
+      r.addEventListener('click', show);
+      r.addEventListener('mouseleave', function(){ tip.hidden = true; });
+    });
+  }
+  function niceStep(raw){
+    var p = Math.pow(10, Math.floor(Math.log10(raw || 1))), n = raw / p;
+    return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p;
+  }
+
+  /* ---- commission rate history (by close date) ---- */
+  function renderRates(rows){
+    var ul = $('rates');
+    if (!agentMode()){
+      $('ratesHint').textContent = 'Current rate by agent (most recent loan).';
+      var per = agentSummary(rows);
+      ul.innerHTML = per.length ? per.map(function(a){
+        return '<li><div><div style="font-weight:500">' + esc(a.name) + '</div><div class="rd" style="text-align:left">' + a.n + ' loans</div></div><div class="rt num">' + esc(pct(a.rate)) + '</div></li>';
+      }).join('') : '<li class="empty">No loans in this period.</li>';
+      return;
+    }
+    $('ratesHint').textContent = 'By loan close date, most recent first.';
+    var srt = rows.filter(function(r){ return r.rate != null; }).sort(function(a, b){
+      var ad = a.closeDate || a.paycheckDate, bd = b.closeDate || b.paycheckDate; return ad < bd ? -1 : ad > bd ? 1 : 0; });
+    var segs = [];
+    srt.forEach(function(r){
+      var d = r.closeDate || r.paycheckDate, s = segs[segs.length - 1];
+      if (s && Math.abs(s.rate - r.rate) < 1e-9){ s.to = d; s.n++; s.comm += r.commission || 0; }
+      else segs.push({ rate: r.rate, from: d, to: d, n: 1, comm: r.commission || 0 });
+    });
+    segs.reverse();
+    ul.innerHTML = segs.length ? segs.map(function(s, i){
+      return '<li><div><span class="rt num">' + esc(pct(s.rate)) + '</span>' + (i === 0 ? '<span class="badge now">Current</span>' : '') +
+        '<div class="rd" style="text-align:left">' + s.n + ' loan' + (s.n === 1 ? '' : 's') + ' · ' + esc(money(s.comm, true)) + '</div></div>' +
+        '<div class="rd">' + esc(fcd(s.from)) + '<br>to ' + esc(i === 0 ? 'present' : fcd(s.to)) + '</div></li>';
+    }).join('') : '<li class="empty">No loans in this period.</li>';
+  }
+
+  function agentSummary(rows){
+    var m = {};
+    rows.forEach(function(r){
+      var k = nameKey(r.salesperson);
+      if (!m[k]) m[k] = { key: k, name: r.salesperson, n: 0, vol: 0, comm: 0, net: 0, last: '', lastClose: '', rate: null };
+      var a = m[k]; a.n += r.units || 1; a.vol += r.loanAmount || 0; a.comm += r.commission || 0; a.net += r.netPay || 0;
+      if ((r.paycheckDate || '') > a.last) a.last = r.paycheckDate;
+      var cd = r.closeDate || r.paycheckDate || '';
+      if (r.rate != null && cd >= a.lastClose){ a.lastClose = cd; a.rate = r.rate; }
+    });
+    return Object.keys(m).map(function(k){ return m[k]; }).sort(function(a, b){ return b.net - a.net; });
+  }
+
+  function renderAgents(rows, bons, ests, fcs){
+    var p = $('agentsPanel');
+    p.hidden = agentMode();
+    if (p.hidden) return;
+    var a = agentSummary(rows), byKey = {};
+    a.forEach(function(x){ x.bonus = 0; x.est = 0; byKey[x.key] = x; });
+    function get(sp){ var k = nameKey(sp); if (!byKey[k]){ byKey[k] = { key: k, name: sp, n: 0, vol: 0, comm: 0, net: 0, last: '', rate: null, bonus: 0, est: 0 }; a.push(byKey[k]); } return byKey[k]; }
+    bons.forEach(function(b){ var x = get(b.salesperson); x.bonus += bNet(b); if ((b.paycheckDate || '') > x.last) x.last = b.paycheckDate; });
+    ests.forEach(function(e){ get(e.salesperson).est += e.estimate || 0; });
+    (fcs || []).forEach(function(f){ get(f.salesperson).est += f.commission || 0; });
+    a.sort(function(p1, p2){ return (p2.net + p2.bonus) - (p1.net + p1.bonus); });
+    var tb = bons.reduce(function(t, b){ return t + bNet(b); }, 0);
+    var h = '<thead><tr><th>Agent</th><th class="r">Loans</th><th class="r">Loan volume</th><th class="r">Commission</th><th class="r">Bonuses</th><th class="r">Total net pay</th><th class="r">Forecast</th><th class="r">Current rate</th><th class="r">Last paycheck</th></tr></thead><tbody>';
+    h += a.map(function(x){
+      return '<tr class="click" data-agent="' + esc(x.key) + '"><td class="prop">' + esc(x.name) + '</td><td class="r num">' + x.n +
+        '</td><td class="r num">' + money(x.vol) + '</td><td class="r num">' + money(x.comm, true) + '</td><td class="r num">' + money(x.bonus, true) +
+        '</td><td class="r num" style="font-weight:600">' + money(x.net + x.bonus, true) + '</td><td class="r num">' + (x.est ? money(x.est, true) : '—') +
+        '</td><td class="r num">' + pct(x.rate) + '</td><td class="r">' + fcd(x.last) + '</td></tr>';
+    }).join('');
+    h += '<tr class="tot"><td>Total</td><td class="r num">' + nUnits(rows) + '</td><td class="r num">' + money(sum(rows, 'loanAmount')) +
+      '</td><td class="r num">' + money(sum(rows, 'commission'), true) + '</td><td class="r num">' + money(tb, true) +
+      '</td><td class="r num">' + money(sum(rows, 'netPay') + tb, true) + '</td><td class="r num">' + money(sum(ests, 'estimate') + sum(fcs || [], 'commission'), true) + '</td><td></td><td></td></tr></tbody>';
+    $('tAgents').innerHTML = a.length ? h : '<tr><td class="empty">No loans in this period.</td></tr>';
+  }
+
+  function propCell(r){
+    var chip = (r.netPay === 0 && (r.commission || 0) > 0) ? '<span class="chip">Applied to draw</span>' : '';
+    return '<td class="pc"><span class="prop">' + esc(r.property || '—') + '</span>' + chip + (r.notes ? '<span class="note">' + esc(r.notes) + '</span>' : '') + '</td>';
+  }
+
+  function renderRecent(rows){
+    var showAgent = !agentMode();
+    var r = rows.slice().sort(function(a, b){
+      var k = (b.paycheckDate || '').localeCompare(a.paycheckDate || ''); return k || (b.closeDate || '').localeCompare(a.closeDate || ''); }).slice(0, 8);
+    if (!r.length){ $('tRecent').innerHTML = '<tr><td class="empty">No loans in this period.</td></tr>'; return; }
+    var h = '<thead><tr><th>Paycheck</th>' + (showAgent ? '<th>Agent</th>' : '') + '<th>Property</th><th>Close date</th><th class="r">Loan amount</th><th class="r">Rate</th><th class="r">Commission</th><th class="r">Net pay</th></tr></thead><tbody>';
+    h += r.map(function(x){
+      return '<tr><td style="white-space:nowrap">' + fcd(x.paycheckDate) + '</td>' + (showAgent ? '<td style="white-space:nowrap">' + esc(x.salesperson) + '</td>' : '') +
+        propCell(x) + '<td style="white-space:nowrap">' + fcd(x.closeDate) + '</td>' + '<td class="r num">' + money(x.loanAmount, true) + '</td><td class="r num">' + pct(x.rate) + '</td><td class="r num">' +
+        money(x.commission, true) + '</td><td class="r num">' + money(x.netPay, true) + '</td></tr>';
+    }).join('') + '</tbody>';
+    $('tRecent').innerHTML = h;
+  }
+
+  function renderChecks(rows, bons){
+    var showAgent = !agentMode();
+    var g = groupChecks(rows, bons);
+    if (!g.length){ $('tChecks').innerHTML = '<tr><td class="empty">No paychecks in this period.</td></tr>'; return; }
+    var h = '<thead><tr><th>Paycheck date</th><th class="r">Loans</th><th class="r">Loan volume</th><th class="r">Commission</th><th class="r">Bonus</th><th class="r">Applied to draw</th><th class="r">Net pay</th></tr></thead><tbody>';
+    g.forEach(function(x){
+      var open = !!S.open[x.date];
+      h += '<tr class="click' + (open ? ' open' : '') + '" data-check="' + esc(x.date) + '"><td style="white-space:nowrap"><span class="caret">&#9656;</span> ' + fcd(x.date) +
+        '</td><td class="r num">' + nUnits(x.rows) + '</td><td class="r num">' + money(x.vol) + '</td><td class="r num">' + money(x.comm, true) +
+        '</td><td class="r num">' + (x.bonusRows.length ? money(x.bonus, true) : '—') +
+        '</td><td class="r num">' + (x.draw > 0.004 ? money(x.draw, true) : '—') + '</td><td class="r num" style="font-weight:600">' + money(x.net, true) + '</td></tr>';
+      if (open){
+        var inner = !x.rows.length ? '' : '<table><thead><tr>' + (showAgent ? '<th>Agent</th>' : '') + '<th>Close date</th><th>Property</th><th>Loan #</th><th>Lender</th><th class="r">Loan amount</th><th class="r">Rate</th><th class="r">Commission</th><th class="r">Net pay</th></tr></thead><tbody>' +
+          x.rows.slice().sort(function(a, b){ return (a.closeDate || '').localeCompare(b.closeDate || ''); }).map(function(r){
+            return '<tr>' + (showAgent ? '<td style="white-space:nowrap">' + esc(r.salesperson) + '</td>' : '') + '<td style="white-space:nowrap">' + fcd(r.closeDate) + '</td>' + propCell(r) +
+              '<td style="white-space:nowrap">' + esc(r.loanNo || '—') + '</td><td>' + esc(r.loanType || '—') + '</td><td class="r num">' + money(r.loanAmount, true) +
+              '</td><td class="r num">' + pct(r.rate) + '</td><td class="r num">' + money(r.commission, true) +
+              '</td><td class="r num">' + money(r.netPay, true) + '</td></tr>';
+          }).join('') + '</tbody></table>';
+        if (x.bonusRows.length) inner += bonusTable(x.bonusRows, showAgent, false);
+        h += '<tr class="sub"><td colspan="7"><div class="tw" style="margin:0;padding:0 0 0 20px">' + inner + '</div></td></tr>';
+      }
+    });
+    var tb = (bons || []).reduce(function(t, b){ return t + bNet(b); }, 0);
+    h += '<tr class="tot"><td>Total</td><td class="r num">' + nUnits(rows) + '</td><td class="r num">' + money(sum(rows, 'loanAmount')) + '</td><td class="r num">' +
+      money(sum(rows, 'commission'), true) + '</td><td class="r num">' + money(tb, true) + '</td><td class="r num">' + money(rows.reduce(function(t, r){ return t + drawApplied(r); }, 0), true) +
+      '</td><td class="r num">' + money(sum(rows, 'netPay') + tb, true) + '</td></tr></tbody>';
+    $('tChecks').innerHTML = h;
+  }
+
+  /* Bonus rows as a table. withCheck adds the paycheck date column. */
+  function bonusTable(list, showAgent, withCheck){
+    var srt = list.slice().sort(function(a, b){ return (b.paycheckDate || '').localeCompare(a.paycheckDate || '') || (b.bonusMonth || '').localeCompare(a.bonusMonth || '') || (a.salesperson || '').localeCompare(b.salesperson || ''); });
+    var h = '<table><thead><tr>' + (withCheck ? '<th>Paycheck</th>' : '') + '<th>Bonus month</th>' + (showAgent ? '<th>Agent</th>' : '') +
+      '<th>Bonus</th><th>Plan</th><th class="r">Loans</th><th class="r">Loan volume</th><th class="r">Bonus rate</th><th class="r">Bonus amount</th></tr></thead><tbody>';
+    h += srt.map(function(b){
+      return '<tr>' + (withCheck ? '<td style="white-space:nowrap">' + fcd(b.paycheckDate) + '</td>' : '') +
+        '<td style="white-space:nowrap">' + esc(monthLabel((b.bonusMonth || '').slice(0, 7))) + '</td>' +
+        (showAgent ? '<td style="white-space:nowrap">' + esc(b.salesperson) + '</td>' : '') +
+        '<td style="min-width:160px"><span class="prop">' + esc(typeLabel(b.bonusType)) + '</span>' + (b.mentee ? '<span class="note">Mentee: ' + esc(b.mentee) + '</span>' : '') + '</td>' +
+        '<td style="white-space:nowrap">' + esc(b.plan || '—') + '</td><td class="r num">' + (b.loanCount || 0) + '</td><td class="r num">' + money(b.loanAmount, true) +
+        '</td><td class="r num">' + pct(b.rate) + '</td><td class="r num" style="font-weight:600">' + money(bNet(b), true) + '</td></tr>';
+    }).join('');
+    if (withCheck) h += '<tr class="tot"><td>Total</td><td></td>' + (showAgent ? '<td></td>' : '') + '<td></td><td></td><td></td><td></td><td></td><td class="r num">' +
+      money(list.reduce(function(t, b){ return t + bNet(b); }, 0), true) + '</td></tr>';
+    return h + '</tbody></table>';
+  }
+
+  function renderBonuses(bons, ests){
+    var showAgent = !agentMode();
+    $('tBonus').innerHTML = bons.length ? bonusTable(bons, showAgent, true).replace(/^<table>|<\/table>$/g, '')
+      : '<tr><td class="empty">No bonuses paid in this period.</td></tr>';
+    var el = $('ests');
+    var months = {}; ests.forEach(function(e){ months[e.month] = 1; });
+    var ml = Object.keys(months).sort().map(monthLabel).join(', ');
+    var anyJ = ests.some(function(e){ return e.perLoan; }), allJ = ests.length && ests.every(function(e){ return e.perLoan; });
+    $('estTitle').textContent = (allJ ? 'Estimated Junior AE commission' : anyJ ? 'Estimated bonus & commission' : 'Estimated bonus') + (ml ? ' — ' + ml : '') + ' (not yet paid)';
+    if (!ests.length){ el.innerHTML = '<div class="empty">No bonus estimate right now. Estimates appear once loans for a month that has not been paid yet are on the commission statements.</div>'; return; }
+    if (showAgent){
+      $('estHint').textContent = 'Per agent, from ' + (S.data.bonusSource === 'feed' ? 'every loan funded in Salesforce' : 'loans on the commission statements so far') + '. Click an agent to open their estimate.';
+      var h = '<div class="tw"><table><thead><tr><th>Month</th><th>Agent</th><th>Type</th><th class="r">Loans</th><th class="r">Not paid yet</th><th class="r">Loan volume</th><th class="r">Tier</th><th class="r">Rate</th><th class="r">Estimate</th><th>Next tier</th></tr></thead><tbody>';
+      h += ests.slice().sort(function(a, b){ return b.estimate - a.estimate || a.salesperson.localeCompare(b.salesperson); }).map(function(e){
+        return '<tr class="click" data-agent="' + esc(nameKey(e.salesperson)) + '"><td style="white-space:nowrap">' + esc(monthLabel(e.month)) + '</td><td style="white-space:nowrap">' + esc(e.salesperson) +
+          '</td><td>' + esc(typeLabel(e.bonusType)) + (e.mentee ? '<span class="note">Mentee: ' + esc(e.mentee) + '</span>' : '') + '</td><td class="r num">' + e.loanCount +
+          '</td><td class="r num">' + (e.unpaidCount || 0) + '</td><td class="r num">' + (e.perLoan ? '—' : money(e.loanAmount)) + '</td><td class="r num">' + (e.tier || '—') + '</td><td class="r num">' + rateTxt(e, e.rate) +
+          '</td><td class="r num" style="font-weight:600">' + money(e.estimate, true) + '</td><td style="white-space:nowrap">' +
+          (e.nextAt ? (e.nextAt - e.loanCount) + ' more → ' + rateTxt(e, e.nextRate) : 'Top tier') + '</td></tr>';
+      }).join('') + '<tr class="tot"><td>Total</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="r num">' + money(sum(ests, 'estimate'), true) + '</td><td></td></tr></tbody></table></div>';
+      el.innerHTML = h;
+      return;
+    }
+    $('estHint').textContent = S.data.bonusSource === 'feed' ? 'Based on every loan that has funded in Salesforce this month, including loans not on a paycheck yet.'
+      : 'Based on loans closed this month that are on your commission statements so far.';
+    el.innerHTML = '<div class="ests">' + ests.slice().sort(function(a, b){ return isMentor(a.bonusType) - isMentor(b.bonusType); }).map(estCard).join('') + '</div>';
+  }
+
+  function estCard(e){
+    var mentor = isMentor(e.bonusType), junior = !!e.perLoan, mon = monthLabel(e.month);
+    var u = e.unpaidCount || 0, paidN = e.loanCount - u;
+    var myFc = mentor || junior ? [] : (S.data.forecast || []).filter(function(f){ return nameKey(f.salesperson) === nameKey(e.salesperson) && (f.closeDate || '').slice(0, 7) === e.month; });
+    var fcComm = sum(myFc, 'commission');
+    var tierTxt = e.tier ? 'Tier ' + e.tier + (junior ? ' · ' + rateTxt(e, e.rate) : e.rate ? ' · +' + pct(e.rate) : ' · base commission only') : '—';
+    var next = '';
+    if (e.nextAt && junior){
+      var moreJ = e.nextAt - e.loanCount;
+      next = '<div class="next"><b>' + moreJ + ' more loan' + (moreJ === 1 ? '' : 's') + '</b> in ' + esc(mon.split(' ')[0]) + ' reaches Tier ' + e.nextTier +
+        ': <b>' + esc(rateTxt(e, e.nextRate)) + '</b> on every loan that month — about ' + esc(money(e.nextAt * e.nextRate, true)) + ' at ' + e.nextAt + ' loans.</div>';
+    } else if (e.nextAt){
+      var more = e.nextAt - e.loanCount;
+      next = '<div class="next"><b>' + more + ' more loan' + (more === 1 ? '' : 's') + '</b>' + (mentor ? ' by ' + esc(e.mentee) : '') +
+        ' in ' + esc(mon.split(' ')[0]) + ' reaches Tier ' + e.nextTier + ': <b>+' + esc(pct(e.nextRate)) + '</b> on ' + (mentor ? 'their' : 'all of the month\'s') +
+        ' volume — about ' + esc(money(e.loanAmount * e.nextRate, true)) + ' at today\'s volume, more as loans are added.</div>';
+    } else {
+      next = '<div class="next">Top tier reached for ' + esc(mon) + '.</div>';
+    }
+    var lad = '<div class="ladder">' + (e.ladder || []).map(function(t){
+      return '<span class="' + (t.tier === e.tier ? 'on' : '') + '">' + esc(t.range) + ' loans · ' + (junior ? esc(rateTxt(e, t.rate)) : t.rate ? '+' + esc(pct(t.rate)) : 'base') + '</span>';
+    }).join('') + '</div>';
+    return '<div class="est-card"><div class="top"><div><div class="mo">' + esc(mon) + ' · ' + esc(typeLabel(e.bonusType)) + '</div>' +
+      '<div class="amt num">' + esc(money(e.estimate, true)) + '</div></div><span class="badge">Estimate</span></div>' +
+      '<dl>' + (mentor ? '<dt>Mentee</dt><dd>' + esc(e.mentee) + '</dd>' : '') +
+      '<dt>' + (mentor ? 'Mentee loans funded' : junior ? 'Loans you underwrote (closed)' : 'Loans funded') + '</dt><dd class="num">' + e.loanCount + '</dd>' +
+      (u ? '<dt>Commission paid / not yet</dt><dd class="num">' + paidN + ' paid · ' + u + ' not yet</dd>' : '') +
+      (junior ? '<dt>Pay per loan</dt><dd class="num">' + esc(rateTxt(e, e.rate)) + '</dd>' : '<dt>Loan volume</dt><dd class="num">' + esc(money(e.loanAmount, true)) + '</dd>') +
+      (!mentor && myFc.length ? '<dt>Est. commission, unpaid loans</dt><dd class="num">' + esc(money(fcComm, true)) + '</dd>' : '') +
+      '<dt>Plan</dt><dd>' + esc(e.plan) + '</dd>' +
+      '<dt>Current tier</dt><dd>' + esc(tierTxt) + '</dd></dl>' +
+      (!mentor && myFc.length ? '<div class="sum"><span>Est. ' + esc(mon) + ' pay still to come<br><span style="color:var(--muted);font-size:12px">bonus + commission on unpaid loans</span></span><b class="num">' +
+        esc(money(e.estimate + fcComm, true)) + '</b></div>' : '') + next + lad + '</div>';
+  }
+
+  function fcChip(f){
+    if (f.status === 'Not posted yet') return '<span class="chip">Not posted yet</span>';
+    return '';
+  }
+  function renderUpcoming(fcs, ests){
+    var showAgent = !agentMode();
+    var by = {};
+    fcs.forEach(function(f){ var k = f.expectedPaycheck || ''; (by[k] = by[k] || []).push(f); });
+    var keys = Object.keys(by).sort();
+    var cards = keys.map(function(k){
+      var l = by[k];
+      return '<div class="ck"><div class="d">Paycheck ' + esc(fcd(k)) + '</div><div class="v num">' + esc(money(sum(l, 'commission'), true)) + '</div>' +
+        '<div class="s">' + l.length + ' loan' + (l.length === 1 ? '' : 's') + ' · ' + esc(money(sum(l, 'loanAmount'))) + '</div></div>';
+    });
+    var em = {}, ej = {}, eb = {};
+    ests.forEach(function(e){ em[e.month] = (em[e.month] || 0) + (e.estimate || 0); if (e.perLoan) ej[e.month] = 1; else eb[e.month] = 1; });
+    Object.keys(em).sort().forEach(function(m){
+      var p = m.split('-'), nm = MON[+p[1] % 12] + ' ' + (+p[1] === 12 ? +p[0] + 1 : p[0]);
+      var what = ej[m] && eb[m] ? 'bonus & Junior AE commission' : ej[m] ? 'Junior AE commission' : 'bonus';
+      cards.push('<div class="ck"><div class="d">' + esc(monthLabel(m)) + ' ' + what + ' (estimate)</div><div class="v num">' + esc(money(em[m], true)) + '</div>' +
+        '<div class="s">Usually paid in ' + esc(nm) + ' · <button class="link" data-goto="bonuses">details</button></div></div>');
+    });
+    $('upChecks').innerHTML = cards.length ? '<div class="checks">' + cards.join('') + '</div>' : '<div class="empty">Nothing pending — every funded loan has been paid.</div>';
+    $('upCount').textContent = fcs.length + ' loan' + (fcs.length === 1 ? '' : 's') + ' · ' + money(sum(fcs, 'loanAmount')) + ' funded · ' + money(sum(fcs, 'commission'), true) + ' expected commission';
+    if (!fcs.length){ $('tUp').innerHTML = '<tr><td class="empty">No funded loans waiting on commission.</td></tr>'; return; }
+    var list = fcs.slice().sort(function(a, b){ return (a.expectedPaycheck || '').localeCompare(b.expectedPaycheck || '') || (b.closeDate || '').localeCompare(a.closeDate || '') || (a.salesperson || '').localeCompare(b.salesperson || ''); });
+    var h = '<thead><tr><th>Expected paycheck</th><th>Close date</th>' + (showAgent ? '<th>Agent</th>' : '') + '<th>Property</th><th>Lender</th><th class="r">Loan amount</th><th class="r">Rate</th><th class="r">Est. commission</th></tr></thead><tbody>';
+    h += list.map(function(f){
+      return '<tr><td style="white-space:nowrap;font-weight:600">' + fcd(f.expectedPaycheck) + ' ' + fcChip(f) + '</td><td style="white-space:nowrap">' + fcd(f.closeDate) + '</td>' +
+        (showAgent ? '<td style="white-space:nowrap">' + esc(f.salesperson) + '</td>' : '') +
+        '<td class="pc"><span class="prop">' + esc(f.property || '—') + '</span></td><td>' + esc(f.lender || '—') + '</td><td class="r num">' + money(f.loanAmount, true) +
+        '</td><td class="r num">' + pct(f.rate) + '</td><td class="r num" style="font-weight:600">' + money(f.commission, true) + '</td></tr>';
+    }).join('');
+    h += '<tr class="tot"><td>Total</td><td></td>' + (showAgent ? '<td></td>' : '') + '<td></td><td></td><td class="r num">' + money(sum(list, 'loanAmount'), true) +
+      '</td><td></td><td class="r num">' + money(sum(list, 'commission'), true) + '</td></tr></tbody>';
+    $('tUp').innerHTML = h;
+  }
+
+  var DEAL_COLS = [
+    { k: 'paycheckDate', t: 'Paycheck', f: function(r){ return '<td style="white-space:nowrap">' + (r.est ? 'Est. ' : '') + fcd(r.paycheckDate) + '</td>'; } },
+    { k: 'salesperson', t: 'Agent', agentOnly: true, f: function(r){ return '<td style="white-space:nowrap">' + esc(r.salesperson) + '</td>'; } },
+    { k: 'property', t: 'Property', f: function(r){
+        if (!r.est) return propCell(r);
+        return '<td class="pc"><span class="prop">' + esc(r.property || '—') + '</span><span class="chip soft">Not paid yet · estimate</span></td>'; } },
+    { k: 'closeDate', t: 'Close date', f: function(r){ return '<td style="white-space:nowrap">' + fcd(r.closeDate) + '</td>'; } },
+    { k: 'loanNo', t: 'Loan #', f: function(r){ return '<td style="white-space:nowrap">' + esc(r.loanNo || (r.est ? '' : '—')) + '</td>'; } },
+    { k: 'loanType', t: 'Lender', f: function(r){ return '<td>' + esc(r.loanType || '—') + '</td>'; } },
+    { k: 'loanAmount', t: 'Loan amount', r: 1, f: function(r){ return '<td class="r num">' + money(r.loanAmount, true) + '</td>'; } },
+    { k: 'rate', t: 'Comm. %', r: 1, f: function(r){ return '<td class="r num">' + pct(r.rate) + '</td>'; } },
+    { k: 'commission', t: 'Comm. $', r: 1, f: function(r){ return '<td class="r num">' + money(r.commission, true) + (r.est ? '<span class="estmark">est.</span>' : '') + '</td>'; } },
+    { k: 'bonusRate', t: 'Bonus %', r: 1, f: function(r){ return '<td class="r num">' + (r.bonusRate == null ? '—' : pct(r.bonusRate)) + (r.bonusRate != null && r.bonusEst ? '<span class="estmark">est.</span>' : '') + '</td>'; } },
+    { k: 'bonusAmt', t: 'Bonus $', r: 1, f: function(r){ return '<td class="r num">' + (r.bonusAmt == null ? '—' : money(r.bonusAmt, true)) + (r.bonusAmt != null && r.bonusEst ? '<span class="estmark">est.</span>' : '') + '</td>'; } },
+    { k: 'netPay', t: 'Comm. net pay', r: 1, f: function(r){ return '<td class="r num" style="font-weight:600">' + money(r.netPay, true) + '</td>'; } },
+    { k: 'referral', t: 'Referral office', f: function(r){ return '<td style="white-space:nowrap">' + esc(r.referral || '—') + '</td>'; } }
+  ];
+
+  /* Funded-but-unpaid loans shaped like pay rows, flagged est. */
+  function fcAsRows(fcs){
+    return fcs.map(function(f){
+      return { est: true, status: f.status, paycheckDate: f.expectedPaycheck, salesperson: f.salesperson, property: f.property,
+               closeDate: f.closeDate, loanNo: '', loanType: f.lender, loanAmount: f.loanAmount, rate: f.rate,
+               commission: f.commission, netPay: f.commission, referral: '', notes: '' };
+    });
+  }
+  /* agent|yyyy-MM -> AE bonus rate: paid rate if payroll paid that month, else the estimate. */
+  function bonusRateMap(){
+    var m = {};
+    (S.data.estimates || []).forEach(function(e){ if (!isMentor(e.bonusType) && !e.perLoan) m[nameKey(e.salesperson) + '|' + e.month] = { rate: e.rate || 0, est: true }; });
+    (S.data.bonuses || []).forEach(function(b){ if (!isMentor(b.bonusType) && b.bonusMonth) m[nameKey(b.salesperson) + '|' + b.bonusMonth.slice(0, 7)] = { rate: b.rate || 0, est: false }; });
+    return m;
+  }
+  function withBonus(rows){
+    var bm = bonusRateMap();
+    return rows.map(function(r){
+      var o = {}; for (var k in r) o[k] = r[k];
+      var hit = r.closeDate && r.loanAmount ? bm[nameKey(r.salesperson) + '|' + r.closeDate.slice(0, 7)] : null;
+      o.bonusRate = hit ? hit.rate : null;
+      o.bonusAmt = hit ? Math.round(r.loanAmount * hit.rate * 100) / 100 : null;
+      o.bonusEst = !!(hit && hit.est) || !!r.est;
+      return o;
+    });
+  }
+  function renderDeals(rows){
+    var cols = DEAL_COLS.filter(function(c){ return !c.agentOnly || !agentMode(); });
+    var fcRows = fcAsRows(scopedFc());
+    $('estToggleWrap').hidden = !fcRows.length;
+    if (S.showEst) rows = rows.concat(fcRows);
+    rows = withBonus(rows);
+    var q = S.q.trim().toLowerCase();
+    var list = !q ? rows : rows.filter(function(r){
+      return [r.property, r.loanNo, r.loanType, r.referral, r.salesperson, r.notes].join(' ').toLowerCase().indexOf(q) > -1; });
+    var k = S.sort.key, d = S.sort.dir;
+    list = list.slice().sort(function(a, b){
+      var x = a[k], y = b[k];
+      if (x == null || x === '') return 1; if (y == null || y === '') return -1;
+      var c = (typeof x === 'number' && typeof y === 'number') ? x - y : String(x).localeCompare(String(y));
+      return c * d || (b.closeDate || '').localeCompare(a.closeDate || '');
+    });
+    var nEst = list.filter(function(r){ return r.est; }).length;
+    $('dealsDisc').hidden = !list.some(function(r){ return r.est || r.bonusEst; });
+    $('dealsCount').textContent = list.length + ' loan' + (list.length === 1 ? '' : 's') + (nEst ? ' (' + nEst + ' not paid yet — estimated)' : '') + (q ? ' matching "' + S.q.trim() + '"' : '');
+    if (!list.length){ $('tDeals').innerHTML = '<tr><td class="empty">No loans match.</td></tr>'; return; }
+    var h = '<thead><tr>' + cols.map(function(c){
+      return '<th class="s' + (c.r ? ' r' : '') + '" data-sort="' + c.k + '">' + c.t + (k === c.k ? '<span class="ar">' + (d > 0 ? '&#9650;' : '&#9660;') + '</span>' : '') + '</th>';
+    }).join('') + '</tr></thead><tbody>';
+    h += list.map(function(r){ return '<tr' + (r.est ? ' class="estrow"' : '') + '>' + cols.map(function(c){ return c.f(r); }).join('') + '</tr>'; }).join('');
+    function totRow(label, l, cls){
+      return '<tr class="tot' + (cls ? ' ' + cls : '') + '">' + cols.map(function(c){
+        if (c.k === 'paycheckDate') return '<td style="white-space:nowrap">' + label + '</td>';
+        if (c.k === 'loanAmount') return '<td class="r num">' + money(sum(l, 'loanAmount'), true) + '</td>';
+        if (c.k === 'commission') return '<td class="r num">' + money(sum(l, 'commission'), true) + '</td>';
+        if (c.k === 'bonusAmt') return '<td class="r num">' + money(sum(l, 'bonusAmt'), true) + '</td>';
+        if (c.k === 'netPay') return '<td class="r num">' + money(sum(l, 'netPay'), true) + '</td>';
+        return '<td></td>';
+      }).join('') + '</tr>';
+    }
+    if (nEst){
+      var paidL = list.filter(function(r){ return !r.est; }), estL = list.filter(function(r){ return r.est; });
+      h += totRow('Paid', paidL) + totRow('Not paid yet (est.)', estL, 'estrow') + totRow('Total incl. estimates', list);
+    } else h += totRow('Total', list);
+    h += '</tbody>';
+    $('tDeals').innerHTML = h;
+  }
+
+  function showTab(t){
+    S.tab = t;
+    Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(b){ b.classList.toggle('on', b.getAttribute('data-tab') === t); });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-pane]'), function(p){ p.hidden = p.getAttribute('data-pane') !== t; });
+  }
+
+  /* ------------------------------ events ------------------------------ */
+  $('fEmail').addEventListener('submit', function(e){ e.preventDefault(); sendCode(); });
+  $('fCode').addEventListener('submit', function(e){ e.preventDefault(); verify(); });
+  $('inCode').addEventListener('input', function(){ var v = this.value.replace(/\D/g, '').slice(0, 6); this.value = v; if (v.length === 6) verify(); });
+  $('bBack').addEventListener('click', function(){ showGate(''); $('inEmail').value = S.email; });
+  $('bResend').addEventListener('click', function(){ $('inEmail').value = S.email; sendCode(); $('mCode').textContent = 'New code requested.'; });
+  $('bOut').addEventListener('click', signOut);
+  $('bRefresh').addEventListener('click', load);
+  $('selAgent').addEventListener('change', function(){ S.agent = this.value; S.open = {}; render(); });
+  $('selYear').addEventListener('change', function(){ S.year = this.value; S.open = {}; render(); });
+  $('q').addEventListener('input', function(){ S.q = this.value; renderDeals(scoped()); });
+  $('estToggle').addEventListener('change', function(){ S.showEst = this.checked; renderDeals(scoped()); });
+  document.querySelector('.tabs').addEventListener('click', function(e){ var t = e.target.closest('.tab'); if (t) showTab(t.getAttribute('data-tab')); });
+  document.addEventListener('click', function(e){
+    var g = e.target.closest('[data-goto]'); if (g){ showTab(g.getAttribute('data-goto')); window.scrollTo(0, 0); return; }
+    var a = e.target.closest('tr[data-agent]');
+    if (a){ S.agent = a.getAttribute('data-agent'); $('selAgent').value = S.agent; S.open = {}; render(); window.scrollTo(0, 0); return; }
+    var c = e.target.closest('tr[data-check]');
+    if (c){ var k = c.getAttribute('data-check'); S.open[k] = !S.open[k]; renderChecks(scoped(), scopedBonus()); return; }
+    var s = e.target.closest('th[data-sort]');
+    if (s){ var key = s.getAttribute('data-sort');
+      if (S.sort.key === key) S.sort.dir = -S.sort.dir;
+      else S.sort = { key: key, dir: /Date$|loanAmount|commission|netPay|rate|bonus/i.test(key) ? -1 : 1 };
+      renderDeals(scoped()); }
+  });
+
+  var rz; window.addEventListener('resize', function(){ clearTimeout(rz); rz = setTimeout(function(){ if (S.data && !$('app').hidden) renderChart(scoped(), scopedBonus(), scopedFc()); }, 150); });
+
+  /* ------------------------------ boot ------------------------------ */
+  if (!S.token){ showGate(''); return; }
+  busy(true);
+  call('getAuthState', S.token).then(function(r){
+    busy(false);
+    if (r && r.ok) load(); else finishSignOut('');
+  }).catch(function(){ busy(false); finishSignOut(''); });
+})();
+</script>
+</body>
+</html>

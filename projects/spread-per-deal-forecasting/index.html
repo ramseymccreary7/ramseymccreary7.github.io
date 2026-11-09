@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../../assets/badge.js"></script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spread-per-Deal Regression — Demo</title>
+<script src="../../assets/vendor/chart.umd.min.js"></script>
+<style>
+:root {
+  --navy: #1e3a5f;
+  --blue: #2f5496;
+  --light-blue: #d6e4f0;
+  --green: #548235;
+  --red: #c00000;
+  --gold: #bf8f00;
+  --gray: #6b7280;
+  --bg: #f8fafc;
+  --card-bg: #ffffff;
+  --border: #e2e8f0;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: #1a1a2e; }
+.header { background: linear-gradient(135deg, var(--navy), var(--blue)); color: white; padding: 28px 40px; }
+.header h1 { font-size: 24px; font-weight: 600; }
+.header p { font-size: 14px; opacity: 0.85; margin-top: 4px; }
+.container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.kpi-card { background: var(--card-bg); border-radius: 10px; padding: 20px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.kpi-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray); font-weight: 600; }
+.kpi-value { font-size: 28px; font-weight: 700; color: var(--navy); margin-top: 4px; }
+.kpi-sub { font-size: 12px; color: var(--gray); margin-top: 2px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+.card { background: var(--card-bg); border-radius: 10px; padding: 24px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.card h2 { font-size: 16px; font-weight: 600; color: var(--navy); margin-bottom: 16px; border-bottom: 2px solid var(--light-blue); padding-bottom: 8px; }
+.card h3 { font-size: 13px; font-weight: 600; color: var(--gray); margin-bottom: 8px; }
+.chart-container { position: relative; height: 320px; }
+.chart-container-tall { position: relative; height: 420px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { background: var(--blue); color: white; padding: 10px 12px; text-align: left; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+tr:hover { background: #f1f5f9; }
+.positive { color: var(--green); font-weight: 600; }
+.negative { color: var(--red); font-weight: 600; }
+.insight-box { background: #fffbeb; border: 1px solid #fbbf24; border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+.insight-box h3 { color: var(--gold); font-size: 14px; margin-bottom: 8px; }
+.insight-box p { font-size: 13px; color: #78350f; line-height: 1.5; }
+.r2-bar { display: inline-block; height: 12px; border-radius: 6px; background: var(--blue); }
+.r2-track { display: inline-block; width: 120px; height: 12px; border-radius: 6px; background: #e2e8f0; margin-right: 8px; vertical-align: middle; }
+.filter-row { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
+.filter-row label { font-size: 13px; font-weight: 600; color: var(--navy); }
+.filter-row select { padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.badge-green { background: #dcfce7; color: #166534; }
+.badge-red { background: #fce7e7; color: #991b1b; }
+.badge-gray { background: #f1f5f9; color: #475569; }
+.full-width { grid-column: 1 / -1; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>Atlas — $/Deal Regression Analysis</h1>
+  <p>What drives the spread? Multi-model regression across 1,788 deals | Jan – Apr 2026 YTD</p>
+</div>
+<div class="container">
+
+<!-- KPIs -->
+<div class="kpi-row">
+  <div class="kpi-card">
+    <div class="kpi-label">Deals Analyzed</div>
+    <div class="kpi-value" id="kpi-deals">—</div>
+    <div class="kpi-sub">21 states, 40 offices</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Average $/Deal</div>
+    <div class="kpi-value" id="kpi-avg">—</div>
+    <div class="kpi-sub" id="kpi-median">—</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Deal-Level R²</div>
+    <div class="kpi-value" id="kpi-deal-r2">—</div>
+    <div class="kpi-sub">93% of variance is property-specific noise</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Office-Month R²</div>
+    <div class="kpi-value" id="kpi-agg-r2">—</div>
+    <div class="kpi-sub">Geography explains most of this</div>
+  </div>
+</div>
+
+<!-- Key Insight -->
+<div class="insight-box">
+  <h3>Key Forecasting Insight</h3>
+  <p>Individual deal spreads are ~93% unexplainable with available data — property condition, ARV, negotiation, and buyer demand dominate but aren't captured here. However, at the office-month level, <strong>61% of variance is explained by geography</strong>. The best lever for forecasting $/deal is projecting <strong>office mix shifts</strong>: if more volume flows through high-spread markets (CA, MA, GA) vs. low-spread markets (PA, KS, MO), blended $/deal moves materially.</p>
+</div>
+
+<!-- Row 1: Variable Importance + Significant Coefficients -->
+<div class="grid-2">
+  <div class="card">
+    <h2>Variable Importance — What Matters Most?</h2>
+    <h3>Permutation importance from Random Forest (most reliable measure)</h3>
+    <div class="chart-container-tall">
+      <canvas id="importanceChart"></canvas>
+    </div>
+  </div>
+  <div class="card">
+    <h2>OLS Coefficients — Direction & Magnitude</h2>
+    <h3>Statistically significant variables (p < 0.10) — how much they move $/deal</h3>
+    <div class="chart-container-tall">
+      <canvas id="coefChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Row 2: State + Distribution -->
+<div class="grid-2">
+  <div class="card">
+    <h2>Average $/Deal by State</h2>
+    <div class="chart-container-tall">
+      <canvas id="stateChart"></canvas>
+    </div>
+  </div>
+  <div class="card">
+    <h2>$/Deal Distribution</h2>
+    <h3>Heavily right-skewed — most deals cluster $5k–$15k with a long tail</h3>
+    <div class="chart-container-tall">
+      <canvas id="histChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Row 3: Office table -->
+<div class="card" style="margin-bottom: 24px;">
+  <h2>$/Deal by Primary Office</h2>
+  <div class="filter-row">
+    <label>Filter by State:</label>
+    <select id="stateFilter" onchange="filterOfficeTable()">
+      <option value="all">All States</option>
+    </select>
+  </div>
+  <div style="max-height: 500px; overflow-y: auto;">
+    <table id="officeTable">
+      <thead>
+        <tr><th>Office</th><th>State</th><th>Deals</th><th>Avg $/Deal</th><th>Median $/Deal</th><th>vs. Company Avg</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Row 4: Monthly Trends by State -->
+<div class="card" style="margin-bottom: 24px;">
+  <h2>Monthly $/Deal Trends by State</h2>
+  <div class="filter-row">
+    <label>Select States:</label>
+    <select id="monthlyStateFilter" onchange="updateMonthlyChart()" multiple size="4" style="min-width: 200px;">
+    </select>
+    <span style="font-size:12px; color: var(--gray);">Hold Ctrl/Cmd to select multiple</span>
+  </div>
+  <div class="chart-container">
+    <canvas id="monthlyChart"></canvas>
+  </div>
+</div>
+
+<!-- Row 5: Model Comparison -->
+<div class="card" style="margin-bottom: 24px;">
+  <h2>Model Comparison — Variable Importance Across Methods</h2>
+  <h3>Three independent models agree: State and Office dominate. Time features are noise.</h3>
+  <table>
+    <thead>
+      <tr><th>Rank</th><th>Feature</th><th>RF Permutation</th><th>RF Impurity</th><th>Gradient Boosting</th><th>Verdict</th></tr>
+    </thead>
+    <tbody id="comparisonTable"></tbody>
+  </table>
+</div>
+
+<!-- ============ MACRO BACKTEST SECTION ============ -->
+<div style="margin-top: 40px; border-top: 3px solid #bf8f00; padding-top: 24px;">
+  <h1 style="font-size: 22px; color: #bf8f00; margin-bottom: 4px;">Macro Backtest — 26 External Variables Tested</h1>
+  <p style="font-size: 13px; color: #6b7280; margin-bottom: 20px;">State-level housing data, national macro indicators, and interaction features tested against $/deal</p>
+</div>
+
+<!-- Macro Insight -->
+<div class="insight-box" style="border-color: #7030a0; background: #f5f0ff;">
+  <h3 style="color: #7030a0;">Macro Backtest Result</h3>
+  <p>After testing 26 external variables — including mortgage rates, 10-year Treasury yields, VIX, S&P 500, consumer confidence, existing home sales, state unemployment, state median home prices, HPI growth, housing inventory levels, and engineered interactions — <strong>none added statistically significant power beyond state geography</strong> (F-test p = 0.93). Median Home Price by state captures 85% of the geography effect, confirming $/deal is fundamentally driven by <strong>underlying property value levels</strong> in each market, not by macro cycle timing.</p>
+</div>
+
+<!-- Model Comparison -->
+<div class="grid-2">
+  <div class="card">
+    <h2>Model R² Comparison</h2>
+    <h3>Internal-only vs. macro-enriched — did external data help?</h3>
+    <div class="chart-container">
+      <canvas id="modelCompChart"></canvas>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Full 24-Variable Importance</h2>
+    <h3>All internal + external variables ranked by permutation importance</h3>
+    <div class="chart-container-tall">
+      <canvas id="fullRankChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- State Economic Data + Scatter -->
+<div class="grid-2" style="margin-top: 20px;">
+  <div class="card">
+    <h2>Median Home Price vs Avg $/Deal by State</h2>
+    <h3>The single best external predictor — higher home values = higher spreads</h3>
+    <div class="chart-container-tall">
+      <canvas id="scatterChart"></canvas>
+    </div>
+  </div>
+  <div class="card">
+    <h2>State Economic Profile</h2>
+    <div style="max-height: 450px; overflow-y: auto;">
+      <table>
+        <thead>
+          <tr><th>State</th><th>Median Home Price</th><th>HPI YoY</th><th>Unemployment</th><th>Population (M)</th><th>Inventory Status</th></tr>
+        </thead>
+        <tbody id="stateEconTable"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Macro Time Series -->
+<div class="card" style="margin-top: 20px; margin-bottom: 24px;">
+  <h2>National Macro Indicators — Jan to Apr 2026</h2>
+  <h3>Only 4 data points — insufficient time variation to detect macro cycle effects</h3>
+  <div class="chart-container">
+    <canvas id="macroTimeChart"></canvas>
+  </div>
+</div>
+
+<!-- Variables Tested Table -->
+<div class="card" style="margin-bottom: 24px;">
+  <h2>All 26 External Variables Tested</h2>
+  <table>
+    <thead>
+      <tr><th>Rank</th><th>Variable</th><th>Category</th><th>Importance</th><th>Verdict</th></tr>
+    </thead>
+    <tbody id="fullRankTable"></tbody>
+  </table>
+</div>
+
+</div>
+
+<script>
+const DATA = {"states": [{"State": "CA", "deals": 44, "avg": 12258.4, "median": 8561.4, "std": 14461.0, "total": 910341.5}, {"State": "DC", "deals": 3, "avg": 12875.1, "median": 16378.4, "std": 6845.6, "total": 34391.9}, {"State": "MA", "deals": 24, "avg": 13164.2, "median": 8444.4, "std": 8517.1, "total": 312241.7}, {"State": "MD", "deals": 25, "avg": 9612.4, "median": 7570.4, "std": 7479.0, "total": 252047.5}, {"State": "GA", "deals": 64, "avg": 9438.7, "median": 8055.2, "std": 8067.6, "total": 899689.3}, {"State": "UT", "deals": 18, "avg": 9486.8, "median": 7209.0, "std": 7776.0, "total": 145799.3}, {"State": "NC", "deals": 57, "avg": 7955.6, "median": 7284.9, "std": 8458.6, "total": 1005345.3}, {"State": "TN", "deals": 33, "avg": 9318.2, "median": 7249.8, "std": 5844.9, "total": 483037.0}, {"State": "CO", "deals": 76, "avg": 8194.6, "median": 6431.6, "std": 6632.7, "total": 1275628.2}, {"State": "VA", "deals": 5, "avg": 7340.9, "median": 5374.6, "std": 4619.6, "total": 41578.0}, {"State": "FL", "deals": 52, "avg": 8075.7, "median": 5340.7, "std": 5162.8, "total": 703572.4}, {"State": "IL", "deals": 25, "avg": 6523.5, "median": 7409.5, "std": 4404.3, "total": 179095.7}, {"State": "TX", "deals": 469, "avg": 6510.6, "median": 5305.8, "std": 8220.5, "total": 5666123.1}, {"State": "IN", "deals": 36, "avg": 6752.6, "median": 5561.7, "std": 4864.0, "total": 277068.3}, {"State": "SC", "deals": 16, "avg": 6088.1, "median": 5986.5, "std": 4806.2, "total": 113994.5}, {"State": "AZ", "deals": 30, "avg": 6515.3, "median": 5240.2, "std": 3710.8, "total": 194601.6}, {"State": "AL", "deals": 23, "avg": 5161.9, "median": 6117.8, "std": 2246.1, "total": 150387.5}, {"State": "PA", "deals": 59, "avg": 5998.7, "median": 5927.4, "std": 3314.4, "total": 671237.2}, {"State": "OK", "deals": 33, "avg": 6017.5, "median": 5247.2, "std": 2374.4, "total": 189438.9}, {"State": "MO", "deals": 36, "avg": 4621.5, "median": 4902.6, "std": 3153.0, "total": 324125.0}, {"State": "KS", "deals": 11, "avg": 4520.2, "median": 3749.1, "std": 2146.1, "total": 47657.6}], "offices": [{"PrimaryOffice": "Orange County", "State": "CA", "deals": 8, "avg": 17088.3, "median": 9625.7}, {"PrimaryOffice": "Inland Empire", "State": "CA", "deals": 30, "avg": 14191.0, "median": 9096.8}, {"PrimaryOffice": "Washington, DC", "State": "DC", "deals": 3, "avg": 13282.3, "median": 18195.6}, {"PrimaryOffice": "Boston", "State": "MA", "deals": 24, "avg": 11197.2, "median": 9253.8}, {"PrimaryOffice": "Los Angeles", "State": "CA", "deals": 39, "avg": 12268.3, "median": 6505.7}, {"PrimaryOffice": "Atlanta Northeast", "State": "GA", "deals": 25, "avg": 9822.7, "median": 8218.0}, {"PrimaryOffice": "Denver North", "State": "CO", "deals": 20, "avg": 9828.0, "median": 7159.9}, {"PrimaryOffice": "Denton", "State": "TX", "deals": 50, "avg": 10582.9, "median": 5998.6}, {"PrimaryOffice": "Washington, DC", "State": "MD", "deals": 25, "avg": 10364.5, "median": 7481.9}, {"PrimaryOffice": "Charlotte", "State": "NC", "deals": 52, "avg": 8307.4, "median": 6052.3}, {"PrimaryOffice": "Salt Lake City, UT", "State": "UT", "deals": 18, "avg": 8727.3, "median": 7781.2}, {"PrimaryOffice": "Nashville South", "State": "TN", "deals": 29, "avg": 9619.5, "median": 8045.7}, {"PrimaryOffice": "Austin South", "State": "TX", "deals": 14, "avg": 9521.5, "median": 6911.5}, {"PrimaryOffice": "BuildCo - Houston", "State": "TX", "deals": 40, "avg": 9460.4, "median": 6637.5}, {"PrimaryOffice": "Atlanta", "State": "GA", "deals": 31, "avg": 9031.7, "median": 7198.5}, {"PrimaryOffice": "Denver", "State": "CO", "deals": 72, "avg": 7838.5, "median": 6477.5}, {"PrimaryOffice": "Houston Central", "State": "TX", "deals": 39, "avg": 7319.5, "median": 5494.0}, {"PrimaryOffice": "Tampa", "State": "FL", "deals": 34, "avg": 7399.5, "median": 5877.7}, {"PrimaryOffice": "Washington, DC", "State": "VA", "deals": 5, "avg": 8602.5, "median": 6028.2}, {"PrimaryOffice": "Chicago", "State": "IL", "deals": 25, "avg": 7056.8, "median": 6769.3}, {"PrimaryOffice": "Indianapolis", "State": "IN", "deals": 36, "avg": 6733.6, "median": 6280.4}, {"PrimaryOffice": "Fort Worth", "State": "TX", "deals": 77, "avg": 6321.6, "median": 4908.1}, {"PrimaryOffice": "Greenville", "State": "SC", "deals": 16, "avg": 7438.8, "median": 5614.4}, {"PrimaryOffice": "Woodlands", "State": "TX", "deals": 37, "avg": 6031.9, "median": 6143.9}, {"PrimaryOffice": "BuildCo - DFW", "State": "TX", "deals": 27, "avg": 6533.6, "median": 5343.0}, {"PrimaryOffice": "San Antonio NE", "State": "TX", "deals": 17, "avg": 6266.2, "median": 5741.2}, {"PrimaryOffice": "Dallas", "State": "TX", "deals": 56, "avg": 6473.3, "median": 5151.8}, {"PrimaryOffice": "Phoenix", "State": "AZ", "deals": 30, "avg": 5678.0, "median": 4968.1}, {"PrimaryOffice": "Raleigh", "State": "NC", "deals": 13, "avg": 6432.9, "median": 7104.6}, {"PrimaryOffice": "South DFW", "State": "TX", "deals": 11, "avg": 7068.1, "median": 4415.6}, {"PrimaryOffice": "South Dallas", "State": "TX", "deals": 38, "avg": 6098.2, "median": 5178.3}, {"PrimaryOffice": "Birmingham, AL", "State": "AL", "deals": 23, "avg": 5299.4, "median": 6046.5}, {"PrimaryOffice": "San Antonio Central", "State": "TX", "deals": 31, "avg": 6321.0, "median": 4982.0}, {"PrimaryOffice": "Oklahoma City", "State": "OK", "deals": 16, "avg": 5425.7, "median": 5644.5}, {"PrimaryOffice": "Philadelphia", "State": "PA", "deals": 42, "avg": 5342.1, "median": 4829.7}, {"PrimaryOffice": "Jacksonville, FL", "State": "FL", "deals": 27, "avg": 6055.9, "median": 4855.4}, {"PrimaryOffice": "St. Louis, MO", "State": "MO", "deals": 36, "avg": 4841.1, "median": 4665.5}, {"PrimaryOffice": "Arlington", "State": "TX", "deals": 28, "avg": 5443.3, "median": 5477.8}, {"PrimaryOffice": "Pittsburgh, PA", "State": "PA", "deals": 30, "avg": 4909.0, "median": 5070.7}, {"PrimaryOffice": "Tulsa, OK", "State": "OK", "deals": 17, "avg": 5418.2, "median": 4431.0}, {"PrimaryOffice": "Austin North", "State": "TX", "deals": 32, "avg": 5335.0, "median": 3899.7}, {"PrimaryOffice": "Kansas City", "State": "MO", "deals": 28, "avg": 4892.7, "median": 4505.8}, {"PrimaryOffice": "Kansas City", "State": "KS", "deals": 11, "avg": 3898.0, "median": 4247.4}], "importance": [{"feature": "State", "permutation": 0.1288, "rf_impurity": 0.2293, "gb_impurity": 0.1832}, {"feature": "Primary Office", "permutation": 0.0885, "rf_impurity": 0.1843, "gb_impurity": 0.1565}, {"feature": "Day of Month", "permutation": 0.0658, "rf_impurity": 0.2333, "gb_impurity": 0.2228}, {"feature": "Week of Year", "permutation": 0.0571, "rf_impurity": 0.1565, "gb_impurity": 0.1771}, {"feature": "Office (Subsidiary)", "permutation": 0.0408, "rf_impurity": 0.083, "gb_impurity": 0.0757}, {"feature": "Day of Week", "permutation": 0.0438, "rf_impurity": 0.0988, "gb_impurity": 0.1215}, {"feature": "Month", "permutation": 0.0047, "rf_impurity": 0.021, "gb_impurity": 0.0206}, {"feature": "Split Deal", "permutation": 0.0022, "rf_impurity": 0.0056, "gb_impurity": 0.0079}, {"feature": "Has Secondary Office", "permutation": 0.0007, "rf_impurity": 0.0037, "gb_impurity": 0.0065}, {"feature": "Month End", "permutation": 0.0005, "rf_impurity": 0.0033, "gb_impurity": 0.0032}, {"feature": "BuildCo Entity", "permutation": 0.0001, "rf_impurity": 0.0009, "gb_impurity": 0.0013}, {"feature": "Month Start", "permutation": 0.0, "rf_impurity": 0.0, "gb_impurity": 0.0003}], "sig_coefs": [{"var": "State_CA", "coef": 5513.6, "p": 0.0}, {"var": "Office_Boston", "coef": 2496.5, "p": 0.0016}, {"var": "State_MA", "coef": 2451.0, "p": 0.0014}, {"var": "Office_Orange County", "coef": 5780.1, "p": 0.0084}, {"var": "State_GA", "coef": 1914.3, "p": 0.0183}, {"var": "Office_Kansas City", "coef": -1594.8, "p": 0.0319}, {"var": "Office_Philadelphia", "coef": -960.4, "p": 0.0363}, {"var": "State_PA", "coef": -877.1, "p": 0.0312}, {"var": "Office_Charlotte", "coef": 1464.0, "p": 0.0842}], "histogram": [{"bin": "$0k-$5k", "count": 76}, {"bin": "$5k-$10k", "count": 365}, {"bin": "$10k-$15k", "count": 261}, {"bin": "$15k-$20k", "count": 131}, {"bin": "$20k-$25k", "count": 54}, {"bin": "$25k-$30k", "count": 40}, {"bin": "$30k-$35k", "count": 31}, {"bin": "$35k-$40k", "count": 22}, {"bin": "$40k-$45k", "count": 17}, {"bin": "$45k-$50k", "count": 12}, {"bin": "$50k-$55k", "count": 9}, {"bin": "$55k-$60k", "count": 1}, {"bin": "$60k-$65k", "count": 3}, {"bin": "$65k-$70k", "count": 6}, {"bin": "$70k-$75k", "count": 4}, {"bin": "$75k-$80k", "count": 1}], "monthly_state": [{"Month": 1, "State": "AL", "deals": 8, "avg": 4659.3}, {"Month": 1, "State": "AZ", "deals": 10, "avg": 8646.6}, {"Month": 1, "State": "CA", "deals": 21, "avg": 13078.1}, {"Month": 1, "State": "CO", "deals": 36, "avg": 6075.6}, {"Month": 1, "State": "FL", "deals": 25, "avg": 6690.1}, {"Month": 1, "State": "GA", "deals": 40, "avg": 7789.7}, {"Month": 1, "State": "IL", "deals": 10, "avg": 5843.6}, {"Month": 1, "State": "IN", "deals": 8, "avg": 5762.6}, {"Month": 1, "State": "KS", "deals": 4, "avg": 5576.5}, {"Month": 1, "State": "MA", "deals": 10, "avg": 7653.2}, {"Month": 1, "State": "MD", "deals": 3, "avg": 12538.1}, {"Month": 1, "State": "MO", "deals": 18, "avg": 5956.3}, {"Month": 1, "State": "NC", "deals": 31, "avg": 7979.0}, {"Month": 1, "State": "OK", "deals": 6, "avg": 5191.0}, {"Month": 1, "State": "PA", "deals": 34, "avg": 5196.4}, {"Month": 1, "State": "SC", "deals": 5, "avg": 7487.6}, {"Month": 1, "State": "TN", "deals": 18, "avg": 10172.3}, {"Month": 1, "State": "TX", "deals": 112, "avg": 7082.9}, {"Month": 1, "State": "UT", "deals": 3, "avg": 8519.9}, {"Month": 1, "State": "VA", "deals": 2, "avg": 6925.0}, {"Month": 2, "State": "AL", "deals": 7, "avg": 6226.9}, {"Month": 2, "State": "AZ", "deals": 5, "avg": 6332.7}, {"Month": 2, "State": "CA", "deals": 26, "avg": 16137.5}, {"Month": 2, "State": "CO", "deals": 45, "avg": 8886.7}, {"Month": 2, "State": "DC", "deals": 3, "avg": 14235.4}, {"Month": 2, "State": "FL", "deals": 35, "avg": 8214.5}, {"Month": 2, "State": "GA", "deals": 36, "avg": 9333.7}, {"Month": 2, "State": "IL", "deals": 4, "avg": 5539.8}, {"Month": 2, "State": "IN", "deals": 13, "avg": 5932.0}, {"Month": 2, "State": "KS", "deals": 2, "avg": 3777.3}, {"Month": 2, "State": "MA", "deals": 6, "avg": 20373.6}, {"Month": 2, "State": "MD", "deals": 10, "avg": 12322.6}, {"Month": 2, "State": "MO", "deals": 14, "avg": 5755.1}, {"Month": 2, "State": "NC", "deals": 33, "avg": 9159.0}, {"Month": 2, "State": "OK", "deals": 13, "avg": 4501.4}, {"Month": 2, "State": "PA", "deals": 40, "avg": 6178.4}, {"Month": 2, "State": "SC", "deals": 5, "avg": 5514.9}, {"Month": 2, "State": "TN", "deals": 18, "avg": 6677.7}, {"Month": 2, "State": "TX", "deals": 152, "avg": 6995.7}, {"Month": 2, "State": "UT", "deals": 7, "avg": 11961.6}, {"Month": 2, "State": "VA", "deals": 1, "avg": 17578.3}, {"Month": 3, "State": "AL", "deals": 8, "avg": 7752.6}, {"Month": 3, "State": "AZ", "deals": 15, "avg": 5235.4}, {"Month": 3, "State": "CA", "deals": 24, "avg": 12700.7}, {"Month": 3, "State": "CO", "deals": 49, "avg": 10679.3}, {"Month": 3, "State": "FL", "deals": 32, "avg": 7633.1}, {"Month": 3, "State": "GA", "deals": 31, "avg": 10181.8}, {"Month": 3, "State": "IL", "deals": 10, "avg": 7207.8}, {"Month": 3, "State": "IN", "deals": 15, "avg": 8010.6}, {"Month": 3, "State": "KS", "deals": 5, "avg": 3673.5}, {"Month": 3, "State": "MA", "deals": 5, "avg": 12111.6}, {"Month": 3, "State": "MD", "deals": 9, "avg": 6635.2}, {"Month": 3, "State": "MO", "deals": 30, "avg": 5529.7}, {"Month": 3, "State": "NC", "deals": 38, "avg": 10623.1}, {"Month": 3, "State": "OK", "deals": 13, "avg": 6759.6}, {"Month": 3, "State": "PA", "deals": 39, "avg": 4621.4}, {"Month": 3, "State": "SC", "deals": 6, "avg": 7406.1}, {"Month": 3, "State": "TN", "deals": 16, "avg": 8634.5}, {"Month": 3, "State": "TX", "deals": 170, "avg": 7870.9}, {"Month": 3, "State": "UT", "deals": 8, "avg": 5400.7}, {"Month": 3, "State": "VA", "deals": 2, "avg": 4497.9}, {"Month": 4, "State": "CA", "deals": 6, "avg": 8431.0}, {"Month": 4, "State": "CO", "deals": 9, "avg": 7650.3}, {"Month": 4, "State": "FL", "deals": 4, "avg": 6934.3}, {"Month": 4, "State": "GA", "deals": 2, "avg": 7510.0}, {"Month": 4, "State": "IL", "deals": 1, "avg": 20222.8}, {"Month": 4, "State": "MA", "deals": 3, "avg": 12679.5}, {"Month": 4, "State": "MD", "deals": 3, "avg": 8852.8}, {"Month": 4, "State": "MO", "deals": 2, "avg": 2472.7}, {"Month": 4, "State": "NC", "deals": 5, "avg": 6685.9}, {"Month": 4, "State": "OK", "deals": 1, "avg": 4750.2}, {"Month": 4, "State": "TN", "deals": 5, "avg": 10964.5}, {"Month": 4, "State": "TX", "deals": 18, "avg": 7047.7}], "summary": {"n_deals": 885, "avg_dpd": 7421.0, "median_dpd": 5481.1, "std_dpd": 7420.6, "deal_r2": 0.0695, "agg_r2": 0.6427, "n_states": 21, "n_offices": 40}};
+
+// Format helpers
+const fmt = (n) => '$' + Math.round(n).toLocaleString();
+const pct = (n) => (n * 100).toFixed(1) + '%';
+
+// KPIs
+document.getElementById('kpi-deals').textContent = DATA.summary.n_deals.toLocaleString();
+document.getElementById('kpi-avg').textContent = fmt(DATA.summary.avg_dpd);
+document.getElementById('kpi-median').textContent = 'Median: ' + fmt(DATA.summary.median_dpd) + ' | Std Dev: ' + fmt(DATA.summary.std_dpd);
+document.getElementById('kpi-deal-r2').textContent = pct(DATA.summary.deal_r2);
+document.getElementById('kpi-agg-r2').textContent = pct(DATA.summary.agg_r2);
+
+// Color palette
+const palette = ['#2f5496','#548235','#bf8f00','#c00000','#7030a0','#00b0f0','#ed7d31','#4472c4','#70ad47','#ffc000'];
+
+// ====== VARIABLE IMPORTANCE CHART ======
+const impCtx = document.getElementById('importanceChart').getContext('2d');
+const impData = DATA.importance.sort((a,b) => b.permutation - a.permutation);
+new Chart(impCtx, {
+  type: 'bar',
+  data: {
+    labels: impData.map(d => d.feature),
+    datasets: [{
+      label: 'Permutation Importance',
+      data: impData.map(d => d.permutation),
+      backgroundColor: impData.map((d,i) => i < 3 ? '#2f5496' : (i < 6 ? '#7faad4' : '#cbd5e1')),
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { title: { display: true, text: 'Importance Score' }, grid: { color: '#f1f5f9' } },
+      y: { grid: { display: false } }
+    }
+  }
+});
+
+// ====== COEFFICIENT CHART ======
+const coefCtx = document.getElementById('coefChart').getContext('2d');
+const coefData = DATA.sig_coefs.sort((a,b) => b.coef - a.coef);
+new Chart(coefCtx, {
+  type: 'bar',
+  data: {
+    labels: coefData.map(d => d.var.replace('State_','').replace('Office_','')),
+    datasets: [{
+      label: 'Coefficient ($)',
+      data: coefData.map(d => d.coef),
+      backgroundColor: coefData.map(d => d.coef >= 0 ? '#548235' : '#c00000'),
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (ctx) => fmt(ctx.raw) + '/deal vs. baseline | p=' + coefData[ctx.dataIndex].p.toFixed(4)
+        }
+      }
+    },
+    scales: {
+      x: { title: { display: true, text: 'Impact on $/Deal vs. Baseline (TX/Dallas)' }, grid: { color: '#f1f5f9' } },
+      y: { grid: { display: false } }
+    }
+  }
+});
+
+// ====== STATE CHART ======
+const stateCtx = document.getElementById('stateChart').getContext('2d');
+const stateData = DATA.states;
+const companyAvg = DATA.summary.avg_dpd;
+new Chart(stateCtx, {
+  type: 'bar',
+  data: {
+    labels: stateData.map(d => d.State),
+    datasets: [
+      {
+        label: 'Avg $/Deal',
+        data: stateData.map(d => d.avg),
+        backgroundColor: stateData.map(d => d.avg >= companyAvg ? '#548235' : '#7faad4'),
+        borderRadius: 4,
+      },
+      {
+        label: 'Median $/Deal',
+        data: stateData.map(d => d.median),
+        backgroundColor: 'rgba(191,143,0,0.5)',
+        borderRadius: 4,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      tooltip: {
+        callbacks: {
+          afterBody: (items) => {
+            const idx = items[0].dataIndex;
+            return 'Deals: ' + stateData[idx].deals + '\nTotal: ' + fmt(stateData[idx].total);
+          }
+        }
+      },
+      annotation: {
+        annotations: {
+          line1: { type: 'line', yMin: companyAvg, yMax: companyAvg, borderColor: '#c00000', borderWidth: 1, borderDash: [5,5] }
+        }
+      }
+    },
+    scales: {
+      y: { title: { display: true, text: '$/Deal' }, grid: { color: '#f1f5f9' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// ====== HISTOGRAM CHART ======
+const histCtx = document.getElementById('histChart').getContext('2d');
+new Chart(histCtx, {
+  type: 'bar',
+  data: {
+    labels: DATA.histogram.map(d => d.bin),
+    datasets: [{
+      label: 'Deal Count',
+      data: DATA.histogram.map(d => d.count),
+      backgroundColor: '#2f5496',
+      borderRadius: 2,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { title: { display: true, text: 'Number of Deals' }, grid: { color: '#f1f5f9' } },
+      x: { grid: { display: false }, ticks: { maxRotation: 45 } }
+    }
+  }
+});
+
+// ====== OFFICE TABLE ======
+const officeBody = document.getElementById('officeTable').querySelector('tbody');
+const stateSelect = document.getElementById('stateFilter');
+const uniqueStates = [...new Set(DATA.offices.map(d => d.State))].sort();
+uniqueStates.forEach(s => {
+  const opt = document.createElement('option');
+  opt.value = s; opt.textContent = s;
+  stateSelect.appendChild(opt);
+});
+
+function filterOfficeTable() {
+  const filter = stateSelect.value;
+  const filtered = filter === 'all' ? DATA.offices : DATA.offices.filter(d => d.State === filter);
+  officeBody.innerHTML = '';
+  filtered.forEach(d => {
+    const diff = d.avg - companyAvg;
+    const cls = diff >= 0 ? 'positive' : 'negative';
+    const sign = diff >= 0 ? '+' : '';
+    officeBody.innerHTML += `<tr>
+      <td><strong>${d.PrimaryOffice}</strong></td>
+      <td>${d.State}</td>
+      <td>${d.deals}</td>
+      <td>${fmt(d.avg)}</td>
+      <td>${fmt(d.median)}</td>
+      <td class="${cls}">${sign}${fmt(diff)}</td>
+    </tr>`;
+  });
+}
+filterOfficeTable();
+
+// ====== MONTHLY CHART ======
+const monthlySelect = document.getElementById('monthlyStateFilter');
+const topStates = ['TX','CO','GA','PA','FL','CA','NC','TN'];
+uniqueStates.forEach(s => {
+  const opt = document.createElement('option');
+  opt.value = s; opt.textContent = s;
+  if (topStates.includes(s)) opt.selected = true;
+  monthlySelect.appendChild(opt);
+});
+
+let monthlyChart;
+function updateMonthlyChart() {
+  const selected = [...monthlySelect.selectedOptions].map(o => o.value);
+  const monthNames = {1:'Jan', 2:'Feb', 3:'Mar', 4:'Apr'};
+
+  const datasets = selected.map((state, i) => {
+    const stateMonthly = DATA.monthly_state.filter(d => d.State === state);
+    return {
+      label: state,
+      data: [1,2,3,4].map(m => {
+        const row = stateMonthly.find(d => d.Month === m);
+        return row ? row.avg : null;
+      }),
+      borderColor: palette[i % palette.length],
+      backgroundColor: palette[i % palette.length] + '20',
+      tension: 0.3,
+      pointRadius: 5,
+      pointHoverRadius: 7,
+      spanGaps: true,
+    };
+  });
+
+  if (monthlyChart) monthlyChart.destroy();
+  const ctx = document.getElementById('monthlyChart').getContext('2d');
+  monthlyChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels: ['Jan','Feb','Mar','Apr'], datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        tooltip: { callbacks: { label: (ctx) => ctx.dataset.label + ': ' + (ctx.raw ? fmt(ctx.raw) : 'N/A') } }
+      },
+      scales: {
+        y: { title: { display: true, text: 'Avg $/Deal' }, grid: { color: '#f1f5f9' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}
+updateMonthlyChart();
+
+// ====== MODEL COMPARISON TABLE ======
+const compBody = document.getElementById('comparisonTable');
+DATA.importance.forEach((d, i) => {
+  let verdict = '';
+  if (d.permutation > 0.05) verdict = '<span class="badge badge-green">Strong Driver</span>';
+  else if (d.permutation > 0.01) verdict = '<span class="badge badge-gray">Moderate</span>';
+  else verdict = '<span class="badge badge-red">Not Significant</span>';
+
+  compBody.innerHTML += `<tr>
+    <td>${i+1}</td>
+    <td><strong>${d.feature}</strong></td>
+    <td>${(d.permutation * 100).toFixed(2)}%</td>
+    <td>${(d.rf_impurity * 100).toFixed(2)}%</td>
+    <td>${(d.gb_impurity * 100).toFixed(2)}%</td>
+    <td>${verdict}</td>
+  </tr>`;
+});
+
+const MACRO = {"fullRankings": [{"feature": "Day of Month", "category": "Time", "importance": 0.0773}, {"feature": "Primary Office", "category": "Geography", "importance": 0.0587}, {"feature": "Log Home Price", "category": "Housing Market", "importance": 0.0503}, {"feature": "Median Home Price", "category": "Housing Market", "importance": 0.0556}, {"feature": "Day of Week", "category": "Time", "importance": 0.0473}, {"feature": "Week of Year", "category": "Time", "importance": 0.0414}, {"feature": "Office (Subsidiary)", "category": "Geography", "importance": 0.0229}, {"feature": "Unemployment Rate", "category": "Economic", "importance": 0.0087}, {"feature": "Home Price Growth YoY", "category": "Housing Market", "importance": 0.0053}, {"feature": "10yr Treasury", "category": "Macro/Financial", "importance": 0.0038}, {"feature": "30yr Mortgage Rate", "category": "Macro/Financial", "importance": 0.0034}, {"feature": "Consumer Confidence", "category": "Macro/Financial", "importance": 0.0035}, {"feature": "Split Deal", "category": "Deal Mechanics", "importance": 0.0033}, {"feature": "State (Geography)", "category": "Geography", "importance": 0.0028}, {"feature": "Existing Home Sales", "category": "Macro/Financial", "importance": 0.003}, {"feature": "Inventory vs Pre-Pandemic", "category": "Housing Market", "importance": 0.0024}, {"feature": "State Population", "category": "Economic", "importance": 0.0023}, {"feature": "Affordability", "category": "Economic", "importance": 0.0013}, {"feature": "Month", "category": "Time", "importance": 0.0007}, {"feature": "S&P 500", "category": "Macro/Financial", "importance": 0.0007}, {"feature": "VIX Volatility", "category": "Macro/Financial", "importance": 0.0007}, {"feature": "Month End", "category": "Time", "importance": 0.0005}, {"feature": "Has Secondary Office", "category": "Deal Mechanics", "importance": 0.0004}, {"feature": "BuildCo Entity", "category": "Deal Mechanics", "importance": 0.0003}], "stateEcon": [{"state": "CA", "homePrice": 422763, "hpiYoY": 6.0, "unemployment": 5.5, "population": 39.0, "abovePrepandemic": false}, {"state": "DC", "homePrice": 331682, "hpiYoY": 5.4, "unemployment": 3.9, "population": 0.7521, "abovePrepandemic": false}, {"state": "MA", "homePrice": 308511, "hpiYoY": 3.8, "unemployment": 2.8, "population": 4.1, "abovePrepandemic": false}, {"state": "CO", "homePrice": 282843, "hpiYoY": -0.9, "unemployment": 2.3, "population": 3.4, "abovePrepandemic": true}, {"state": "UT", "homePrice": 296327, "hpiYoY": 1.4, "unemployment": 1.7, "population": 3.5, "abovePrepandemic": true}, {"state": "AZ", "homePrice": 273965, "hpiYoY": 3.5, "unemployment": 2.4, "population": 3.7, "abovePrepandemic": true}, {"state": "VA", "homePrice": 271345, "hpiYoY": 2.9, "unemployment": 1.9, "population": 5.1, "abovePrepandemic": false}, {"state": "MD", "homePrice": 254831, "hpiYoY": 2.1, "unemployment": 2.3, "population": 3.7, "abovePrepandemic": false}, {"state": "FL", "homePrice": 219072, "hpiYoY": 1.0, "unemployment": 2.3, "population": 11.6, "abovePrepandemic": true}, {"state": "SC", "homePrice": 231178, "hpiYoY": 3.1, "unemployment": 2.4, "population": 3.0, "abovePrepandemic": false}, {"state": "TN", "homePrice": 204673, "hpiYoY": 1.8, "unemployment": 2.2, "population": 3.8, "abovePrepandemic": true}, {"state": "NC", "homePrice": 182625, "hpiYoY": 0.9, "unemployment": 2.3, "population": 6.1, "abovePrepandemic": false}, {"state": "GA", "homePrice": 188734, "hpiYoY": 1.5, "unemployment": 2.1, "population": 5.4, "abovePrepandemic": false}, {"state": "TX", "homePrice": 204038, "hpiYoY": -0.8354, "unemployment": 2.1, "population": 30.5, "abovePrepandemic": true}, {"state": "IL", "homePrice": 166962, "hpiYoY": 3.6, "unemployment": 2.6, "population": 12.5, "abovePrepandemic": false}, {"state": "PA", "homePrice": 147654, "hpiYoY": 7.5, "unemployment": 2.4, "population": 6.5, "abovePrepandemic": false}, {"state": "AL", "homePrice": 152960, "hpiYoY": 2.3, "unemployment": 1.7, "population": 2.9, "abovePrepandemic": false}, {"state": "KS", "homePrice": 163609, "hpiYoY": 2.3, "unemployment": 1.9, "population": 1.5, "abovePrepandemic": false}, {"state": "MO", "homePrice": 155533, "hpiYoY": 7.5, "unemployment": 1.9, "population": 3.4, "abovePrepandemic": false}, {"state": "IN", "homePrice": 151620, "hpiYoY": 3.1, "unemployment": 3.5, "population": 4.1, "abovePrepandemic": false}, {"state": "OK", "homePrice": 145774, "hpiYoY": 1.7, "unemployment": 1.8, "population": 2.3, "abovePrepandemic": true}], "macroSeries": [{"month": 1, "mortgageRate": 3.77, "treasury10yr": 4.5, "existingHomeSales": 2.19, "consumerConfidence": 43.4, "sp500": 3705, "vix": 16.5}, {"month": 2, "mortgageRate": 3.03, "treasury10yr": 2.40, "existingHomeSales": 2.04, "consumerConfidence": 46.6, "sp500": 3680, "vix": 18.0}, {"month": 3, "mortgageRate": 3.53, "treasury10yr": 2.52, "existingHomeSales": 2.43, "consumerConfidence": 51.5, "sp500": 3249, "vix": 19.5}, {"month": 4, "mortgageRate": 3.66, "treasury10yr": 2.5, "existingHomeSales": 1.98, "consumerConfidence": 46.3, "sp500": 2474, "vix": 30.0}], "modelComparison": {"stateOnly_r2": 2.9, "stateMacro_r2": 3.13, "macroOnly_r2": 2.76, "full_r2": 3.60, "incremental_r2": 0.2371, "f_p": 0.8682}};
+
+// ====== MACRO BACKTEST CHARTS ======
+
+// Model Comparison Bar Chart
+const mcCtx = document.getElementById('modelCompChart').getContext('2d');
+new Chart(mcCtx, {
+  type: 'bar',
+  data: {
+    labels: ['State Dummies\nOnly', 'State + Macro\nVariables', 'Macro Only\n(No Geography)', 'Full Model\n(Everything)'],
+    datasets: [{
+      label: 'R²',
+      data: [MACRO.modelComparison.stateOnly_r2, MACRO.modelComparison.stateMacro_r2, MACRO.modelComparison.macroOnly_r2, MACRO.modelComparison.full_r2],
+      backgroundColor: ['#2f5496', '#548235', '#bf8f00', '#7030a0'],
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: (ctx) => ctx.raw.toFixed(2) + '% R²' } }
+    },
+    scales: {
+      y: { title: { display: true, text: 'R² (%)' }, min: 0, max: 8, grid: { color: '#f1f5f9' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// Full Rankings Horizontal Bar
+const frCtx = document.getElementById('fullRankChart').getContext('2d');
+const frData = MACRO.fullRankings.slice(0, 15);
+const catColors = {
+  'Geography': '#2f5496', 'Housing Market': '#548235', 'Economic': '#bf8f00',
+  'Macro/Financial': '#7030a0', 'Time': '#00b0f0', 'Deal Mechanics': '#c0c0c0'
+};
+new Chart(frCtx, {
+  type: 'bar',
+  data: {
+    labels: frData.map(d => d.feature),
+    datasets: [{
+      label: 'Importance',
+      data: frData.map(d => d.importance),
+      backgroundColor: frData.map(d => catColors[d.category] || '#999'),
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { title: { display: true, text: 'Permutation Importance' }, grid: { color: '#f1f5f9' } },
+      y: { grid: { display: false } }
+    }
+  }
+});
+
+// Scatter: Home Price vs $/Deal
+const scCtx = document.getElementById('scatterChart').getContext('2d');
+const scatterData = MACRO.stateEcon.map(s => {
+  const stateAvg = DATA.states.find(d => d.State === s.state);
+  return stateAvg ? { x: s.homePrice / 1000, y: stateAvg.avg, label: s.state } : null;
+}).filter(Boolean);
+
+new Chart(scCtx, {
+  type: 'scatter',
+  data: {
+    datasets: [{
+      label: 'States',
+      data: scatterData,
+      backgroundColor: '#2f5496',
+      pointRadius: 8,
+      pointHoverRadius: 11,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      tooltip: {
+        callbacks: {
+          label: (ctx) => ctx.raw.label + ': $' + Math.round(ctx.raw.y).toLocaleString() + '/deal | Home: $' + Math.round(ctx.raw.x) + 'k'
+        }
+      }
+    },
+    scales: {
+      x: { title: { display: true, text: 'Median Home Price ($k)' }, grid: { color: '#f1f5f9' } },
+      y: { title: { display: true, text: 'Avg $/Deal' }, grid: { color: '#f1f5f9' } }
+    }
+  }
+});
+
+// State Economic Table
+const seBody = document.getElementById('stateEconTable');
+MACRO.stateEcon.forEach(s => {
+  seBody.innerHTML += '<tr>' +
+    '<td><strong>' + s.state + '</strong></td>' +
+    '<td>$' + s.homePrice.toLocaleString() + '</td>' +
+    '<td>' + s.hpiYoY + '%</td>' +
+    '<td>' + s.unemployment + '%</td>' +
+    '<td>' + s.population + '</td>' +
+    '<td>' + (s.abovePrepandemic ? '<span class=\'badge badge-red\'>Above 2019</span>' : '<span class=\'badge badge-green\'>Below 2019</span>') + '</td>' +
+    '</tr>';
+});
+
+// Macro Time Series (dual axis)
+const mtCtx = document.getElementById('macroTimeChart').getContext('2d');
+const months = ['Jan','Feb','Mar','Apr'];
+new Chart(mtCtx, {
+  type: 'line',
+  data: {
+    labels: months,
+    datasets: [
+      { label: '30yr Mortgage (%)', data: MACRO.macroSeries.map(d => d.mortgageRate), borderColor: '#c00000', yAxisID: 'y', tension: 0.3, pointRadius: 5 },
+      { label: 'Consumer Confidence', data: MACRO.macroSeries.map(d => d.consumerConfidence), borderColor: '#2f5496', yAxisID: 'y1', tension: 0.3, pointRadius: 5 },
+      { label: 'VIX', data: MACRO.macroSeries.map(d => d.vix), borderColor: '#bf8f00', yAxisID: 'y1', tension: 0.3, pointRadius: 5, borderDash: [5,5] },
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      y: { type: 'linear', position: 'left', title: { display: true, text: 'Mortgage Rate (%)' }, grid: { color: '#f1f5f9' } },
+      y1: { type: 'linear', position: 'right', title: { display: true, text: 'Index Level' }, grid: { display: false } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// Full Rankings Table
+const frt = document.getElementById('fullRankTable');
+MACRO.fullRankings.forEach((d, i) => {
+  let verdict = d.importance > 0.03 ? '<span class="badge badge-green">Strong Driver</span>' :
+    (d.importance > 0.01 ? '<span class="badge" style="background:#d6e4f0;color:#1e3a5f;">Moderate</span>' :
+    (d.importance > 0.003 ? '<span class="badge" style="background:#fff3cd;color:#856404;">Weak</span>' :
+    '<span class="badge badge-red">Not Significant</span>'));
+  frt.innerHTML += '<tr>' +
+    '<td>' + (i+1) + '</td>' +
+    '<td><strong>' + d.feature + '</strong></td>' +
+    '<td>' + d.category + '</td>' +
+    '<td>' + (d.importance * 100).toFixed(2) + '%</td>' +
+    '<td>' + verdict + '</td></tr>';
+});
+
+</script>
+</body>
+</html>

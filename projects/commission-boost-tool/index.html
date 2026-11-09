@@ -1,0 +1,1463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../../assets/gas-mock.js"></script>
+<script src="../../assets/fake.js"></script>
+<script src="mock.js"></script>
+
+<meta charset="UTF-8">
+<base target="_top">
+<title>Commission Boost Tool — Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Atlas palette — same as the Deal Ops DA commission tool */
+    --bg-card: #24241F; --bg-elev: #2E2E2B;
+    --border: rgba(220,220,215,0.10); --border-2: rgba(220,220,215,0.18);
+    --text: #EFF0EB; --text-soft: #C9C9C2; --text-dim: #8E8E8B;
+    --brand: #1F5662; --brand-2: #2C7484;
+    --accent: #BD9F40; --accent-2: #D6BC66;
+    --good: #82C4B0; --copper: #995533;
+    --base-1: #1E4D2B; --base-2: #2D6A3A;      /* commission (battery bottom) */
+    --bonus-1: #2E7D32; --bonus-2: #4C9A50;    /* bonus */
+    --ink: #2E2E2B; --ink-2: #5F5E5A;
+    --shadow: 0 30px 60px -20px rgba(0,0,0,0.35), 0 18px 36px -18px rgba(0,0,0,0.22);
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; padding: 0; }
+  html { background:#EFF0EB; }
+  body {
+    font-family: 'Source Sans 3', 'Source Sans Pro', -apple-system, 'Segoe UI', Arial, sans-serif;
+    color: var(--text); min-height: 100vh; letter-spacing: 0.1px; -webkit-font-smoothing: antialiased;
+    background:#EFF0EB;   /* same off-white as the Deal Ops & Partnership Revenue Dashboard */
+    padding: 14px 32px 40px;   /* tighter top so the header sits higher */
+  }
+  .container { max-width: 1240px; margin: 0 auto; }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+  /* ===== HEADER ===== */
+  .header { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+    margin-bottom:16px; padding-bottom:14px; border-bottom:1px solid rgba(189,159,64,0.6); }
+  .brand { display:flex; align-items:center; gap:18px; }
+  .co-logo { max-height:38px; max-width:220px; width:auto; height:auto; object-fit:contain; display:block; filter:brightness(0); }
+  .logo-fb { font-weight:800; letter-spacing:3px; color:var(--ink); font-size:16px; }
+  .brand-divider { width:1px; height:40px; background:linear-gradient(180deg, transparent, rgba(189,159,64,0.65), transparent); }
+  .brand h1 { margin:0; font-size:23px; font-weight:800; letter-spacing:-0.2px; color:var(--ink); display:flex; align-items:center; gap:8px; }
+  .brand h1 svg { color: var(--accent); }
+  .brand .sub { margin-top:2px; color:#5F5E5A; font-size:13px; font-weight:600; font-style:italic; }
+  .hdr-right { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .pulse { display:inline-flex; align-items:center; gap:8px; background:rgba(31,86,98,0.10); color:#1F5662;
+    padding:6px 12px; border-radius:999px; font-size:12px; font-weight:700; border:1px solid rgba(31,86,98,0.30); }
+  .pulse-dot { width:7px; height:7px; border-radius:50%; background:#1F9E75; animation:pulse 2s infinite; }
+  @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(130,196,176,0.6);} 70%{box-shadow:0 0 0 10px rgba(130,196,176,0);} 100%{box-shadow:0 0 0 0 rgba(130,196,176,0);} }
+  .who { font-size:12.5px; color:#5F5E5A; display:flex; align-items:center; gap:8px; }
+  .who b { color:var(--ink); }
+  /* keep the header to one row on mid-size screens: drop the Live pill, shorten the email */
+  @media (max-width: 1400px) { .pulse { display:none; } }
+  #whoEmail { max-width:190px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }   /* full email on hover of the level badge */
+  @media (max-width: 1200px) and (min-width: 721px) { #whoEmail { display:none; } }
+  @media (max-width: 1100px) and (min-width: 721px) { .tab { padding:8px 12px; font-size:13px; } .brand { gap:12px; } .brand h1 { font-size:20px; } .brand .sub { font-size:12px; } }
+  @media (max-width: 940px) and (min-width: 721px) { .tabs { order:3; margin:0; } }   /* tabs drop to a second row below ~940px */
+  .lvl { font-size:11px; font-weight:800; letter-spacing:.6px; text-transform:uppercase; padding:3px 9px; border-radius:999px; background:var(--ink); color:var(--accent-2); }
+  .linkbtn { background:none; border:0; color:#1F5662; font:inherit; font-size:12.5px; font-weight:700; cursor:pointer; padding:0; text-decoration:underline; text-underline-offset:3px; }
+
+  .card { background:linear-gradient(180deg, var(--bg-card) 0%, var(--bg-elev) 100%); border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); }
+
+  /* ===== TABS ===== */
+  .tabs { display:flex; gap:6px; margin:0 auto 0 12px; }   /* in the header, just right of the title */
+  .tabs[hidden] { display:none; }
+  .tab { font:inherit; font-size:13.5px; font-weight:700; padding:9px 16px; border-radius:10px; cursor:pointer;
+    border:1px solid rgba(46,46,43,0.18); background:rgba(255,255,255,0.45); color:var(--ink); }
+  .tab.active { background:var(--ink); color:var(--accent-2); border-color:var(--ink); }
+
+  /* ===== SELECTORS ===== */
+  .selectors { display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap; padding:18px 22px; margin-bottom:16px; }
+  .sel-group { display:flex; gap:14px; align-items:flex-end; flex-wrap:wrap; }
+  .field { display:flex; flex-direction:column; gap:8px; }
+  .field > label { font-size:11px; font-weight:700; letter-spacing:0.6px; text-transform:uppercase; color:var(--text-dim); line-height:1; }
+  .select-wrap { position:relative; display:block; }
+  .field select, .ro, .pos-badge, .field input[type=number], .field input[type=text] {
+    box-sizing:border-box; height:44px; border-radius:10px; font-family:inherit; font-size:14px; font-weight:600; display:flex; align-items:center; }
+  .field select { appearance:none; -webkit-appearance:none; width:100%; background:rgba(255,255,255,0.04); color:var(--text);
+    border:1px solid var(--border-2); padding:0 38px 0 14px; min-width:170px; cursor:pointer; }
+  .field select:focus, .field input:focus { outline:none; border-color:var(--good); box-shadow:0 0 0 4px rgba(31,86,98,0.30); }
+  .field select option { background:#24241F; color:var(--text); }
+  .select-wrap::after { content:""; position:absolute; right:15px; top:50%; transform:translateY(-50%); width:0; height:0;
+    border-left:5px solid transparent; border-right:5px solid transparent; border-top:6px solid var(--text-dim); pointer-events:none; }
+  .ro { background:rgba(255,255,255,0.04); color:var(--text); border:1px solid var(--border-2); padding:0 16px; min-width:150px; }
+  .pos-badge { padding:0 16px; font-weight:800; letter-spacing:0.4px; color:#fff; background:linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
+    box-shadow:0 8px 22px -10px rgba(31,86,98,0.75); white-space:nowrap; }
+  .seg { display:inline-flex; background:rgba(255,255,255,0.05); border:1px solid var(--border-2); border-radius:10px; padding:3px; height:44px; }
+  .seg button { font:inherit; font-size:13px; font-weight:700; border:0; background:none; color:var(--text-dim); padding:0 14px; border-radius:8px; cursor:pointer; }
+  .seg button.on { background:var(--accent); color:var(--ink); }
+
+  /* what-if inputs */
+  /* office picker when one name is in two offices */
+  .seg.offpick button { white-space:nowrap; }
+  .field input[type=number], .field input[type=text] { background:rgba(255,255,255,0.06); color:#fff; border:1px solid var(--border-2); padding:0 12px; width:150px; }
+  .field input.small { width:110px; }
+  .chk { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-soft); height:44px; cursor:pointer; }
+  .chk input { width:18px; height:18px; accent-color:var(--accent); }
+  .wi-note { margin-top:10px; font-size:12px; color:var(--text-dim); }
+
+  /* ===== STATS ===== */
+  /* Units / Volume become inputs in "Enter my own" mode — same look, boxed in gold */
+  .s-input { display:block; width:100%; box-sizing:border-box; margin-top:6px; font-family:inherit; font-size:34px; font-weight:800; letter-spacing:-0.5px;
+    font-variant-numeric:tabular-nums; color:#fff; background:rgba(255,255,255,0.06); border:2px solid var(--accent); border-radius:10px; padding:2px 12px; outline:none;
+    box-shadow:0 0 0 4px rgba(189,159,64,0.12); }
+  .stat.accent .s-input { color:var(--accent-2); }
+  .s-input:focus { border-color:var(--accent-2); box-shadow:0 0 0 4px rgba(214,188,102,0.32); }
+  .s-edit { display:none; margin-left:6px; font-size:9.5px; font-weight:800; letter-spacing:.6px; padding:2px 7px; border-radius:999px; background:rgba(189,159,64,0.2); color:var(--accent-2); vertical-align:middle; }
+  body.custom .s-edit { display:inline-block; }
+  .s-state b { color:var(--text-soft); }
+  /* Master-only State filter in "Enter my own" — flashes gold until a state is picked */
+  .field.needs > label { color:var(--accent-2); }
+  .field.needs select { border-color:var(--accent); animation:stateFlash 1.1s ease-in-out infinite; }
+  @keyframes stateFlash {
+    0%,100% { box-shadow:0 0 0 0 rgba(214,188,102,0); background:rgba(255,255,255,0.04); }
+    50%     { box-shadow:0 0 0 5px rgba(214,188,102,0.45), 0 0 18px 2px rgba(214,188,102,0.55); background:rgba(189,159,64,0.22); }
+  }
+  /* boost rows: uncapped % + min/max badge + fine print */
+  .sr-pctbox { text-align:right; }
+  /* min/max note takes the rate tag's spot on the name line, so the row never gets taller */
+  .sr-cap { display:inline-flex; align-items:center; gap:7px; white-space:nowrap; height:19px; min-width:0; overflow:hidden; }   /* same height as the rate tag it replaces */
+  .sr-cap .cap-badge { flex:none; }
+  .sr-cap .cap-fine { min-width:0; overflow:hidden; text-overflow:ellipsis; }
+  @media (min-width: 721px) {
+    .srow.live .sr-name { flex-wrap:nowrap; min-width:0; white-space:nowrap; }
+  }
+  /* wide enough: arrows in the middle of the row, big % and $ on the right */
+  @media (min-width: 901px) {
+    .stack .srow { display:grid; grid-template-columns:minmax(0,1fr) auto 90px 128px; column-gap:14px; align-items:center; }
+    .stack .srow > .sr-top { display:contents; }
+    .stack .srow .sr-name { grid-column:1; grid-row:1; }
+    .stack .srow > .sr-desc { grid-column:1; grid-row:2; }
+    .stack .srow > .hints { grid-column:1 / 3; grid-row:3; }
+    .stack .srow.base > .sr-desc, .stack .srow.bonus > .sr-desc { grid-column:1 / 3; }   /* no arrows on these rows — use the space */
+    .stack .srow > .slider-block { grid-column:2; grid-row:1 / span 3; align-self:center; justify-self:center; margin-top:0; }   /* arrows sit in the middle of the row */
+    .stack .srow .sr-pctbox, .stack .srow > .sr-top > .sr-pct { grid-column:3; grid-row:1 / span 3; align-self:center; }
+    .stack .srow .sr-dol { grid-column:4; grid-row:1 / span 3; align-self:center; }
+    .stack .sr-pct { font-size:22px; } .stack .sr-dol { font-size:24px; letter-spacing:-0.5px; }   /* just under the Total Potential Commission (24 / 26px) */
+  }
+  @media (min-width: 901px) and (max-width: 1180px) {
+    .stack .srow { grid-template-columns:minmax(0,1fr) auto 78px 116px; column-gap:10px; }
+    .stack .sr-pct { font-size:20px; } .stack .sr-dol { font-size:22px; }
+    .stp-btn { width:32px; } .stp-val { min-width:46px; font-size:16px; }
+  }
+  .sr-cap[hidden], .tag[hidden] { display:none !important; }
+  .cap-badge { display:inline-block; font-size:9.5px; font-weight:800; letter-spacing:.6px; padding:2px 7px; border-radius:999px; white-space:nowrap; line-height:1.3; }
+  .cap-badge.max { background:rgba(153,85,51,0.28); color:#F0B48A; border:1px solid rgba(240,180,138,0.35); }
+  .cap-badge.min { background:rgba(31,86,98,0.35); color:#9FD3C9; border:1px solid rgba(159,211,201,0.3); }
+  .cap-fine { font-size:10.5px; color:var(--text-dim); white-space:nowrap; font-family:'JetBrains Mono', monospace; line-height:1.3; }
+  .stat { padding:18px 20px; }
+  .stat .s-label { font-size:11.5px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; color:var(--text-dim); }
+  .stat .s-value { font-size:34px; font-weight:800; margin-top:6px; letter-spacing:-0.5px; font-variant-numeric:tabular-nums; }
+  .stat .s-sub { margin-top:4px; font-size:12px; color:var(--text-dim); }
+  .stat.accent .s-value { color:var(--accent-2); }
+
+  /* ===== TOP ROW: stacked Units/Volume + tall pay box ===== */
+  .top-row { display:grid; grid-template-columns:minmax(0,1fr) minmax(230px, 300px); gap:16px; margin-bottom:16px; align-items:stretch; }
+  /* pay box in the middle (next to the battery), Units / Volume on the far right */
+  .top-row > .hero { grid-column:1; grid-row:1; }
+  .top-row > .stat-col { grid-column:2; grid-row:1; }
+  .stat-col { display:flex; flex-direction:column; gap:16px; min-width:0; }
+  .stat-col[hidden] { display:none; }
+  .stat-col .stat { flex:1 1 0; display:flex; flex-direction:column; justify-content:center; }
+  .s-label-row { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .side-seg { display:inline-flex; background:rgba(255,255,255,0.05); border:1px solid var(--border-2); border-radius:8px; padding:2px; text-transform:none; letter-spacing:0; }
+  .side-seg button { font:inherit; font-size:11px; font-weight:800; border:0; background:none; color:var(--text-dim); padding:3px 10px; border-radius:6px; cursor:pointer; }
+  .side-seg button.on { background:var(--accent); color:var(--ink); }
+  .side-seg button:disabled { opacity:.35; cursor:not-allowed; }
+
+  /* ===== HERO EQUATION: one row per component ===== */
+  .hero { position:relative; overflow:hidden; padding:16px 18px; border:1px solid rgba(189,159,64,0.22); border-radius:14px; box-shadow:var(--shadow); display:flex;
+    background: radial-gradient(circle at 110% -10%, rgba(189,159,64,0.16) 0%, transparent 60%), radial-gradient(circle at -10% 110%, rgba(31,86,98,0.26) 0%, transparent 60%), linear-gradient(135deg, #26261F 0%, #2E2E2B 100%); }
+  .h-rows { flex:1; display:flex; flex-direction:column; gap:8px; min-width:0; }
+  .pay-term { flex:1 1 0; display:grid; grid-template-columns:26px minmax(0,1fr) auto minmax(130px,auto); align-items:center; column-gap:14px; padding:6px 16px 6px 10px;
+    border-radius:10px; background:rgba(255,255,255,0.04); border:1px solid var(--border); min-height:44px; }
+  .pay-op { font-size:20px; font-weight:800; color:var(--accent-2); text-align:center; line-height:1; }
+  .pt-label { font-size:14px; font-weight:800; text-transform:uppercase; letter-spacing:1.1px; color:#EDE8DA; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pt-pct { font-family:'JetBrains Mono', ui-monospace, monospace; font-size:22px; font-weight:700; color:var(--accent-2); text-align:right; line-height:1.1; }
+  .pt-dol { font-family:'JetBrains Mono', ui-monospace, monospace; font-size:24px; font-weight:700; letter-spacing:-0.5px; line-height:1.1; color:var(--text); text-align:right; }
+  .pay-term.total { background:linear-gradient(90deg, rgba(189,159,64,0.16), rgba(31,86,98,0.16)); border-color:rgba(189,159,64,0.45); }
+  .pay-term.total .pt-label { color:#fff; }
+  .pay-term.total .pt-pct { color:var(--good); font-size:26px; }
+  .pay-term.total .pt-dol { font-size:30px; background-image:linear-gradient(135deg,#FFFFFF 0%, var(--accent-2) 55%, var(--accent) 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-fill-color:transparent; }
+
+  /* boost title → on-screen guide picture */
+  .sr-link { font:inherit; color:inherit; background:none; border:0; padding:0; margin:0; cursor:pointer; display:inline-flex; align-items:center; gap:6px;
+    text-decoration:underline dotted rgba(214,188,102,0.6); text-underline-offset:4px; text-decoration-thickness:1.5px; }
+  .sr-link:hover { color:var(--accent-2); text-decoration-color:var(--accent-2); }
+  .sr-link:focus-visible { outline:2px solid var(--accent-2); outline-offset:3px; border-radius:4px; }
+  .sr-link .info { width:15px; height:15px; flex:none; color:var(--accent-2); opacity:.85; }
+  #guideModal { position:fixed; inset:0; z-index:90; display:none; align-items:center; justify-content:center; padding:24px; background:rgba(20,20,18,0.78); backdrop-filter:blur(3px); }
+  #guideModal.show { display:flex; animation:gmIn .18s ease; }
+  @keyframes gmIn { from { opacity:0; } to { opacity:1; } }
+  .gm-box { position:relative; width:min(1200px, 100%); max-height:100%; display:flex; flex-direction:column; gap:10px; }
+  .gm-bar { display:flex; align-items:center; justify-content:space-between; gap:12px; color:#fff; }
+  .gm-title { font-size:15px; font-weight:800; letter-spacing:.3px; }
+  .gm-close { font:inherit; font-size:13px; font-weight:800; color:var(--ink); background:linear-gradient(135deg,var(--accent),var(--accent-2)); border:0; border-radius:9px; padding:8px 14px; cursor:pointer; }
+  .gm-img-wrap { position:relative; border-radius:12px; overflow:auto; background:#fff; box-shadow:0 24px 60px -20px rgba(0,0,0,.7); max-height:calc(100vh - 110px); }
+  .gm-img-wrap img { display:block; width:100%; height:auto; }
+  .gm-load { min-height:240px; display:flex; align-items:center; justify-content:center; color:var(--ink); font-weight:700; gap:12px; }
+  .gm-hint { font-size:11.5px; color:rgba(255,255,255,.65); text-align:center; }
+  @media (max-width: 720px) {
+    #guideModal { padding:10px; }
+    .gm-img-wrap.zoom img { width:220%; max-width:none; }   /* tap to zoom on phones, then scroll */
+  }
+  @media (min-width: 721px) { .gm-hint { display:none; } }
+
+  /* hover / tap tooltip for the MAX REACHED / MIN APPLIED badges */
+  .cap-badge[data-tip] { cursor:help; }
+  #capTip { position:fixed; z-index:50; pointer-events:none; max-width:min(340px, calc(100vw - 16px)); padding:7px 11px; border-radius:8px; font-size:12px; font-weight:700; line-height:1.35;
+    color:#fff; background:#1C1C18; border:1px solid var(--border-2); box-shadow:0 8px 24px rgba(0,0,0,0.45); opacity:0; transform:translateY(4px); transition:opacity .12s, transform .12s; }
+  #capTip.show { opacity:1; transform:none; }
+  #capTip.max { border-color:rgba(240,180,138,0.55); }
+  #capTip.min { border-color:rgba(159,211,201,0.55); }
+  .est-tag { display:inline-block; margin-left:6px; font-size:10px; font-weight:800; letter-spacing:.8px; padding:2px 7px; border-radius:999px; background:rgba(130,196,176,0.16); color:var(--good); vertical-align:middle; }
+
+  /* ===== STACK + BATTERY ===== */
+  .stack-card { padding:22px 24px 18px; }
+  .stack { display:block; }
+  /* page columns: top row + stack rows on the left, battery column on the right (sticky) */
+  .main-cols { display:grid; grid-template-columns:340px minmax(0,1fr); grid-template-areas:"batt top" "batt stack"; gap:16px 24px; align-items:start; }
+  .main-cols > .top-row { grid-area:top; margin-bottom:0; }
+  .main-cols > .stack-card { grid-area:stack; }
+  .batt-col { grid-area:batt; align-self:stretch; position:relative; }
+  .battery { position:sticky; top:34px; margin-top:22px; height:min(760px, calc(100vh - 56px)); min-height:520px; display:flex; flex-direction:column; gap:10px; }
+  /* Est. Total Pay under the battery */
+  .batt-total { flex:none; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:11px 16px; border-radius:14px;
+    background:linear-gradient(135deg,#26261F 0%, #2E2E2B 100%); border:1px solid rgba(189,159,64,0.5); box-shadow:0 12px 26px -14px rgba(0,0,0,.6); color:var(--text); }
+  .bt-label { font-size:12px; font-weight:800; letter-spacing:.6px; text-transform:uppercase; color:#EDE8DA; line-height:1.15; white-space:nowrap; }
+  .bt-nums { display:flex; align-items:baseline; gap:12px; font-family:'JetBrains Mono', ui-monospace, monospace; font-weight:700; font-variant-numeric:tabular-nums; }
+  .bt-pct { font-size:22px; color:var(--good); }
+  .bt-dol { font-size:24px; letter-spacing:-0.5px; background-image:linear-gradient(135deg,#FFFFFF 0%, var(--accent-2) 55%, var(--accent) 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-fill-color:transparent; }
+  .battery.full .batt-total { border-color:var(--accent-2); box-shadow:0 0 18px 2px rgba(214,188,102,.45), 0 12px 26px -14px rgba(0,0,0,.6); }
+  .stack-head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:nowrap; padding-bottom:12px; }
+  .stack-head > div:first-child { flex:1 1 auto; min-width:0; }
+  .stack-head .btns { flex:none; }   /* Reset / Max it out sit top-right of the card */
+  .stack-head h2 { margin:0; font-size:18px; font-weight:800; display:flex; align-items:center; gap:10px; }
+  .stack-head h2::before { content:""; width:6px; height:18px; border-radius:2px; background:linear-gradient(180deg,var(--accent),var(--accent-2)); }
+  .stack-head .note { color:var(--text-dim); font-size:12.5px; margin-top:4px; }
+  .btns { display:flex; gap:8px; }
+  .btn { font:inherit; font-size:12.5px; font-weight:800; letter-spacing:.3px; padding:8px 13px; border-radius:9px; cursor:pointer; border:1px solid var(--border-2); background:rgba(255,255,255,0.05); color:var(--text-soft); }
+  .btn.gold { background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:var(--ink); border-color:rgba(214,188,102,.7); }
+  .btn:hover { filter:brightness(1.08); }
+
+  @keyframes badgePop { 0%{transform:scale(.6);opacity:0} 70%{transform:scale(1.08)} 100%{transform:scale(1);opacity:1} }
+  @keyframes dopeGlow { 0%{box-shadow:0 0 0 0 rgba(189,159,64,.55)} 70%{box-shadow:0 0 0 14px rgba(189,159,64,0)} 100%{box-shadow:0 0 0 0 rgba(189,159,64,0)} }
+
+  /* battery frame spans every segment row in column 2 */
+  .batt-frame { flex:1; display:flex; flex-direction:column; padding:10px 0; position:relative; border:8px solid #141412; border-radius:26px; background:#FBFAF6; z-index:0;
+    box-shadow:0 22px 40px -18px rgba(0,0,0,.55), inset 0 0 0 1px rgba(0,0,0,.05); transition:box-shadow .5s ease; }
+  .batt-frame::before { content:""; position:absolute; left:50%; top:-24px; transform:translateX(-50%); width:96px; height:16px; background:#141412; border-radius:7px 7px 2px 2px; }
+  .battery.full .batt-frame { animation:battGlow 1.6s ease-in-out infinite; }
+  @keyframes battGlow {
+    0%,100% { box-shadow:0 0 18px 2px rgba(214,188,102,.55), 0 0 46px 6px rgba(130,196,176,.35), 0 22px 40px -18px rgba(0,0,0,.55); }
+    50%     { box-shadow:0 0 34px 8px rgba(214,188,102,.85), 0 0 80px 18px rgba(130,196,176,.55), 0 22px 40px -18px rgba(0,0,0,.55); }
+  }
+
+  .cell { flex:1 1 0; position:relative; z-index:1; margin:5px 14px; border-radius:9px; overflow:hidden; min-height:56px;
+    background:#E6E3DA; color:#8E8C84; display:flex; flex-direction:column; justify-content:center; padding:8px 14px;
+    transition:transform .25s ease, box-shadow .35s ease, color .3s ease; }
+  .cell.first { margin-top:4px; } .cell.last { margin-bottom:4px; }
+  /* fill rises from the bottom of each cell; any value > 0 = completely full. --d staggers cells bottom → top */
+  .cell .fill { position:absolute; left:0; right:0; bottom:0; height:0; transition:height .5s cubic-bezier(.2,.8,.2,1) var(--d,0ms); z-index:-1; }
+  .cell.lit .fill { height:100%; }
+  .cell .c-name { font-size:16px; font-weight:800; display:flex; align-items:center; gap:6px; line-height:1.15; position:relative; }
+  .cell .c-sub { font-size:12px; font-weight:600; margin-top:3px; opacity:.9; position:relative; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  /* big % and $ inside each lit bar */
+  .cell .c-val { display:none; align-items:baseline; justify-content:space-between; gap:4px 10px; flex-wrap:wrap; margin-top:2px; position:relative;
+    font-family:'JetBrains Mono', ui-monospace, monospace; font-weight:700; line-height:1.05; font-variant-numeric:tabular-nums; }
+  .cell.lit .c-val { display:flex; }
+  .cell .cv-pct { font-size:28px; }
+  .cell .cv-dol { font-size:28px; letter-spacing:-0.5px; }
+  .cell.base .cv-pct, .cell.base .cv-dol, .cell.bonus .cv-pct, .cell.bonus .cv-dol { font-size:30px; }
+  .cell svg { flex:none; }
+  .cell.boost .fill { background:linear-gradient(0deg, var(--accent) 0%, var(--accent-2) 100%); }
+  .cell.boost.lit { color:var(--ink); box-shadow:0 0 0 1px rgba(189,159,64,.6), 0 6px 18px -6px rgba(189,159,64,.8); }
+  .cell.boost.lit .c-name svg { animation:zap 1.4s ease-in-out infinite; }
+  @keyframes zap { 0%,100%{transform:scale(1)} 50%{transform:scale(1.25) rotate(-8deg)} }
+  .cell.bonus .fill { background:linear-gradient(0deg, var(--bonus-1), var(--bonus-2)); }
+  .cell.bonus.lit, .cell.base.lit { color:#fff; }
+  .cell.base .fill { background:linear-gradient(0deg, var(--base-1), var(--base-2)); }
+  .cell.base, .cell.bonus { min-height:64px; }
+  .cell.base .c-name, .cell.bonus .c-name { font-size:18px; }
+  .cell.upcoming { background:repeating-linear-gradient(135deg, #EFEDE7 0 10px, #E8E6DF 10px 20px); color:#B3B0A7; font-style:italic; border:1px dashed #D2CEC3; }
+  .cell.upcoming .c-name { font-weight:700; }
+  .cell.bump { transform:scale(1.035); }
+  .battery.full .cell.lit::after { content:""; position:absolute; top:0; bottom:0; left:-60%; width:50%;
+    background:linear-gradient(100deg, transparent, rgba(255,255,255,.55), transparent); animation:shine 1.8s ease-in-out infinite; }
+  @keyframes shine { 0%{left:-60%} 100%{left:120%} }
+
+  /* rows on the left — one per battery cell, same grid row */
+  .srow { grid-column:1; display:flex; flex-direction:column; justify-content:center; padding:5px 4px; border-bottom:1px solid var(--border); position:relative; }
+  .srow.last-row { border-bottom:none; }
+  .sr-top { display:grid; grid-template-columns:minmax(0,1fr) 74px 110px; gap:12px; align-items:start; }
+  .sr-top .sr-name { align-self:center; grid-column:1; grid-row:1; }
+  .sr-top > .sr-pct, .sr-top > .sr-pctbox { grid-column:2; grid-row:1; }
+  .sr-top > .sr-dol { grid-column:3; grid-row:1; }
+  .sr-name { font-weight:800; font-size:15px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .tag { font-size:10.5px; font-weight:700; padding:3px 8px; border-radius:999px; background:rgba(31,86,98,0.30); color:#9FD3C9; letter-spacing:0.3px; }
+  .tag.gold { background:rgba(189,159,64,0.18); color:var(--accent-2); }
+  .tag.grey { background:rgba(255,255,255,0.08); color:var(--text-dim); }
+  .tag.green { background:rgba(76,154,80,0.22); color:#A5D6A7; }
+  .sr-pct { font-family:'JetBrains Mono', monospace; font-size:18px; font-weight:700; color:var(--accent-2); text-align:right; font-variant-numeric:tabular-nums; }
+  .sr-dol { font-family:'JetBrains Mono', monospace; font-size:18px; font-weight:700; text-align:right; font-variant-numeric:tabular-nums; }
+  .sr-desc { font-size:12px; color:var(--text-dim); margin-top:1px; }
+  .sr-desc b { color:var(--text-soft); }
+  .hints { display:flex; gap:6px; flex-wrap:wrap; margin-top:4px; }
+  .hint { font-size:11px; font-weight:700; padding:3px 8px; border-radius:7px; background:rgba(76,154,80,0.14); color:#A5D6A7; border:1px solid rgba(76,154,80,0.3); }
+  .srow.upcoming { opacity:.55; }
+  .srow.upcoming .slider-block { display:none; }
+  .srow.first-row { padding-top:12px; } .srow.last-row { padding-bottom:12px; }
+  .srow.upcoming .sr-pct, .srow.upcoming .sr-dol { color:var(--text-dim); }
+
+  /* boost amount: down / up arrows instead of a slider */
+  .slider-block { display:flex; align-items:center; gap:12px; margin-top:4px; }
+  .stp { display:inline-flex; align-items:center; gap:0; background:rgba(255,255,255,0.05); border:1px solid var(--border-2); border-radius:10px; overflow:hidden; }
+  .stp-btn { font:inherit; width:36px; height:30px; display:flex; align-items:center; justify-content:center; border:0; background:none; color:var(--accent-2); cursor:pointer;
+    transition:background .15s, color .15s; -webkit-user-select:none; user-select:none; touch-action:manipulation; }
+  .stp-btn:hover:not(:disabled) { background:rgba(189,159,64,0.2); }
+  .stp-btn:active:not(:disabled) { background:rgba(189,159,64,0.35); }
+  .stp-btn:disabled { color:rgba(255,255,255,0.18); cursor:not-allowed; }
+  .stp-btn:focus-visible { outline:none; box-shadow:inset 0 0 0 2px var(--accent-2); }
+  .stp-btn svg { width:16px; height:16px; }
+  .stp-val { min-width:54px; text-align:center; font-family:'JetBrains Mono', monospace; font-size:18px; font-weight:700; color:#fff; padding:0 6px;
+    border-left:1px solid var(--border-2); border-right:1px solid var(--border-2); line-height:30px; }
+  .slider-block.has .stp-val { color:var(--accent-2); }
+  .slider-block.has .stp { border-color:rgba(189,159,64,0.55); }
+
+  .total-row { display:grid; grid-template-columns:1fr auto auto; gap:28px; align-items:center; padding:16px 16px; margin-top:18px; border-radius:12px;
+    background:linear-gradient(90deg, rgba(189,159,64,0.12), rgba(31,86,98,0.12)); border:1px solid rgba(189,159,64,0.30); }
+  .total-row .name { font-size:16px; font-weight:800; }
+  .total-row .rpct { color:var(--good); font-weight:800; font-size:24px; font-family:'JetBrains Mono', monospace; }
+  .total-row .rdol { font-weight:800; font-size:26px; font-family:'JetBrains Mono', monospace;
+    background-image:linear-gradient(135deg,#FFFFFF 0%, var(--accent-2) 55%, var(--accent) 100%); -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-fill-color:transparent; }
+  .foot { margin-top:16px; color:var(--text-dim); font-size:12px; line-height:1.6; }
+  .warn { margin-top:10px; font-size:12px; color:#F0C987; }
+
+  /* ===== TEAM VIEW ===== */
+  .team { padding:20px 22px; }
+  .team-tools { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:14px; }
+  .tbl-wrap { overflow-x:auto; border-radius:10px; border:1px solid var(--border); }
+  table.tt { width:100%; border-collapse:collapse; font-size:12.5px; font-variant-numeric:tabular-nums; }
+  .tt th { text-align:left; font-size:11px; letter-spacing:.5px; text-transform:uppercase; color:var(--text-dim); padding:10px 10px; background:rgba(255,255,255,0.03);
+    border-bottom:1px solid var(--border-2); cursor:pointer; white-space:nowrap; user-select:none; position:sticky; top:0; }
+  .tt th.num, .tt td.num { text-align:right; }
+  .tt th.sorted { color:var(--accent-2); }
+  .tt td { padding:9px 10px; border-bottom:1px solid var(--border); white-space:nowrap; }
+  .tt tbody tr { cursor:pointer; }
+  .tt tbody tr:hover td { background:rgba(189,159,64,0.08); }
+  .tt tfoot td { font-weight:800; border-top:1px solid var(--border-2); background:rgba(255,255,255,0.03); }
+  .tt td.gold { color:var(--accent-2); font-weight:700; }
+  .muted { color:var(--text-dim); }
+
+  .banner { padding:12px 16px; border-radius:12px; margin-bottom:16px; font-size:13px; background:rgba(31,86,98,0.10); border:1px solid rgba(31,86,98,0.30); color:var(--ink); }
+  .banner.warn { background:rgba(153,85,51,0.12); border-color:rgba(153,85,51,0.4); }
+  .banner ul { margin:6px 0 0; padding-left:18px; }
+
+  /* loader */
+  #loader { position:fixed; inset:0; display:none; align-items:center; justify-content:center; flex-direction:column; gap:14px; z-index:100;
+    background:#EFF0EB; color:var(--ink); font-weight:600; }
+  .spin { width:40px; height:40px; border-radius:50%; border:4px solid rgba(46,46,43,.15); border-top-color:var(--accent); animation:sp 0.9s linear infinite; }
+  @keyframes sp { to { transform:rotate(360deg); } }
+  #errBox { display:none; background:#F4D6CF; color:#3B0E07; border:1px solid #8C2A1B; border-radius:12px; padding:14px 18px; margin-bottom:16px; }
+
+  /* sign-in gate — same look as the FY2027 OPEX Budget sign-in */
+  #auth-gate{--lion:#C0985C;--jet:#2C2C2C;--jet-70:rgba(44,44,44,.70);--jet-25:rgba(44,44,44,.25);--lion-15:rgba(192,152,92,.16);--lion-30:rgba(192,152,92,.35);
+    position:fixed;inset:0;background:var(--jet);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px;z-index:160;
+    font-family:'Source Sans 3','Source Sans Pro',Arial,sans-serif;font-size:13px;line-height:1.3;color:var(--jet)}
+  #auth-gate.overlay{background:rgba(44,44,44,.92)}
+  #auth-gate .ag-brand{margin-bottom:26px;display:flex;flex-direction:column;align-items:center;gap:10px}
+  #auth-gate .ag-brand .logo-img{max-width:240px;max-height:48px;width:auto;height:auto;object-fit:contain;display:block}
+  #auth-gate .ag-brand .gate-fb{color:var(--lion);font-weight:700;letter-spacing:4px;font-size:22px}
+  #auth-gate .ag-card{background:#fff;border-radius:12px;width:min(400px,100%);padding:26px 28px;border-top:4px solid var(--lion)}
+  #auth-gate h1{margin:0 0 4px;font-size:20px;font-weight:700;color:var(--jet)}
+  #auth-gate .ag-lead{margin:0 0 18px;font-size:13.5px;color:var(--jet-70)}
+  #auth-gate label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+  #auth-gate input{width:100%;font:inherit;font-size:16px;border:1.5px solid var(--jet-25);border-radius:7px;padding:10px 12px;outline:none;color:var(--jet);box-sizing:border-box}
+  #auth-gate input:focus{border-color:var(--lion);box-shadow:0 0 0 3px var(--lion-30)}
+  #auth-gate #ag-code{letter-spacing:8px;font-size:24px;text-align:center;font-weight:700}
+  #auth-gate .ag-btn{display:block;width:100%;margin-top:14px;padding:10px;font:inherit;font-size:15px;font-weight:600;border-radius:5px;cursor:pointer;background:var(--lion);border:1px solid var(--lion);color:var(--jet)}
+  #auth-gate .ag-btn:hover{filter:brightness(1.05)}
+  #auth-gate .ag-btn:disabled{opacity:.6;cursor:default;filter:none}
+  #auth-gate .msg{min-height:18px;margin-top:10px;font-size:13px;color:var(--jet-70)}
+  #auth-gate .msg.err{color:#8a1f11;font-weight:600}
+  #auth-gate .ag-row{display:flex;justify-content:space-between;margin-top:12px;font-size:12.5px}
+  #auth-gate .ag-row button{background:none;border:none;cursor:pointer;font:inherit;color:var(--jet);text-decoration:underline;text-decoration-color:var(--lion);text-underline-offset:3px;padding:0}
+  #auth-gate .ag-note{font-size:12.5px;background:var(--lion-15);border-radius:6px;padding:8px 10px;margin-bottom:14px}
+  #auth-gate .ag-note:empty{display:none}
+  #auth-gate .ag-foot{margin-top:18px;color:rgba(255,255,255,.55);font-size:12px;text-align:center;max-width:400px;line-height:1.45}
+  #auth-gate .ag-foot b{color:rgba(255,255,255,.8)}
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 1180px) {
+    .main-cols { grid-template-columns:300px minmax(0,1fr); }
+    .top-row { grid-template-columns:minmax(0,1fr) minmax(200px, 250px); }
+    .pay-term { grid-template-columns:22px minmax(0,1fr) auto minmax(110px,auto); column-gap:10px; }
+    .pt-pct { font-size:19px; } .pt-dol { font-size:21px; } .pay-term.total .pt-pct { font-size:22px; } .pay-term.total .pt-dol { font-size:25px; }
+  }
+  /* tablet: Units / Volume + pay box go full width; battery sits beside the stack rows */
+  @media (max-width: 1060px) {
+    .main-cols { grid-template-areas:"top top" "batt stack"; grid-template-columns:270px minmax(0,1fr); }
+  }
+  @media (max-width: 980px) {
+    .top-row { grid-template-columns:minmax(0,1fr) minmax(200px, 240px); }
+    .pay-term { grid-template-columns:22px minmax(0,1fr) auto minmax(100px,auto); column-gap:10px; }
+    .main-cols { grid-template-columns:250px minmax(0,1fr); column-gap:18px; }
+    .cell .cv-pct, .cell .cv-dol { font-size:22px; } .cell.base .cv-pct, .cell.base .cv-dol, .cell.bonus .cv-pct, .cell.bonus .cv-dol { font-size:24px; }
+  }
+  @media (max-width: 720px) {
+    body { padding:10px 16px 16px; }
+    .header { margin-bottom:14px; padding-bottom:12px; }
+    .tabs { order:3; margin:0; width:100%; } .tab { flex:1; padding:8px 10px; font-size:13px; }
+    .brand { gap:12px; } .co-logo { max-height:28px; } .brand h1 { font-size:18px; } .brand .sub { font-size:12px; }
+    .brand-divider { height:30px; }
+    .selectors { padding:14px; gap:12px; }
+    .sel-group { width:100%; gap:10px; }
+    .sel-group .field { flex:1 1 140px; }
+    .field select, .ro { min-width:0; width:100%; }
+    .field input[type=number], .field input[type=text] { width:100%; }
+    .top-row { grid-template-columns:1fr; gap:10px; }
+    .top-row > .hero, .top-row > .stat-col { grid-column:1; grid-row:auto; }
+    .stat-col { flex-direction:row; gap:10px; } .stat-col .stat { min-width:0; }
+    .stat { padding:12px 14px; } .stat .s-value { font-size:24px; } .stat .s-label { font-size:10.5px; }
+    .s-input { font-size:22px; padding:2px 8px; }
+    .hero { padding:12px; }
+    .h-rows { gap:6px; }
+    .pay-term { flex:none; grid-template-columns:16px minmax(0,1fr) auto auto; column-gap:8px; padding:8px 10px 8px 6px; min-height:40px; }
+    .pay-op { font-size:15px; }
+    .pt-label { font-size:12.5px; letter-spacing:.7px; }
+    .pt-pct { font-size:16px; } .pt-dol { font-size:17px; }
+    .pay-term.total .pt-pct { font-size:18px; } .pay-term.total .pt-dol { font-size:21px; }
+    .stack-card { padding:16px 12px 14px; }
+    /* phone: top row full width, then stack rows with a slim sticky battery beside them */
+    .main-cols { grid-template-columns:112px minmax(0,1fr); grid-template-areas:"top top" "batt stack"; gap:10px 8px; }
+    .battery { top:22px; margin-top:20px; height:min(620px, calc(100vh - 40px)); min-height:430px; gap:6px; }
+    .batt-total { flex-direction:column; align-items:flex-start; gap:2px; padding:7px 8px; border-radius:10px; }
+    .bt-label { font-size:9.5px; letter-spacing:.3px; white-space:normal; } .bt-nums { flex-direction:column; gap:0; } .bt-pct { font-size:14px; } .bt-dol { font-size:16px; }
+    .stack-head { padding-bottom:12px; flex-wrap:wrap; gap:10px; }
+    .sr-top { grid-template-columns:minmax(0,1fr) auto; gap:4px 8px; }
+    .sr-name, .sr-top .sr-name { font-size:13.5px; grid-column:1 / span 2; }
+    .sr-pct { text-align:left; font-size:18px; } .sr-dol { font-size:18px; }
+    .sr-pctbox { text-align:left; }
+    .sr-top > .sr-pct, .sr-top > .sr-pctbox { grid-column:1; grid-row:2; }
+    .sr-top > .sr-dol { grid-column:2; grid-row:2; }
+    .sr-cap { gap:5px; }
+    .cap-badge { font-size:8.5px; padding:1px 5px; } .cap-fine { font-size:9.5px; }
+    .sr-desc { display:none; }
+    .srow.base .sr-desc, .srow.bonus .sr-desc { display:block; font-size:11px; }
+    .slider-block { gap:8px; flex-wrap:wrap; } .stp-btn { width:34px; height:32px; } .stp-val { font-size:15px; min-width:44px; line-height:32px; }
+    .cell { margin:3px 6px; padding:5px 7px; min-height:40px; }
+    .cell.first { margin-top:2px; } .cell.last { margin-bottom:2px; }
+    .batt-frame { padding:6px 0; }
+    .cell .c-name { font-size:11px; } .cell .c-sub { font-size:9.5px; margin-top:1px; }
+    .cell .c-val { flex-direction:column; align-items:flex-start; gap:1px; margin-top:3px; }
+    .cell .cv-pct, .cell .cv-dol, .cell.base .cv-pct, .cell.base .cv-dol, .cell.bonus .cv-pct, .cell.bonus .cv-dol { font-size:15px; }
+    .cell.base .c-name, .cell.bonus .c-name { font-size:12px; }
+    .cell .c-name svg { width:11px; height:11px; }
+    .batt-frame { border-width:5px; border-radius:16px; } .batt-frame::before { width:50px; height:12px; top:-17px; }
+    .total-row { grid-template-columns:1fr auto; gap:6px 14px; }
+    .total-row .rpct, .total-row .rdol { font-size:19px; }
+    .team { padding:14px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loader"><div class="spin"></div><div>Building your boost…</div></div>
+
+<!-- ============ SIGN-IN GATE ============ -->
+<div id="auth-gate" style="display:none">
+  <div class="ag-brand">
+    <img class="logo-img" src="../../assets/logo-light.svg" alt="Atlas" onerror="this.style.display='none';var f=document.getElementById('gateFb');if(f)f.hidden=false;">
+    <div class="gate-fb" id="gateFb" hidden>Atlas</div>
+  </div>
+  <div class="ag-card">
+    <h1>Commission Boost Tool</h1>
+    <p class="ag-lead">Sign in with your Atlas email. We'll email you a 6-digit code.</p>
+    <div class="ag-note" id="ag-note"></div>
+    <div id="ag-step1">
+      <label for="ag-email">Email</label>
+      <input id="ag-email" type="email" autocomplete="email" placeholder="demo.viewer@example.com" onkeydown="if(event.key==='Enter')requestCode()">
+      <button class="ag-btn" id="ag-send" onclick="requestCode()">Email me a code</button>
+      <div class="msg" id="ag-msg1"></div>
+    </div>
+    <div id="ag-step2" style="display:none">
+      <label for="ag-code">6-digit code</label>
+      <input id="ag-code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" placeholder="••••••" onkeydown="if(event.key==='Enter')verifyCode()">
+      <div class="msg">If <b id="ag-emaillbl"></b> has access, a code is on its way. It expires in 10 minutes.</div>
+      <button class="ag-btn" id="ag-verify" onclick="verifyCode()">Sign in</button>
+      <div class="msg" id="ag-msg2"></div>
+      <div class="ag-row"><button onclick="agBack()">Use a different email</button><button onclick="agResend()">Send a new code</button></div>
+    </div>
+  </div>
+  <div class="ag-foot">Access is managed by FP&amp;A. If you don't receive a code, check that you used your Atlas email, then check spam.<br>You stay signed in for 24 hours on this browser — use <b>Sign out</b> on a shared computer.</div>
+</div>
+
+<div class="container" id="app" style="display:none">
+
+  <!-- ============ HEADER ============ -->
+  <div class="header">
+    <div class="brand">
+      <img class="co-logo" src="../../assets/logo-light.svg" alt="Atlas" onerror="this.style.display='none';var f=document.getElementById('hdrFb');if(f)f.hidden=false;">
+      <div class="logo-fb" id="hdrFb" hidden>Atlas</div>
+      <span class="brand-divider"></span>
+      <div>
+        <h1><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>Commission Boost Tool</h1>
+        <div class="sub">One battery. Many boosts.</div>
+      </div>
+    </div>
+    <!-- Boost Builder / Team View sit in the header row (above the gold line) -->
+    <div class="tabs" id="tabs" hidden>
+      <button class="tab active" data-tab="stack" onclick="switchTab('stack')">Boost Builder</button>
+      <button class="tab" data-tab="team" onclick="switchTab('team')" id="teamTabBtn">Team View</button>
+    </div>
+    <div class="hdr-right">
+      <div class="pulse"><span class="pulse-dot"></span> Live</div>
+      <div class="who"><span class="lvl" id="whoLvl">Agent</span><b id="whoEmail"></b><button class="linkbtn" onclick="signOutNow()">Sign out</button></div>
+    </div>
+  </div>
+
+  <div id="errBox"></div>
+  <div id="setupBanner" class="banner warn" hidden></div>
+
+  <!-- ============ STACK BUILDER ============ -->
+  <div id="view-stack">
+    <div class="card selectors">
+      <div class="sel-group">
+        <div class="field">
+          <label for="monthSel">Month</label>
+          <div class="select-wrap"><select id="monthSel"></select></div>
+        </div>
+        <div class="field" id="officeField" hidden>
+          <label for="officeSel">Office</label>
+          <div class="select-wrap"><select id="officeSel"></select></div>
+        </div>
+        <div class="field">
+          <label for="agentSel">Agent</label>
+          <div class="select-wrap" id="agentSelWrap"><select id="agentSel"></select></div>
+          <div class="ro" id="agentLocked" hidden></div>
+        </div>
+        <div class="field" id="agentOfficeField" hidden>
+          <label>In 2 offices — pick one</label>
+          <div class="seg offpick" id="agentOfficeSeg"></div>
+        </div>
+        <div class="field" id="stateField" hidden>
+          <label for="stateSel">State</label>
+          <div class="select-wrap"><select id="stateSel"><option value="">Select a state</option></select></div>
+        </div>
+      </div>
+      <div class="sel-group">
+        <div class="field">
+          <label>Position</label>
+          <span class="pos-badge" id="posBadge">—</span>
+        </div>
+        <div class="field">
+          <label>Numbers</label>
+          <div class="seg" id="modeSeg">
+            <button class="on" data-mode="actual" onclick="setMode('actual')">My KPIs</button>
+            <button data-mode="custom" onclick="setMode('custom')">Enter my own</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-cols">
+    <!-- Units + Volume stacked on the left; the pay equation as a tall box on the right -->
+    <div class="top-row">
+      <div class="stat-col" id="statsActual">
+        <div class="card stat"><div class="s-label">Units</div><div class="s-value" id="stUnits">0</div><div class="s-sub" id="stUnitsSub">—</div></div>
+        <div class="card stat accent"><div class="s-label">Volume</div><div class="s-value" id="stVol">$0</div><div class="s-sub" id="stVolSub">—</div></div>
+      </div>
+
+      <!-- Enter my own: Units + Volume become inputs; AA / DA pick sits on the Units box -->
+      <div class="stat-col" id="statsCustom" hidden>
+        <div class="card stat">
+          <div class="s-label s-label-row"><span><span id="lblUnits">AA Units</span><span class="s-edit">ENTER</span></span>
+            <span class="side-seg" id="sideSeg"><button type="button" data-side="aa" onclick="setSide('aa')">AA</button><button type="button" data-side="da" onclick="setSide('da')">DA</button></span></div>
+          <input id="inUnits" class="s-input" type="text" inputmode="decimal" aria-label="Units">
+          <div class="s-sub" id="unitsNote">This month + 3-mo avg</div>
+        </div>
+        <div class="card stat accent">
+          <div class="s-label"><span id="lblVol">AA Volume</span><span class="s-edit">ENTER</span></div>
+          <input id="inVol" class="s-input" type="text" inputmode="numeric" aria-label="Volume">
+          <div class="s-sub"><span class="s-state" id="stateNote"></span></div>
+        </div>
+      </div>
+
+      <div class="hero">
+        <div class="h-rows">
+          <div class="pay-term"><span class="pay-op"></span><div class="pt-label">Base Pay</div><div class="pt-pct" id="hBasePct">0%</div><div class="pt-dol" id="hBaseDol">$0</div></div>
+          <div class="pay-term"><span class="pay-op">+</span><div class="pt-label">Bonus</div><div class="pt-pct" id="hBonusPct">0%</div><div class="pt-dol" id="hBonusDol">$0</div></div>
+          <div class="pay-term"><span class="pay-op">+</span><div class="pt-label">Boosts</div><div class="pt-pct" id="hBoostPct">0%</div><div class="pt-dol" id="hBoostDol">$0</div></div>
+          <div class="pay-term total"><span class="pay-op">=</span><div class="pt-label">Est. Total Pay</div><div class="pt-pct" id="hTotPct">0%</div><div class="pt-dol" id="hTotDol">$0</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card stack-card">
+      <div class="stack" id="stack"><!-- built by buildStack() --></div>
+      <div class="total-row">
+        <div class="name">Total Potential Commission <span class="est-tag">ESTIMATE</span></div>
+        <div class="rpct" id="totPct">0%</div>
+        <div class="rdol" id="totDol">$0</div>
+      </div>
+      <div class="warn" id="calcWarn" hidden></div>
+      <div class="foot">
+        This tool is for illustrative purposes only. Amounts shown are estimates based on your KPIs, the commission grids and the boost programs as currently defined — they are not actual pay.
+        Final commission amounts are calculated exclusively by Atlas FP&amp;A, and actual payouts may vary.
+        <span id="asOf"></span>
+      </div>
+    </div>
+
+    <!-- battery: its own column, stays on screen while you scroll -->
+    <aside class="batt-col"><div class="battery" id="battery"><!-- built by buildStack() --></div></aside>
+    </div>
+  </div>
+
+  <!-- boost guide picture (opens on screen when a boost title is clicked) -->
+  <div id="guideModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="gmTitle">
+    <div class="gm-box">
+      <div class="gm-bar"><div class="gm-title" id="gmTitle"></div><button type="button" class="gm-close" id="gmClose" onclick="closeGuide()">Close ✕</button></div>
+      <div class="gm-img-wrap" id="gmImg"></div>
+      <div class="gm-hint">Tap the picture to zoom in.</div>
+    </div>
+  </div>
+
+  <!-- ============ TEAM VIEW (Master / GM) ============ -->
+  <div id="view-team" hidden>
+    <div class="card team">
+      <div class="team-tools">
+        <div class="field"><label for="tMonth">Month</label><div class="select-wrap"><select id="tMonth"></select></div></div>
+        <div class="field" id="tOfficeField"><label for="tOffice">Office</label><div class="select-wrap"><select id="tOffice"></select></div></div>
+        <div class="field"><label for="tSearch">Search</label><input id="tSearch" type="text" placeholder="Agent name…"></div>
+        <label class="chk"><input type="checkbox" id="tActive" checked> Only agents with deals this month</label>
+      </div>
+      <div class="tbl-wrap">
+        <table class="tt" id="teamTbl">
+          <thead><tr>
+            <th data-k="n">Agent</th><th data-k="o">Office</th><th data-k="p">Position</th>
+            <th class="num" data-k="au">AA Units</th><th class="num" data-k="av">AA Volume</th>
+            <th class="num" data-k="du">DA Units</th><th class="num" data-k="dv">DA Volume</th>
+            <th class="num" data-k="t3u">3-Mo Units</th>
+            <th class="num" data-k="base">Est. Base</th><th class="num" data-k="bonus">Est. Bonus</th><th class="num" data-k="tot">Base + Bonus</th>
+          </tr></thead>
+          <tbody></tbody>
+          <tfoot></tfoot>
+        </table>
+      </div>
+      <div class="foot">Base + Bonus only (boosts are agent-entered). Click an agent to open them in the Boost Builder. Estimates — actual pay may vary.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// CALC-START — pure functions (no DOM). Unit-tested in Node by extracting this block.
+var StackCalc = (function () {
+  function ymAdd(ym, d) {
+    var y = +ym.slice(0, 4), m = +ym.slice(5, 7) - 1 + d;
+    y += Math.floor(m / 12); m = ((m % 12) + 12) % 12;
+    return y + '-' + ('0' + (m + 1)).slice(-2);
+  }
+  function isAA(p) { return /acqui/i.test(p || ''); }
+  function isDA(p) { return /dispo/i.test(p || ''); }
+  function blank() { return { au: 0, av: 0, du: 0, dv: 0, s: {}, p: '' }; }
+
+  // AA grid: highest units row ≤ U, highest volume threshold ≤ V. Rates include base.
+  function aaLookup(G, st, U, V) {
+    var g = G.aa[st]; if (!g) return null;
+    var row = null, ri = -1, ci = 0;
+    g.rows.forEach(function (r, i) { if (r.u <= U + 1e-9) { row = r; ri = i; } });
+    g.vols.forEach(function (t, i) { if (V >= t - 1e-9) ci = i; });
+    if (!row) return { rate: null, ri: -1, ci: ci };
+    return { rate: row.r[ci], ri: ri, ci: ci, u: row.u, vol: g.vols[ci] };
+  }
+  function daLookup(G, st, U) {
+    var t = G.da[st]; if (!t) return null;
+    var hit = null, hi = -1;
+    t.forEach(function (x, i) { if (x.u <= U + 1e-9) { hit = x; hi = i; } });
+    return hit ? { rate: hit.r, ti: hi, u: hit.u } : { rate: null, ti: -1 };
+  }
+  function baseRate(G, st, side) { var b = G.base[st]; return b ? (b[side] || 0) : null; }
+  function maxBonus(G, side, st) {
+    var b = baseRate(G, st, side) || 0, mx = 0;
+    if (side === 'aa' && G.aa[st]) G.aa[st].rows.forEach(function (r) { r.r.forEach(function (x) { mx = Math.max(mx, x - b); }); });
+    if (side === 'da' && G.da[st]) G.da[st].forEach(function (x) { mx = Math.max(mx, x.r - b); });
+    return Math.max(0, mx);
+  }
+  // Next better tier(s) from where the agent sits
+  function nextTiers(G, side, st, U, V) {
+    var out = [], b = baseRate(G, st, side) || 0;
+    if (side === 'aa' && G.aa[st]) {
+      var g = G.aa[st], cur = aaLookup(G, st, U, V), curRate = cur && cur.rate != null ? cur.rate : b;
+      var ri = cur ? cur.ri : -1, ci = cur ? cur.ci : 0;
+      for (var i = ri + 1; i < g.rows.length; i++) { if (g.rows[i].r[ci] > curRate + 1e-9) { out.push({ kind: 'units', need: g.rows[i].u, rate: g.rows[i].r[ci] - b }); break; } }
+      if (ri > -1) for (var j = ci + 1; j < g.vols.length; j++) { if (g.rows[ri].r[j] > curRate + 1e-9) { out.push({ kind: 'vol', need: g.vols[j], rate: g.rows[ri].r[j] - b }); break; } }
+    }
+    if (side === 'da' && G.da[st]) {
+      var c2 = daLookup(G, st, U), r2 = c2 && c2.rate != null ? c2.rate : b;
+      for (var k = 0; k < G.da[st].length; k++) { var x = G.da[st][k]; if (x.u > U + 1e-9 && x.r > r2 + 1e-9) { out.push({ kind: 'units', need: x.u, rate: x.r - b }); break; } }
+    }
+    return out;
+  }
+
+  /**
+   * DATA = { grids, kpi:{key:{ym:{p,au,av,du,dv,s:{ST:[av,dv]}}}}, agents:[{k,p}] }
+   * opt  = { override:{au,av,du,dv,state} | null, pace:bool }
+   */
+  function estimate(DATA, key, ym, opt) {
+    opt = opt || {};
+    var G = DATA.grids, K = (DATA.kpi && DATA.kpi[key]) || {}, warn = [];
+    var agent = (DATA.agents || []).filter(function (a) { return a.k === key; })[0] || {};
+    // primary state = most volume across all months (used for rows with no state, and as what-if default)
+    var stVol = {};
+    Object.keys(K).forEach(function (m) { var s = K[m].s || {}; Object.keys(s).forEach(function (st) { if (st !== '??') stVol[st] = (stVol[st] || 0) + Math.abs(s[st][0]) + Math.abs(s[st][1]); }); });
+    var primary = Object.keys(stVol).sort(function (a, b) { return stVol[b] - stVol[a]; })[0] || '';
+
+    var cur;
+    if (opt.override) {
+      var o = opt.override, st0 = o.state || primary || '??', s0 = {};
+      s0[st0] = [+o.av || 0, +o.dv || 0];
+      cur = { au: +o.au || 0, av: +o.av || 0, du: +o.du || 0, dv: +o.dv || 0, s: s0, p: (K[ym] && K[ym].p) || agent.p || '' };
+      if (o.state) primary = o.state;
+    } else cur = K[ym] || blank();
+    var pos = cur.p || agent.p || '';
+    var prior = opt.pace ? [cur, cur] : [K[ymAdd(ym, -2)] || blank(), K[ymAdd(ym, -1)] || blank()];
+    var full = cur;
+    // Role picked (agent with AA AND DA volume): only that side's numbers count — units, volume, base, bonus, boosts.
+    var role = opt.role === 'aa' || opt.role === 'da' ? opt.role : null;
+    if (role) {
+      var only = function (m) {
+        var s = {}, src = m.s || {};
+        Object.keys(src).forEach(function (k) { s[k] = role === 'aa' ? [src[k][0], 0] : [0, src[k][1]]; });
+        return role === 'aa' ? { au: m.au || 0, av: m.av || 0, du: 0, dv: 0, s: s, p: m.p } : { au: 0, av: 0, du: m.du || 0, dv: m.dv || 0, s: s, p: m.p };
+      };
+      cur = only(cur); prior = [only(prior[0]), only(prior[1])];
+    }
+    var trio = [prior[0], prior[1], cur];
+
+    var other = !!pos && !isAA(pos) && !isDA(pos);   // blank position (e.g. Example Agent) = price AA and DA separately
+    var hasA = cur.au > 0 || cur.av > 0, hasD = cur.du > 0 || cur.dv > 0;
+    var combined = !role && other && hasA && hasD;
+    var sides = role ? [role] : (combined ? [cur.av >= cur.dv ? 'aa' : 'da'] : ['aa', 'da']);
+
+    function u(m, side) { return combined ? (m.au || 0) + (m.du || 0) : (side === 'aa' ? m.au || 0 : m.du || 0); }
+    function v(m, side) { return combined ? (m.av || 0) + (m.dv || 0) : (side === 'aa' ? m.av || 0 : m.dv || 0); }
+
+    var res = { sides: [], vol: 0, units: 0, base: 0, bonus: 0, primary: primary, pos: pos, combined: combined, warn: warn, cur: cur, full: full, role: role };
+    sides.forEach(function (side) {
+      var sumU = 0, sumV = 0;
+      trio.forEach(function (m) { sumU += u(m, side); sumV += v(m, side); });
+      var t3u = Math.floor(sumU / 3 + 1e-9), t3v = sumV / 3, curU = u(cur, side), curV = v(cur, side);
+      var S = { side: side, units: curU, vol: curV, t3u: t3u, t3uRaw: sumU / 3, t3v: t3v, states: [], base: 0, bonus: 0 };
+      var s = cur.s || {};
+      Object.keys(s).forEach(function (stKey) {
+        var vol = combined ? (s[stKey][0] + s[stKey][1]) : (side === 'aa' ? s[stKey][0] : s[stKey][1]);
+        if (!vol) return;
+        var st = stKey === '??' ? primary : stKey;
+        var b = st ? baseRate(G, st, side) : null;
+        if (b == null) { warn.push('No base % for state "' + (st || '?') + '" — ' + side.toUpperCase() + ' volume there is priced at 0%.'); b = 0; }
+        var lk = side === 'aa' ? aaLookup(G, st, t3u, t3v) : daLookup(G, st, t3u);
+        var grid = lk && lk.rate != null ? lk.rate : null;
+        if (!lk && st) warn.push('No ' + side.toUpperCase() + ' bonus grid for ' + st + ' — bonus shown as $0.');
+        var bonus = grid == null ? 0 : Math.max(0, grid - b);
+        S.states.push({ st: st, vol: vol, base: b, grid: grid, bonus: bonus });
+        S.base += b * vol; S.bonus += bonus * vol;
+      });
+      // rate shown for the side = the rate in its biggest state (or primary state if no volume yet)
+      var top = S.states.slice().sort(function (a, b2) { return b2.vol - a.vol; })[0];
+      var rst = top ? top.st : primary;
+      S.st = rst;
+      S.baseRate = top ? top.base : (rst ? baseRate(G, rst, side) || 0 : 0);
+      var lk2 = rst ? (side === 'aa' ? aaLookup(G, rst, t3u, t3v) : daLookup(G, rst, t3u)) : null;
+      S.gridRate = lk2 && lk2.rate != null ? lk2.rate : null;
+      S.bonusRate = top ? top.bonus : (S.gridRate == null ? 0 : Math.max(0, S.gridRate - S.baseRate));
+      S.maxBonus = rst ? maxBonus(G, side, rst) : 0;
+      S.next = rst ? nextTiers(G, side, rst, t3u, t3v) : [];
+      res.sides.push(S);
+      res.vol += curV; res.units += curU; res.base += S.base; res.bonus += S.bonus;
+    });
+    res.basePct = res.vol ? res.base / res.vol : 0;
+    res.bonusPct = res.vol ? res.bonus / res.vol : 0;
+    // the side(s) that matter for display: those with activity, else the agent's position side
+    // sides shown: this month's activity first, else 3-month activity, else the position's side
+    res.active = res.sides.filter(function (S) { return S.vol || S.units; });
+    if (!res.active.length) res.active = res.sides.filter(function (S) { return S.t3uRaw || S.t3v; });
+    if (!res.active.length) res.active = res.sides.filter(function (S) { return combined || S.side === (isDA(pos) ? 'da' : 'aa'); });
+    return res;
+  }
+
+  // Boost $: rate × steps × volume, with min/max either per step or per month.
+  function boostPay(b, n, V) {
+    if (!b || b.status !== 'live' || !(n > 0)) return 0;
+    V = Math.max(0, V || 0);
+    if (b.cap === 'step') {
+      var per = b.rate * V;
+      if (b.minPay != null) per = Math.max(per, b.minPay);
+      if (b.maxPay != null) per = Math.min(per, b.maxPay);
+      return per * n;
+    }
+    var t = b.rate * n * V;
+    if (b.cap === 'month') {
+      if (b.minPay != null) t = Math.max(t, b.minPay);
+      if (b.maxPay != null) t = Math.min(t, b.maxPay);
+    }
+    return t;
+  }
+  // Boost with its UNCAPPED % (rate × steps) and whether a min/max kicked in; adjPct = what it really pays as a % of volume.
+  function boostDetail(b, n, V) {
+    var pay = boostPay(b, n, V), on = !!b && b.status === 'live' && n > 0;
+    var rawPct = on ? b.rate * n : 0, raw = rawPct * Math.max(0, V || 0), cap = null;
+    if (on && pay > raw + 0.005) cap = 'min'; else if (on && pay < raw - 0.005) cap = 'max';
+    return { pay: pay, rawPct: rawPct, adjPct: V > 0 ? pay / V : null, cap: cap };
+  }
+  // 3-month averages for each side on its own (used by the AA / DA selector). override = entered numbers,
+  // which are treated as this month AND the 3-month average.
+  function t3Sides(DATA, key, ym, override) {
+    var K = (DATA.kpi && DATA.kpi[key]) || {}, out = {};
+    ['aa', 'da'].forEach(function (side) {
+      var u = 0, v = 0;
+      if (override) { u = side === 'aa' ? +override.au || 0 : +override.du || 0; v = side === 'aa' ? +override.av || 0 : +override.dv || 0; }
+      else [ymAdd(ym, -2), ymAdd(ym, -1), ym].forEach(function (m) { var r = K[m] || {}; u += (side === 'aa' ? r.au : r.du) || 0; v += (side === 'aa' ? r.av : r.dv) || 0; });
+      if (!override) { u /= 3; v /= 3; }
+      out[side] = { uRaw: u, u: Math.floor(u + 1e-9), v: v };
+    });
+    return out;
+  }
+  // Does this person have BOTH AA and DA volume in the selected month (or in the entered numbers)?
+  function hasBothSides(DATA, key, ym, override) {
+    var r = override || ((DATA.kpi && DATA.kpi[key]) || {})[ym];
+    if (!r) return false;
+    return (+r.au > 0 || +r.av > 0) && (+r.du > 0 || +r.dv > 0);
+  }
+  // The ONE side an agent is paid on: Acquisition Agent → AA, Disposition Agent → DA.
+  // Anyone else (SLM, GM, Other) → the side with more volume over the selected month + prior 2 (tie → this month, then AA).
+  function positionSide(DATA, key, ym) {
+    var K = (DATA.kpi && DATA.kpi[key]) || {}, a = (DATA.agents || []).filter(function (x) { return x.k === key; })[0] || {};
+    var p = (K[ym] && K[ym].p) || a.p || '';
+    if (isAA(p)) return 'aa';
+    if (isDA(p)) return 'da';
+    var av = 0, dv = 0;
+    [ymAdd(ym, -2), ymAdd(ym, -1), ym].forEach(function (m) { var r = K[m]; if (r) { av += r.av || 0; dv += r.dv || 0; } });
+    if (av !== dv) return av > dv ? 'aa' : 'da';
+    var c = K[ym] || {};
+    return (c.dv || 0) > (c.av || 0) ? 'da' : 'aa';
+  }
+  return { ymAdd: ymAdd, estimate: estimate, hasBothSides: hasBothSides, positionSide: positionSide, boostPay: boostPay, boostDetail: boostDetail, t3Sides: t3Sides, aaLookup: aaLookup, daLookup: daLookup, maxBonus: maxBonus, nextTiers: nextTiers, isAA: isAA, isDA: isDA };
+})();
+// CALC-END
+</script>
+
+<script>
+var $ = function (id) { return document.getElementById(id); };
+var DOLLAR = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+function PCT(x) { var v = Math.round(x * 1000) / 10; return (Number.isInteger(v) ? v : v.toFixed(1)) + '%'; }
+function NUM(x) { var r = Math.round(x * 100) / 100; return Number.isInteger(r) ? r.toLocaleString('en-US') : r.toFixed(1); }
+function KMONEY(x) { return Math.abs(x) >= 1000 ? '$' + (Math.round(x / 100) / 10).toLocaleString('en-US') + 'K' : DOLLAR.format(x); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function monthLabel(ym, short) { var p = ym.split('-'); return new Date(+p[0], +p[1] - 1, 1).toLocaleString('en-US', { month: short || window.innerWidth < 720 ? 'short' : 'long', year: 'numeric' }); }
+function moneyIn(s) { var n = parseFloat(String(s || '').replace(/[^0-9.\-]/g, '')); return isFinite(n) ? n : 0; }
+var INFO = '<svg class="info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6"/><circle cx="12" cy="7.6" r="0.6" fill="currentColor"/></svg>';
+var ARROW_DN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+var ARROW_UP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>';
+var BOLT = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>';
+var CHECK = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+var LOCK = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+
+var DATA = null, AUTH_TOKEN = '', VIEWER_EMAIL = '';
+var ST = { key: '', month: '', office: '', mode: 'actual', side: 'aa', role: null, masterState: '', custom: null, sliders: {}, tab: 'stack', sortK: 'tot', sortDir: -1 };
+
+/* ================= sign-in (same model as the OPEX Budget app) ================= */
+var TOKEN_KEY = 'nwStacksToken';
+function savedToken() { try { return localStorage.getItem(TOKEN_KEY) || ''; } catch (e) { return ''; } }
+function storeToken(t) { try { localStorage.setItem(TOKEN_KEY, t); } catch (e) {} }
+function clearToken() { try { localStorage.removeItem(TOKEN_KEY); } catch (e) {} }
+function errText(e) { return String(e && e.message ? e.message : e).replace(/^(Exception|Error):\s*/, ''); }
+function isAuthErr(e) { return /access denied|sign in again/i.test(errText(e)); }
+function authFail(e) { if (!isAuthErr(e)) return false; AUTH_TOKEN = ''; clearToken(); showGate('', !!DATA); return true; }
+
+window.addEventListener('load', function () {
+  AUTH_TOKEN = savedToken();
+  if (!window.google || !google.script) { showGate('This page must be opened from its web-app link.'); return; }
+  google.script.run
+    .withSuccessHandler(function (s) { if (s && s.ok) { hideGate(); loadData(); } else { AUTH_TOKEN = ''; clearToken(); showGate(); } })
+    .withFailureHandler(function () { showGate(); })
+    .getAuthState(AUTH_TOKEN);
+});
+var GATE = { email: '', resume: false };
+function showGate(msg, resume) {
+  GATE.resume = !!resume;
+  $('loader').style.display = 'none';
+  var g = $('auth-gate'); g.style.display = 'flex'; g.classList.toggle('overlay', !!resume);
+  $('ag-step1').style.display = 'block'; $('ag-step2').style.display = 'none';
+  $('ag-note').textContent = resume ? 'Your session ended. Sign in again to keep going.' : '';
+  if (resume && VIEWER_EMAIL) $('ag-email').value = VIEWER_EMAIL;
+  agMsg(!!msg, msg || '');
+  setTimeout(function () { var i = $('ag-email'); if (i) i.focus(); }, 50);
+}
+function hideGate() { $('auth-gate').style.display = 'none'; }
+function agMsg(isErr, text) {
+  var step2 = $('ag-step2').style.display !== 'none';
+  var m = $(step2 ? 'ag-msg2' : 'ag-msg1'), o = $(step2 ? 'ag-msg1' : 'ag-msg2');
+  o.textContent = ''; o.className = 'msg';
+  m.textContent = text || ''; m.className = 'msg' + (text && isErr ? ' err' : '');
+}
+function requestCode() {
+  var email = ($('ag-email').value || '').trim();
+  if (!email || email.indexOf('@') < 1) { agMsg(true, 'Enter a valid email.'); return; }
+  var btn = $('ag-send'); btn.disabled = true; agMsg(false, 'Sending…');
+  google.script.run
+    .withSuccessHandler(function (r) {
+      btn.disabled = false;
+      if (r && r.ok) {
+        GATE.email = email;
+        $('ag-step1').style.display = 'none'; $('ag-step2').style.display = 'block';
+        $('ag-emaillbl').textContent = email; $('ag-code').value = ''; agMsg(false, '');
+        setTimeout(function () { var c = $('ag-code'); if (c) c.focus(); }, 50);
+      } else agMsg(true, r && r.error ? r.error : 'Something went wrong.');
+    })
+    .withFailureHandler(function (e) { btn.disabled = false; agMsg(true, 'Error: ' + errText(e)); })
+    .requestAccessCode(email);
+}
+function verifyCode() {
+  var code = ($('ag-code').value || '').replace(/\D/g, '');
+  if (code.length !== 6) { agMsg(true, 'Enter the 6-digit code from your email.'); return; }
+  var btn = $('ag-verify'); btn.disabled = true; agMsg(false, 'Verifying…');
+  google.script.run
+    .withSuccessHandler(function (r) {
+      btn.disabled = false;
+      if (!(r && r.ok)) { agMsg(true, r && r.error ? r.error : 'Verification failed.'); return; }
+      AUTH_TOKEN = r.token; storeToken(r.token); hideGate();
+      if (GATE.resume && DATA && VIEWER_EMAIL && String(r.email || '').toLowerCase() !== VIEWER_EMAIL.toLowerCase()) { location.reload(); return; }
+      loadData();
+    })
+    .withFailureHandler(function (e) { btn.disabled = false; agMsg(true, 'Error: ' + errText(e)); })
+    .verifyAccessCode(GATE.email, code);
+}
+function agBack() { $('ag-step2').style.display = 'none'; $('ag-step1').style.display = 'block'; $('ag-code').value = ''; agMsg(false, ''); }
+function agResend() { $('ag-email').value = GATE.email; agBack(); requestCode(); }
+function signOutNow() {
+  var t = AUTH_TOKEN; AUTH_TOKEN = ''; clearToken();
+  google.script.run.withSuccessHandler(function () { location.reload(); }).withFailureHandler(function () { location.reload(); }).signOut(t);
+}
+
+/* ================= data ================= */
+function loadData() {
+  $('loader').style.display = 'flex';
+  google.script.run
+    .withSuccessHandler(function (d) { $('loader').style.display = 'none'; onData(d); })
+    .withFailureHandler(function (e) {
+      $('loader').style.display = 'none';
+      if (authFail(e)) return;
+      $('app').style.display = 'block';
+      var b = $('errBox'); b.style.display = 'block'; b.textContent = 'Could not load data: ' + errText(e);
+    })
+    .getStacksData(AUTH_TOKEN);
+}
+
+function onData(d) {
+  DATA = d;
+  VIEWER_EMAIL = d.viewer.email;
+  $('app').style.display = 'block';
+  $('errBox').style.display = 'none';
+  $('whoEmail').textContent = d.viewer.email; $('whoLvl').title = d.viewer.email;   // email also on hover when the header hides it
+  $('whoLvl').textContent = d.viewer.label;
+  var lvl = d.viewer.level;
+
+  // Agents with no KPI rows yet still get a what-if stack.
+  if (!d.agents.filter(function (a) { return !a.example; }).length) {
+    d.agents.unshift({ k: 'x:me', n: 'You', o: '', m: '', p: '' });
+    d.kpi['x:me'] = {};
+    d.viewer.self = ['x:me'];
+    var nb = $('setupBanner'); nb.hidden = false; nb.className = 'banner';
+    nb.textContent = 'We don\'t have any closed deals for ' + d.viewer.email + ' yet, so the stack starts in "Enter my own" mode. If that looks wrong, contact FP&A.';
+    ST.mode = 'custom';
+  }
+  if (d.problems && d.problems.length) {
+    var sb = $('setupBanner'); sb.hidden = false; sb.className = 'banner warn';
+    sb.innerHTML = '<b>Setup notes (Master only):</b><ul>' + d.problems.slice(0, 12).map(function (p) { return '<li>' + esc(p) + '</li>'; }).join('') + '</ul>';
+  }
+
+  // months (newest first); default = this month if it has data, else the latest
+  var ms = (d.months || []).slice().sort().reverse();
+  if (!ms.length) ms = [d.currentMonth];
+  ['monthSel', 'tMonth'].forEach(function (id) {
+    var s = $(id); s.innerHTML = '';
+    ms.forEach(function (m) { var o = document.createElement('option'); o.value = m; o.textContent = monthLabel(m); s.appendChild(o); });
+  });
+  ST.month = ms.indexOf(d.currentMonth) > -1 ? d.currentMonth : ms[0];
+  $('monthSel').value = ST.month; $('tMonth').value = ST.month;
+
+  // states for "Enter my own"
+  var sts = Object.keys(d.grids.base).sort(), ws = $('stateSel');
+  ws.innerHTML = '<option value="">Select a state</option>';
+  sts.forEach(function (s) { var o = document.createElement('option'); o.value = s; o.textContent = s; ws.appendChild(o); });
+
+  // team tab for Master / GM
+  var canTeam = lvl === 'master' || lvl === 'gm';
+  $('tabs').hidden = !canTeam;
+
+  // office filter (Master always; GM if several offices)
+  var offices = uniq(d.agents.map(function (a) { return a.o; }).filter(String)).sort();
+  var showOff = canTeam && offices.length > 1;
+  $('officeField').hidden = !showOff; $('tOfficeField').hidden = !showOff;
+  ['officeSel', 'tOffice'].forEach(function (id) {
+    var s = $(id); s.innerHTML = '<option value="">All offices</option>';
+    offices.forEach(function (o) { var op = document.createElement('option'); op.value = o; op.textContent = o; s.appendChild(op); });
+  });
+
+  ST.key = (d.viewer.self && d.viewer.self[0]) || (d.agents[0] && d.agents[0].k) || '';
+  buildAgentSelect();
+  buildStack();
+  syncModeUI();
+  if (d.asOf) $('asOf').textContent = ' Data refreshed ' + new Date(d.asOf).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) + '.';
+  render(true);
+  if (canTeam) renderTeam();
+}
+function uniq(a) { var s = {}, o = []; a.forEach(function (x) { if (!s[x]) { s[x] = 1; o.push(x); } }); return o; }
+
+function agentsInScope() {
+  var lvl = DATA.viewer.level;
+  if (lvl === 'agent') return DATA.agents.filter(function (a) { return a.example || DATA.viewer.self.indexOf(a.k) > -1; });
+  return DATA.agents.filter(function (a) { return a.example || !ST.office || a.o === ST.office; });
+}
+// The dropdown lists each NAME once. If that name has entries in two offices (two people with the same name,
+// or a GM/Master seeing someone split by office), an office picker appears next to it.
+function nameGroups() {
+  var g = {}, order = [];
+  agentsInScope().forEach(function (a) { if (!g[a.n]) { g[a.n] = []; order.push(a.n); } g[a.n].push(a); });
+  return { g: g, order: order };
+}
+function buildAgentSelect() {
+  var G = nameGroups(), sel = $('agentSel'), cur = agentObj();
+  if (!G.order.length) return;
+  var curName = cur.n && G.g[cur.n] ? cur.n : G.order[0];
+  if (!G.g[curName].some(function (a) { return a.k === ST.key; })) ST.key = G.g[curName][0].k;
+  var locked = DATA.viewer.level === 'agent' && G.order.length <= 1;
+  $('agentSelWrap').hidden = locked; $('agentLocked').hidden = !locked;
+  if (locked) $('agentLocked').textContent = curName;
+  else {
+    sel.innerHTML = '';
+    G.order.forEach(function (n) { var o = document.createElement('option'); o.value = n; o.textContent = n; sel.appendChild(o); });
+    sel.value = curName;
+  }
+  buildOfficePicker(G.g[curName]);
+}
+function buildOfficePicker(entries) {
+  var f = $('agentOfficeField'), seg = $('agentOfficeSeg');
+  if (!entries || entries.length < 2) { f.hidden = true; seg.innerHTML = ''; return; }
+  f.hidden = false;
+  f.querySelector('label').textContent = 'In ' + entries.length + ' offices — pick one';
+  seg.innerHTML = '';
+  entries.forEach(function (a) {
+    var b = document.createElement('button'); b.type = 'button'; b.textContent = a.o || 'Unknown office';
+    b.className = a.k === ST.key ? 'on' : '';
+    b.addEventListener('click', function () { if (ST.key === a.k) return; ST.key = a.k; buildAgentSelect(); resetSliders(); render(true); });
+    seg.appendChild(b);
+  });
+}
+function agentObj() { return DATA.agents.filter(function (a) { return a.k === ST.key; })[0] || {}; }
+
+/* ================= stack (rows + battery cells share grid rows) ================= */
+function buildStack() {
+  var boosts = DATA.boosts.slice().reverse();          // top of battery first
+  var segs = boosts.map(function (b) { return { kind: b.status === 'live' ? 'boost' : 'upcoming', b: b }; });
+  segs.push({ kind: 'bonus' }); segs.push({ kind: 'base' });
+  var h = [];
+  h.push('<div class="stack-head"><div><h2>Boost Builder</h2><div class="note">Use the arrows on each boost to light up its bar. Fill every bar to fully charge the battery.</div></div>'
+    + '<div class="btns"><button class="btn" onclick="resetSliders()">Reset</button><button class="btn gold" onclick="maxSliders()">' + BOLT + ' Max it out</button></div></div>');
+  var cells = [];
+  segs.forEach(function (s, i) {
+    var row = i + 2, first = i === 0 ? ' first' : '', last = i === segs.length - 1 ? ' last' : '';
+    var dly = ';--d:' + ((segs.length - 1 - i) * 70) + 'ms';
+    if (s.kind === 'base' || s.kind === 'bonus') {
+      var isBase = s.kind === 'base';
+      h.push('<div class="srow ' + s.kind + (last ? ' last-row' : '') + '" style="grid-row:' + row + '">'
+        + '<div class="sr-top"><div class="sr-name">' + (isBase ? 'Commission %' : 'Bonus') + ' <span class="tag ' + (isBase ? 'green' : 'green') + '">' + (isBase ? 'Base earnings tier' : 'Performance tier') + '</span></div>'
+        + '<div class="sr-pct" id="r-' + s.kind + '-pct">0%</div><div class="sr-dol" id="r-' + s.kind + '-dol">$0</div></div>'
+        + '<div class="sr-desc" id="r-' + s.kind + '-desc"></div>' + (isBase ? '' : '<div class="hints" id="r-bonus-hints"></div>') + '</div>');
+      cells.push('<div class="cell ' + s.kind + first + last + '" id="c-' + s.kind + '" style="' + dly.slice(1) + '"><div class="fill"></div>'
+        + '<div class="c-name">' + (isBase ? CHECK + ' Commission %' : BOLT + ' + Bonus') + '</div>'
+        + '<div class="c-val"><span class="cv-pct" id="c-' + s.kind + '-pct"></span><span class="cv-dol" id="c-' + s.kind + '-dol"></span></div>'
+        + '<div class="c-sub" id="c-' + s.kind + '-sub">' + (isBase ? 'Base Earnings Tier' : 'Performance Tier') + '</div></div>');
+      return;
+    }
+    var b = s.b, up = s.kind === 'upcoming', fr = i === 0 ? ' first-row' : '';
+    var rateTxt = !b.rate ? 'Rate TBD' : (isPctUnit(b) ? 'Up to ' + PCT(b.rate * b.max) + ' boost' : PCT(b.rate) + ' per ' + unitSingular(b.unit));
+    h.push('<div class="srow ' + (up ? 'upcoming' : 'live') + fr + '" style="grid-row:' + row + '">'
+      + '<div class="sr-top"><div class="sr-name">' + (guideKey(b) ? '<button type="button" class="sr-link" onclick="openGuide(\'' + guideKey(b) + '\', this)" title="How ' + esc(b.name) + ' works">' + esc(b.name) + INFO + '</button>' : esc(b.name)) + (up ? ' <span class="tag grey">' + LOCK + ' Upcoming</span>'
+        : ' <span class="tag gold" id="r-' + b.id + '-tag">' + esc(isPctUnit(b) ? 'Up to ' + PCT(b.rate * b.max) : rateTxt) + '</span>'
+        + '<span class="sr-cap" id="r-' + b.id + '-capbox" hidden><span class="cap-badge" id="r-' + b.id + '-cap"></span><span class="cap-fine" id="r-' + b.id + '-fine"></span></span>') + '</div>'
+      + '<div class="sr-pctbox"><div class="sr-pct" id="r-' + b.id + '-pct">' + (up ? '—' : '0%') + '</div></div>'
+      + '<div class="sr-dol" id="r-' + b.id + '-dol">' + (up ? '—' : '$0') + '</div></div>'
+      + '<div class="sr-desc">' + esc(stripLimits(b.desc)) + '</div>'
+      + '<div class="slider-block" id="sb-' + b.id + '">'
+      + '<div class="stp"><button type="button" class="stp-btn" id="dn-' + b.id + '" data-id="' + b.id + '" data-d="-1" aria-label="Decrease ' + esc(b.name) + '"' + (up ? ' disabled' : '') + '>' + ARROW_DN + '</button>'
+      + '<b class="stp-val" id="sv-' + b.id + '" aria-live="polite">0</b>'
+      + '<button type="button" class="stp-btn" id="up-' + b.id + '" data-id="' + b.id + '" data-d="1" aria-label="Increase ' + esc(b.name) + '"' + (up ? ' disabled' : '') + '>' + ARROW_UP + '</button></div></div></div>');
+    cells.push('<div class="cell ' + (up ? 'upcoming' : 'boost') + first + last + '" id="c-' + b.id + '" style="' + dly.slice(1) + '"><div class="fill"></div>'
+      + '<div class="c-name">' + (up ? LOCK : BOLT) + ' + ' + esc(b.name) + '</div>'
+      + (up ? '' : '<div class="c-val"><span class="cv-pct" id="c-' + b.id + '-pct"></span><span class="cv-dol" id="c-' + b.id + '-dol"></span></div>')
+      + '<div class="c-sub" id="c-' + b.id + '-sub">' + (up ? 'Upcoming' : (isPctUnit(b) ? '' : esc(rateTxt))) + '</div></div>');
+  });
+  $('stack').innerHTML = h.join('');
+  $('battery').innerHTML = '<div class="batt-frame">' + cells.join('') + '</div>'
+    + '<div class="batt-total"><div class="bt-label">Est. Total Pay</div><div class="bt-nums"><span class="bt-pct" id="bTotPct">0%</span><span class="bt-dol" id="bTotDol">$0</span></div></div>';
+  DATA.boosts.forEach(function (b) {
+    if (ST.sliders[b.id] == null) ST.sliders[b.id] = b.min;
+    ['dn-', 'up-'].forEach(function (pre) { var btn = $(pre + b.id); if (btn) holdRepeat(btn, function () { return stepBoost(b.id, Number(btn.getAttribute('data-d'))); }); });
+  });
+}
+function isPctUnit(b) { return /%/.test(b.unit || ''); }
+// Min / max $ live in the badge tooltip, not the description — drop any "($500 min / $5,000 max …)" text
+function stripLimits(d) { return String(d || '').replace(/\s*\([^)]*\b(min|max)\b[^)]*\)/ig, '').replace(/\s*[·\-–—]\s*\$[\d,]+\s*min[^·]*$/i, '').trim(); }
+function capTip(b, cap) {
+  var amt = cap === 'max' ? b.maxPay : b.minPay;
+  return 'The ' + cap + ' for this program is ' + DOLLAR.format(amt || 0) + (b.cap === 'step' ? ' per ' + unitSingular(b.unit) : (b.cap === 'month' ? ' per month' : ''));
+}
+function unitSingular(u) { u = String(u || '').toLowerCase(); if (/%/.test(u)) return 'step'; return u.replace(/ies$/, 'y').replace(/s$/, ''); }
+function sliderLabel(b, n) { return isPctUnit(b) ? PCT(b.rate * n) : String(n); }
+function bump(id) { var c = $('c-' + id); if (!c) return; c.classList.remove('bump'); void c.offsetWidth; c.classList.add('bump'); setTimeout(function () { c.classList.remove('bump'); }, 260); }
+function resetSliders() { DATA.boosts.forEach(function (b) { ST.sliders[b.id] = b.min; }); render(false); }
+function maxSliders() { DATA.boosts.forEach(function (b) { if (b.status !== 'live') return; ST.sliders[b.id] = b.max; }); render(false); }
+// up / down arrows: one step per click; hold to keep stepping
+function setBoost(id, n) {
+  var b = DATA.boosts.filter(function (x) { return x.id === id; })[0]; if (!b || b.status !== 'live') return false;
+  var v = Math.max(b.min, Math.min(b.max, Math.round(Number(n) / b.step) * b.step));
+  if (v === Number(ST.sliders[id] || 0)) return false;
+  ST.sliders[id] = v; bump(id); render(false); return true;
+}
+function stepBoost(id, dir) {
+  var b = DATA.boosts.filter(function (x) { return x.id === id; })[0]; if (!b) return false;
+  return setBoost(id, Number(ST.sliders[id] || 0) + dir * b.step);
+}
+function holdRepeat(btn, fn) {
+  var t1 = null, t2 = null;
+  function stop() { clearTimeout(t1); clearInterval(t2); t1 = t2 = null; }
+  btn.addEventListener('pointerdown', function (e) {
+    if (btn.disabled || (e.button != null && e.button !== 0)) return;
+    e.preventDefault(); fn();
+    t1 = setTimeout(function () { t2 = setInterval(function () { if (!fn()) stop(); }, 110); }, 380);
+  });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) { btn.addEventListener(ev, stop); });
+  btn.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(); } });
+}
+
+/* ================= mode: My KPIs vs Enter my own ================= */
+// "Enter my own": the Units and Volume boxes become inputs for the selected side (AA or DA).
+// Whatever is entered is treated as this month's numbers AND the 3-month average.
+function setMode(m) {
+  if (m === 'custom' && ST.mode !== 'custom') ST.side = defaultSide();
+  ST.mode = m;
+  if (m === 'custom' && !ST.custom) seedCustom();
+  syncModeUI(); render(false);
+  if (m === 'custom') setTimeout(function () { var i = $('inUnits'); if (i) i.focus(); }, 30);
+}
+// State used to price "Enter my own":
+//  Masters pick it in the State filter (required, flashes gold until picked).
+//  Agents / GMs get it automatically — the selected agent's state, else their own, else their office's most common.
+function isMaster() { return DATA && DATA.viewer.level === 'master'; }
+function primaryState(key) { return key ? StackCalc.estimate(DATA, key, ST.month, {}).primary || '' : ''; }
+function autoState() {
+  var st = primaryState(ST.key);
+  if (!st) (DATA.viewer.self || []).some(function (k) { return (st = primaryState(k)); });
+  if (!st) {
+    var cnt = {};
+    DATA.agents.forEach(function (a) { if (!a.example) { var p = primaryState(a.k); if (p) cnt[p] = (cnt[p] || 0) + 1; } });
+    st = Object.keys(cnt).sort(function (x, y) { return cnt[y] - cnt[x]; })[0] || '';
+  }
+  return st;
+}
+function customState() { return isMaster() ? ST.masterState || '' : autoState(); }
+function seedCustom() {
+  var k = (DATA.kpi[ST.key] || {})[ST.month] || {};
+  ST.custom = { au: k.au || 0, av: k.av || 0, du: k.du || 0, dv: k.dv || 0, state: customState() };
+  fillInputs();
+}
+function fillInputs() {
+  if (!ST.custom) return;
+  var u = ST.side === 'aa' ? ST.custom.au : ST.custom.du, v = ST.side === 'aa' ? ST.custom.av : ST.custom.dv;
+  $('inUnits').value = u ? NUM(u) : '';
+  $('inVol').value = v ? DOLLAR.format(v) : '';
+}
+function syncModeUI() {
+  var custom = ST.mode === 'custom';
+  document.querySelectorAll('#modeSeg button').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-mode') === ST.mode); });
+  document.body.classList.toggle('custom', custom);
+  $('statsActual').hidden = custom; $('statsCustom').hidden = !custom;
+  $('stateField').hidden = !(custom && isMaster());
+  $('stateField').classList.toggle('needs', custom && isMaster() && !ST.masterState);
+  if (custom) fillInputs();
+}
+// Acquisition / Disposition Agents are only ever modelled on their own side; others (SLM, GM, Example Agent) can pick.
+function lockedSide() {
+  var a = agentObj(); if (a.example) return null;
+  var k = (DATA.kpi[ST.key] || {})[ST.month] || {}, p = k.p || a.p || '';
+  return StackCalc.isAA(p) ? 'aa' : (StackCalc.isDA(p) ? 'da' : null);
+}
+function setSide(side) {          // Enter my own: which side (AA / DA) is being modelled
+  var lk = lockedSide(); if (lk && side !== lk) return;
+  ST.side = side;
+  fillInputs();
+  render(false);
+}
+/* MAX REACHED / MIN APPLIED tooltip: hover (desktop), focus (keyboard) or tap (phone) */
+(function () {
+  var tip = document.createElement('div'); tip.id = 'capTip'; tip.setAttribute('role', 'tooltip'); document.body.appendChild(tip);
+  var cur = null;
+  function show(el) {
+    cur = el; tip.textContent = el.getAttribute('data-tip');
+    tip.className = /\bmax\b/.test(el.className) ? 'max' : 'min';
+    var r = el.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+    var x = Math.max(8, Math.min(window.innerWidth - w - 8, r.left + r.width / 2 - w / 2)), y = r.top - h - 8;
+    if (y < 8) y = r.bottom + 8;
+    tip.style.left = x + 'px'; tip.style.top = y + 'px'; tip.classList.add('show');
+  }
+  function hide() { cur = null; tip.classList.remove('show'); }
+  function tipEl(t) { return t && t.closest ? t.closest('.cap-badge[data-tip]') : null; }
+  document.addEventListener('mouseover', function (e) { var el = tipEl(e.target); if (el) show(el); else if (cur) hide(); });
+  document.addEventListener('focusin', function (e) { var el = tipEl(e.target); if (el) show(el); });
+  document.addEventListener('focusout', function (e) { if (tipEl(e.target)) hide(); });
+  document.addEventListener('click', function (e) { var el = tipEl(e.target); if (el) show(el); else if (cur) hide(); });
+  window.addEventListener('scroll', hide, true);
+})();
+/* ---- boost guide pictures: click a boost title → picture on screen (no new tab) ---- */
+function guideKey(b) {
+  var n = String(b && b.name || '').toLowerCase();
+  if (/referr/.test(n) && /agent/.test(n)) return 'referral';
+  if (/deal\s*ops/.test(n)) return 'dealops';
+  if (/consult/.test(n)) return 'consultancy';
+  return '';
+}
+var GUIDE_IMG = {}, GUIDE_NAMES = { referral: 'Agent Referral', dealops: 'Deal Ops Assist', consultancy: 'Consultancy Program' }, GUIDE_FROM = null;
+function openGuide(key, from) {
+  GUIDE_FROM = from || null;
+  var m = $('guideModal'), w = $('gmImg');
+  $('gmTitle').textContent = (GUIDE_NAMES[key] || 'Boost') + ' — how it works';
+  w.classList.remove('zoom');
+  m.classList.add('show'); m.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  $('gmClose').focus();
+  if (GUIDE_IMG[key]) { w.innerHTML = '<img alt="' + esc(GUIDE_NAMES[key]) + ' program details" src="' + GUIDE_IMG[key] + '">'; return; }
+  w.innerHTML = '<div class="gm-load"><div class="spin"></div>Loading…</div>';
+  google.script.run
+    .withSuccessHandler(function (src) {
+      if (!src) { w.innerHTML = '<div class="gm-load">Details for this boost aren\'t available yet.</div>'; return; }
+      GUIDE_IMG[key] = src;
+      if ($('guideModal').classList.contains('show')) w.innerHTML = '<img alt="' + esc(GUIDE_NAMES[key]) + ' program details" src="' + src + '">';
+    })
+    .withFailureHandler(function (e) { if (authFail(e)) { closeGuide(); return; } w.innerHTML = '<div class="gm-load">Couldn\'t load the details: ' + esc(errText(e)) + '</div>'; })
+    .getBoostGuide(AUTH_TOKEN, key);
+}
+function closeGuide() {
+  var m = $('guideModal'); if (!m.classList.contains('show')) return;
+  m.classList.remove('show'); m.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+  if (GUIDE_FROM && GUIDE_FROM.focus) GUIDE_FROM.focus();
+}
+$('guideModal').addEventListener('click', function (e) { if (e.target === this) closeGuide(); });
+$('gmImg').addEventListener('click', function (e) { if (e.target.tagName === 'IMG' && window.innerWidth <= 720) this.classList.toggle('zoom'); });
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeGuide(); });
+
+function readCustom() {
+  if (!ST.custom) seedCustom();
+  var u = Math.max(0, parseFloat(String($('inUnits').value).replace(/[^0-9.]/g, '')) || 0), v = Math.max(0, moneyIn($('inVol').value));
+  if (ST.side === 'aa') { ST.custom.au = u; ST.custom.av = v; } else { ST.custom.du = u; ST.custom.dv = v; }
+  ST.custom.state = customState();
+}
+['inUnits', 'inVol'].forEach(function (id) { $(id).addEventListener('input', function () { readCustom(); render(false); }); });
+$('stateSel').addEventListener('change', function () {
+  ST.masterState = this.value;
+  if (ST.custom) ST.custom.state = ST.masterState;
+  syncModeUI(); render(false);
+});
+$('inVol').addEventListener('blur', function () { var n = moneyIn(this.value); this.value = n ? DOLLAR.format(n) : ''; });
+$('inVol').addEventListener('focus', function () { var n = moneyIn(this.value); this.value = n ? String(Math.round(n)) : ''; this.select(); });
+['inUnits', 'inVol'].forEach(function (id) { $(id).addEventListener('keydown', function (e) { if (e.key === 'Enter') this.blur(); }); });
+// The side this agent is paid on (their position; non-AA/DA = bigger 3-month side)
+function defaultSide() { return StackCalc.positionSide(DATA, ST.key, ST.month); }
+
+/* ================= render ================= */
+function render(agentChanged) {
+  if (!DATA || !ST.key) return;
+  var a = agentObj();
+  if (agentChanged) { ST.side = defaultSide(); ST.role = null; ST.custom = null; if (ST.mode === 'custom') seedCustom(); }
+  var custom = ST.mode === 'custom' && ST.custom;
+  if (custom) ST.custom.state = customState();                      // agent changed → auto state follows (non-masters)
+  var needState = custom && !ST.custom.state;
+  var opt = custom ? { override: needState ? Object.assign({}, ST.custom, { state: 'XX' }) : ST.custom, pace: true } : {};
+  // Only ONE side is ever shown and paid (boosts included): the agent's position side.
+  // Enter my own: the side picked in the AA / DA box.
+  if (custom && lockedSide()) ST.side = lockedSide();
+  ST.role = custom ? ST.side : defaultSide();
+  opt.role = ST.role;
+  var E = StackCalc.estimate(DATA, ST.key, ST.month, opt);
+  var V = E.vol, mLab = monthLabel(ST.month);
+
+  var posTxt = a.example ? 'Example Agent' : (E.pos || a.p || 'Agent');
+  // non-AA/DA positions (SLM, GM…) show which side they're being paid on
+  if (!a.example && !StackCalc.isAA(posTxt) && !StackCalc.isDA(posTxt)) posTxt += ' · ' + (ST.role === 'aa' ? 'AA' : 'DA');
+  $('posBadge').textContent = posTxt;
+
+  var cur = E.cur, shown = E.active.length ? E.active : E.sides;
+  if (!custom) {
+    // My KPIs — the original four boxes
+    $('stUnits').textContent = NUM((cur.au || 0) + (cur.du || 0));
+    $('stVol').textContent = DOLLAR.format((cur.av || 0) + (cur.dv || 0));
+    // their position's side only; any volume on the other side is acknowledged, never counted
+    var SDL = ST.role === 'aa' ? 'AA' : 'DA', oth = ST.role === 'aa' ? 'DA' : 'AA', f = E.full || {};
+    var ou = ST.role === 'aa' ? f.du || 0 : f.au || 0, ov = ST.role === 'aa' ? f.dv || 0 : f.av || 0;
+    $('stUnitsSub').textContent = SDL + ' units — ' + mLab;
+    $('stVolSub').textContent = (ou || ov) ? oth + ' ' + NUM(ou) + ' unit' + (ou === 1 ? '' : 's') + ' / ' + KMONEY(ov) + ' not included' : SDL + ' volume';
+  } else {
+    // Enter my own — inputs are for the selected side; the AA / DA box shows what's entered for each
+    var SD = ST.side === 'aa' ? 'AA' : 'DA';
+    $('stateNote').innerHTML = needState ? (isMaster() ? 'Pick a <b>State</b> above to price base + bonus' : 'No state on file — contact FP&amp;A')
+      : 'State: <b>' + esc(ST.custom.state) + '</b>' + (isMaster() ? '' : ' (auto)');
+    $('lblUnits').textContent = SD + ' Units'; $('lblVol').textContent = SD + ' Volume';
+    var lk = lockedSide();
+    document.querySelectorAll('#sideSeg button').forEach(function (r) {
+      var sd = r.getAttribute('data-side');
+      r.classList.toggle('on', sd === ST.side);
+      r.disabled = !!lk && sd !== lk;
+      r.title = r.disabled ? (lk === 'aa' ? 'Acquisition' : 'Disposition') + ' Agents are estimated on ' + lk.toUpperCase() + ' volume only' : (sd === 'aa' ? 'Acquisition (AA) side' : 'Disposition (DA) side');
+    });
+    $('unitsNote').textContent = 'This month + 3-mo avg' + (lk ? '' : ' · pick AA or DA');
+  }
+
+  // base + bonus rows
+  $('r-base-pct').textContent = V ? PCT(E.basePct) : PCT(shown[0] ? shown[0].baseRate : 0);
+  $('r-base-dol').textContent = DOLLAR.format(E.base);
+  $('r-base-desc').innerHTML = shown.map(function (s) {
+    return '<b>' + (E.combined ? 'AA+DA' : s.side.toUpperCase()) + ' ' + PCT(s.baseRate) + '</b> base' + (s.st ? ' (' + esc(s.st) + ')' : '') + ' × ' + DOLLAR.format(s.vol) + ' volume';
+  }).join(' &nbsp;·&nbsp; ') || 'No volume this month';
+  $('r-bonus-pct').textContent = V ? PCT(E.bonusPct) : PCT(shown[0] ? shown[0].bonusRate : 0);
+  $('r-bonus-dol').textContent = DOLLAR.format(E.bonus);
+  $('r-bonus-desc').innerHTML = shown.map(function (s) {
+    var lab = E.combined ? 'AA+DA' : s.side.toUpperCase();
+    if (s.gridRate == null) return '<b>' + lab + '</b> 3-mo avg ' + s.t3u + ' units · ' + KMONEY(s.t3v) + ' — below the first bonus tier';
+    return '<b>' + lab + '</b> 3-mo avg ' + s.t3u + ' units · ' + KMONEY(s.t3v) + ' → ' + PCT(s.gridRate) + ' grid − ' + PCT(s.baseRate) + ' base = <b>' + PCT(s.bonusRate) + '</b>';
+  }).join('<br>');
+  var hints = [];
+  shown.forEach(function (s) { (s.next || []).forEach(function (n) {
+    hints.push('<span class="hint">↑ ' + (n.kind === 'units' ? n.need + ' units/mo avg' : KMONEY(n.need) + '/mo avg volume') + ' → ' + PCT(n.rate) + ' bonus</span>');
+  }); });
+  $('r-bonus-hints').innerHTML = hints.join('');
+
+  // boosts
+  var boostTot = 0, fills = [], allLit = true;
+  DATA.boosts.forEach(function (b) {
+    var n = Number(ST.sliders[b.id] || 0), live = b.status === 'live';
+    var det = StackCalc.boostDetail(b, n, V), pay = det.pay; boostTot += pay;
+    var pct = V ? pay / V : (live ? b.rate * n : 0);          // real % (battery, hero, totals)
+    var sv = $('sv-' + b.id); if (sv) sv.textContent = sliderLabel(b, n);
+    var sb = $('sb-' + b.id); if (sb) sb.classList.toggle('has', live && n > 0);
+    var dn = $('dn-' + b.id), upb = $('up-' + b.id);
+    if (dn) dn.disabled = !live || n <= b.min; if (upb) upb.disabled = !live || n >= b.max;
+    if (live) {
+      // stack row: the % ignoring min/max, with a badge + fine print when a min/max changed the payout
+      $('r-' + b.id + '-pct').textContent = PCT(det.rawPct);
+      $('r-' + b.id + '-dol').textContent = DOLLAR.format(pay);
+      var cb = $('r-' + b.id + '-cap'), cf = $('r-' + b.id + '-fine');
+      $('r-' + b.id + '-capbox').hidden = !det.cap; $('r-' + b.id + '-tag').hidden = !!det.cap || isPctUnit(b);   // no "Up to 14%" pill on % boosts (Consultancy); the arrows still stop at the max
+      if (det.cap) {
+        cb.className = 'cap-badge ' + det.cap;
+        cb.textContent = det.cap === 'max' ? 'MAX REACHED' : 'MIN APPLIED';
+        cb.setAttribute('data-tip', capTip(b, det.cap)); cb.setAttribute('tabindex', '0'); cb.setAttribute('aria-label', capTip(b, det.cap));
+        cf.textContent = det.adjPct != null ? det.cap + ' adj. ' + PCT(det.adjPct) : '';   // the $ min / max is in the badge's hover tooltip
+      }
+      var on = n > 0; fills.push(on ? 1 : 0); if (!on) allLit = false;
+      $('c-' + b.id).classList.toggle('lit', on);
+      $('c-' + b.id + '-pct').textContent = PCT(pct); $('c-' + b.id + '-dol').textContent = DOLLAR.format(pay);
+      $('c-' + b.id + '-sub').textContent = isPctUnit(b) ? '' : n > 0 ? ( sliderLabel(b, n) + ' ' + (n === 1 ? unitSingular(b.unit) : b.unit.toLowerCase())) : (!b.rate ? '' : (isPctUnit(b) ? 'Up to ' + PCT(b.rate * b.max) + ' boost' : PCT(b.rate) + ' per ' + unitSingular(b.unit)));
+    }
+  });
+
+  // battery: base + bonus cells
+  var baseLit = E.base > 0 || V > 0;
+  $('c-base').classList.toggle('lit', baseLit);
+  $('c-base-pct').textContent = PCT(E.basePct); $('c-base-dol').textContent = DOLLAR.format(E.base);
+  var bonusLit = E.bonus > 0;
+  $('c-bonus').classList.toggle('lit', bonusLit);
+  $('c-bonus-pct').textContent = PCT(E.bonusPct); $('c-bonus-dol').textContent = DOLLAR.format(E.bonus);
+  fills.unshift(baseLit ? 1 : 0, bonusLit ? 1 : 0);
+  // Full = every live bar has something in it (base, bonus and each live boost)
+  var full = baseLit && bonusLit && allLit && DATA.boosts.some(function (b) { return b.status === 'live'; });
+  $('stack').classList.toggle('full', !!full); $('battery').classList.toggle('full', !!full);
+
+  // hero + total
+  var tot = E.base + E.bonus + boostTot;
+  $('hBasePct').textContent = PCT(E.basePct); $('hBaseDol').textContent = DOLLAR.format(E.base);
+  $('hBonusPct').textContent = PCT(E.bonusPct); $('hBonusDol').textContent = DOLLAR.format(E.bonus);
+  $('hBoostPct').textContent = V ? PCT(boostTot / V) : '—'; $('hBoostDol').textContent = DOLLAR.format(boostTot);
+  $('hTotPct').textContent = V ? PCT(tot / V) : '—'; $('hTotDol').textContent = DOLLAR.format(tot);
+  $('totPct').textContent = V ? PCT(tot / V) : '—'; $('totDol').textContent = DOLLAR.format(tot);
+  $('bTotPct').textContent = V ? PCT(tot / V) : '—'; $('bTotDol').textContent = DOLLAR.format(tot);
+
+  var w = needState ? ['Select a state to price base and bonus for these numbers.'] : uniq(E.warn);
+  $('calcWarn').hidden = !w.length; $('calcWarn').textContent = w.join(' ');
+}
+
+/* ================= team view ================= */
+function switchTab(t) {
+  ST.tab = t;
+  document.querySelectorAll('.tab').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-tab') === t); });
+  $('view-stack').hidden = t !== 'stack'; $('view-team').hidden = t !== 'team';
+  if (t === 'team') renderTeam();
+}
+function renderTeam() {
+  if (!DATA) return;
+  var m = $('tMonth').value, off = $('tOffice').value, q = ($('tSearch').value || '').trim().toLowerCase(), onlyActive = $('tActive').checked;
+  var rows = [];
+  DATA.agents.forEach(function (a) {
+    if (a.example) return;
+    if (off && a.o !== off) return;
+    if (q && String(a.n).toLowerCase().indexOf(q) < 0) return;
+    var k = (DATA.kpi[a.k] || {})[m] || { au: 0, av: 0, du: 0, dv: 0 };
+    if (onlyActive && !(k.au || k.du || k.av || k.dv)) return;
+    var E = StackCalc.estimate(DATA, a.k, m, { role: StackCalc.positionSide(DATA, a.k, m) });   // position side only, like the stack
+    var t3 = (E.active.length ? E.active : E.sides).map(function (s) { return s.t3u; });
+    rows.push({ k: a.k, n: a.n, o: a.o, p: k.p || a.p, au: k.au || 0, av: k.av || 0, du: k.du || 0, dv: k.dv || 0, t3u: Math.max.apply(null, t3.concat([0])), base: E.base, bonus: E.bonus, tot: E.base + E.bonus });
+  });
+  var sk = ST.sortK, dir = ST.sortDir;
+  rows.sort(function (x, y) { var a = x[sk], b = y[sk]; if (typeof a === 'string') return dir * String(a).localeCompare(String(b)); return dir * ((a || 0) - (b || 0)); });
+  document.querySelectorAll('#teamTbl th').forEach(function (th) { th.classList.toggle('sorted', th.getAttribute('data-k') === sk); });
+  var tb = $('teamTbl').querySelector('tbody'), T = { au: 0, av: 0, du: 0, dv: 0, base: 0, bonus: 0, tot: 0 };
+  tb.innerHTML = rows.map(function (r) {
+    ['au', 'av', 'du', 'dv', 'base', 'bonus', 'tot'].forEach(function (f) { T[f] += r[f]; });
+    return '<tr data-k="' + esc(r.k) + '"><td><b>' + esc(r.n) + '</b></td><td class="muted">' + esc(r.o) + '</td><td class="muted">' + esc(r.p) + '</td>'
+      + '<td class="num">' + NUM(r.au) + '</td><td class="num">' + DOLLAR.format(r.av) + '</td><td class="num">' + NUM(r.du) + '</td><td class="num">' + DOLLAR.format(r.dv) + '</td>'
+      + '<td class="num">' + r.t3u + '</td><td class="num">' + DOLLAR.format(r.base) + '</td><td class="num">' + DOLLAR.format(r.bonus) + '</td><td class="num gold">' + DOLLAR.format(r.tot) + '</td></tr>';
+  }).join('') || '<tr><td colspan="11" class="muted" style="text-align:center;padding:24px">No agents match.</td></tr>';
+  $('teamTbl').querySelector('tfoot').innerHTML = rows.length ? '<tr><td>Total · ' + rows.length + ' agents</td><td></td><td></td><td class="num">' + NUM(T.au) + '</td><td class="num">' + DOLLAR.format(T.av) + '</td><td class="num">' + NUM(T.du) + '</td><td class="num">' + DOLLAR.format(T.dv) + '</td><td></td><td class="num">' + DOLLAR.format(T.base) + '</td><td class="num">' + DOLLAR.format(T.bonus) + '</td><td class="num gold">' + DOLLAR.format(T.tot) + '</td></tr>' : '';
+}
+document.querySelectorAll('#teamTbl th').forEach(function (th) {
+  th.addEventListener('click', function () { var k = th.getAttribute('data-k'); if (ST.sortK === k) ST.sortDir *= -1; else { ST.sortK = k; ST.sortDir = (k === 'n' || k === 'o' || k === 'p') ? 1 : -1; } renderTeam(); });
+});
+$('teamTbl').querySelector('tbody').addEventListener('click', function (e) {
+  var tr = e.target.closest('tr[data-k]'); if (!tr) return;
+  ST.key = tr.getAttribute('data-k'); ST.month = $('tMonth').value; $('monthSel').value = ST.month;
+  ST.office = ''; $('officeSel').value = ''; buildAgentSelect();
+  resetSliders(); switchTab('stack'); render(true); window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+['tMonth', 'tOffice', 'tActive'].forEach(function (id) { $(id).addEventListener('change', renderTeam); });
+$('tSearch').addEventListener('input', renderTeam);
+
+/* ================= selectors ================= */
+$('monthSel').addEventListener('change', function () { ST.month = this.value; $('tMonth').value = ST.month; render(true); });
+$('agentSel').addEventListener('change', function () {
+  var G = nameGroups(), ents = G.g[this.value] || [];
+  ST.key = ents.length ? ents[0].k : ST.key;
+  buildAgentSelect(); resetSliders(); render(true);
+});
+$('officeSel').addEventListener('change', function () { ST.office = this.value; buildAgentSelect(); resetSliders(); render(true); });
+</script>
+</body>
+</html>

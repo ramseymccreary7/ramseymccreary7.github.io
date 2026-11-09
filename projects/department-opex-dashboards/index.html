@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../../assets/gas-mock.js"></script>
+<script src="../../assets/fake.js"></script>
+<script src="mock.js"></script>
+
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Department OPEX: Actual vs Budget — Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="../../assets/vendor/chart.umd.min.js"></script>
+<style>
+[hidden]{display:none!important}
+:root{
+  --lion:#C0985C; --jet:#2C2C2C; --white:#FFFFFF; --afw:#F1F1F1;
+  --jet-70:rgba(44,44,44,.70); --jet-50:rgba(44,44,44,.5); --jet-25:rgba(44,44,44,.25); --jet-15:rgba(44,44,44,.15); --jet-08:rgba(44,44,44,.08);
+  --lion-10:rgba(192,152,92,.10); --lion-15:rgba(192,152,92,.16); --lion-30:rgba(192,152,92,.35); --lion-55:rgba(192,152,92,.55);
+  --grid:rgba(44,44,44,.13);
+  --over:#B3261E; --over-10:rgba(179,38,30,.08); --under:#2E7D4F; --under-10:rgba(46,125,79,.09);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--afw);color:var(--jet);font-family:'Source Sans 3','Source Sans Pro',Arial,sans-serif;font-size:13px;line-height:1.3;display:flex;flex-direction:column}
+button,input,select{font-family:inherit;color:var(--jet)}
+
+/* header band */
+header{background:var(--jet);color:var(--white);flex:none}
+.hbar{padding:10px 20px;display:flex;align-items:center;gap:18px}
+.hbar .logo-img{max-height:24px;max-width:170px;height:auto;width:auto;object-fit:contain;display:block}
+.hbar .logo-fb{font-weight:700;letter-spacing:2px;font-size:14px;color:var(--lion)}
+.htitle{border-left:1px solid rgba(255,255,255,.25);padding-left:18px;min-width:0}
+.htitle .t{font-weight:700;font-size:17px;display:flex;align-items:center;white-space:nowrap;gap:2px}
+.htitle .t select{font:inherit;font-weight:700;font-size:16px;background:var(--jet);color:var(--white);border:1px solid rgba(255,255,255,.35);border-radius:5px;padding:1px 6px;margin-left:4px;cursor:pointer}
+.htitle .t select:hover{border-color:var(--lion)}
+.htitle .s{font-size:12px;opacity:.7}
+.hspacer{flex:1}
+.thru{display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.2);border-radius:7px;padding:4px 6px 4px 12px}
+.thru select{font:inherit;font-weight:700;font-size:14px;background:var(--lion);color:var(--jet);border:none;border-radius:5px;padding:3px 8px;cursor:pointer}
+.whobox{display:flex;flex-direction:column;align-items:flex-end;font-size:11px;line-height:1.25;color:rgba(255,255,255,.75)}
+.whobox b{color:var(--white);font-weight:600}
+.whobox button{background:none;border:none;color:var(--lion);cursor:pointer;font:inherit;font-size:11px;padding:0;text-decoration:underline;text-underline-offset:2px}
+.btn{border:1px solid var(--jet);background:var(--white);border-radius:5px;padding:6px 13px;font-weight:600;font-size:13px;cursor:pointer}
+.btn:hover{background:var(--afw)}
+.btn.gold{background:var(--lion);border-color:var(--lion);color:var(--jet)}
+.btn.sm{padding:3px 9px;font-size:12px}
+.btn.on{background:var(--jet);color:var(--white)}
+/* tabs */
+.tabs{flex:none;display:flex;gap:2px;padding:0 20px;background:var(--jet);border-top:1px solid rgba(255,255,255,.12)}
+.tabs button{border:none;background:transparent;color:rgba(255,255,255,.7);font-weight:600;font-size:13px;padding:9px 16px;cursor:pointer;border-bottom:3px solid transparent}
+.tabs button:hover{color:var(--white)}
+.tabs button.on{color:var(--white);border-bottom-color:var(--lion)}
+#shell{display:flex;flex-direction:column;height:100%;min-height:0}
+#app{display:flex;flex-direction:column;flex:1;min-height:0}
+.view{flex:1;overflow:auto;padding:18px 20px 40px}
+.sechd{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--jet-70);margin:4px 2px 8px;display:flex;align-items:center;gap:10px}
+.sechd .sp{flex:1}
+.fnote{font-size:12px;color:var(--jet-70);margin:10px 12px 0}
+.muted{color:var(--jet-50);font-size:12px}
+.ov{color:var(--over)}
+.un{color:var(--under)}
+
+/* KPI tiles */
+.tiles{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.tile{background:var(--white);border:1px solid var(--grid);border-radius:10px;padding:13px 16px;min-width:0}
+.tile .k{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--jet-70);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .v{font-size:25px;font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums;margin-top:3px;white-space:nowrap}
+.tile .s{font-size:12px;color:var(--jet-70);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .s b{color:var(--jet);font-variant-numeric:tabular-nums}
+.tile.hero{border:2px solid var(--lion);background:var(--lion-10)}
+.tile.isov{border-color:var(--over);background:var(--over-10)}
+.tile.isun{border-color:var(--under);background:var(--under-10)}
+.tile .bar{height:7px;border-radius:4px;background:var(--afw);margin-top:8px;overflow:hidden;position:relative}
+.tile .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--under);border-radius:4px}
+.tile .bar u{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--jet)}
+@media (max-width:1300px){.tiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* charts */
+.charts{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:12px;margin-bottom:16px;align-items:start}
+.chbox{position:relative;width:100%}
+.card{background:var(--white);border:1px solid var(--grid);border-radius:10px;padding:12px 16px 8px;min-width:0}
+.card h3{margin:0 0 2px;font-size:15px;display:flex;align-items:center;gap:10px}
+.card h3 .sp{flex:1}
+.card .sub{font-size:12px;color:var(--jet-70);margin-bottom:6px}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--jet-70);align-items:center;flex-wrap:wrap}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:5px}
+.sw.ln{height:3px;border-radius:2px;vertical-align:3px;width:16px}
+.tip{position:fixed;z-index:95;background:var(--jet);color:var(--white);border-radius:7px;padding:8px 11px;font-size:12px;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.25);font-variant-numeric:tabular-nums;max-width:320px}
+.tip b{color:#E2C48F}
+.tip table{border-collapse:collapse;margin-top:4px}
+.tip td{padding:1px 0}
+.tip td.n{text-align:right;padding-left:14px}
+.vlist{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums;table-layout:fixed}
+.vlist td{padding:5px 6px;border-bottom:1px solid var(--grid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vlist th{font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--jet-70);text-align:right;padding:2px 6px 5px;border-bottom:1.5px solid var(--jet-25)}
+.vlist th:first-child{text-align:left}
+.vlist td.n{text-align:right}
+.vlist td.nm{font-weight:600}
+.vlist td.nm .g{font-weight:400;color:var(--jet-50);font-size:11.5px;margin-left:6px}
+.vlist tr.go{cursor:pointer}
+.vlist tr.go:hover td{background:var(--lion-10)}
+.vlist .empty{color:var(--jet-50);font-style:italic;text-align:center;padding:16px}
+
+/* summary + FY tables */
+.sumwrap{overflow-x:auto;background:var(--white);border:1px solid var(--grid);border-radius:10px;padding:0 0 10px;margin-bottom:16px}
+table.sumtbl{border-collapse:separate;border-spacing:0;table-layout:fixed;font-variant-numeric:tabular-nums;font-size:12.5px}
+.sumtbl th{background:var(--jet);color:var(--white);font-weight:700;font-size:12px;text-align:right;padding:6px 8px;line-height:1.25}
+.sumtbl th.tl{background:var(--lion);color:var(--jet);text-align:left}
+.sumtbl th.gap,.sumtbl td.gap{background:var(--white)!important;padding:0;border:none!important}
+.sumtbl td{padding:0 8px;height:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sumtbl td.n{text-align:right}
+.sumtbl td.cat{padding-left:22px}
+.sumtbl td.act{color:var(--jet)}
+.sumtbl td.bud{background:var(--afw)}
+.sumtbl td.fut{color:var(--jet-25);background:repeating-linear-gradient(135deg,transparent 0 6px,rgba(44,44,44,.03) 6px 12px)}
+.sumtbl tr.nl{cursor:pointer}
+.sumtbl tr.zero td:not(.gap){color:var(--jet-50)}
+.sumtbl tr.nl:hover td:not(.gap){background:var(--lion-15)}
+.sumtbl tr.nl:hover td.cat{text-decoration:underline;text-decoration-color:var(--lion);text-underline-offset:3px}
+.sumtbl tr.tot td:not(.gap){font-weight:700;border-top:1px solid var(--jet)}
+.sumtbl tr.tot td.cat{padding-left:10px}
+.sumtbl tr.tot2 td:not(.gap){font-weight:700;background:var(--afw);border-top:1.5px solid var(--jet);border-bottom:1.5px solid var(--jet);height:28px}
+.sumtbl tr.tot2 td.cat{padding-left:10px}
+.sumtbl tr.sp td{height:10px}
+.sumtbl tr.grp td{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--jet-50);padding-top:8px;height:26px;vertical-align:bottom}
+.sumtbl td.pbar{padding:0 10px}
+.mb{display:block;height:8px;background:var(--afw);border-radius:4px;position:relative;overflow:hidden}
+.mb i{position:absolute;left:0;top:0;bottom:0;background:var(--under);border-radius:4px}
+.mb i.ov{background:var(--over)}
+/* section bands (FY OPEX + Category Detail) */
+.secband{display:flex;align-items:center;gap:12px;background:var(--jet);color:var(--white);border-radius:10px 10px 0 0;padding:9px 14px}
+.secband .ix{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--lion);color:var(--jet);font-weight:800;font-size:12px}
+.secband h2{margin:0;font-size:15px;letter-spacing:.3px}
+.secband .s{font-size:12px;opacity:.75}
+.secband.var{background:#4A3B26}
+.secband.bud{background:var(--lion);color:var(--jet)}
+.secband.bud .ix{background:var(--jet);color:var(--lion)}
+.secwrap{margin-bottom:22px}
+.secwrap .sumwrap{border-radius:0 0 10px 10px;border-top:none}
+.sumtbl th.sh{background:var(--afw);color:var(--jet);border-bottom:1.5px solid var(--jet-25)}
+.sumtbl th.sh.tl{background:var(--afw)}
+.sumtbl th.fut{color:var(--jet-50)}
+
+/* category bar */
+.catbar{flex:none;display:flex;align-items:flex-end;gap:28px;padding:14px 20px 12px;background:var(--white);border-bottom:1px solid var(--grid);flex-wrap:wrap}
+.catbar .sp{flex:1}
+.catpick label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--jet);margin-bottom:5px}
+.catrow{display:flex;align-items:stretch;border:2px solid var(--lion);border-radius:7px;overflow:hidden;background:var(--lion-15)}
+.catrow select{font-size:19px;font-weight:700;border:none;background:transparent;padding:7px 12px;min-width:300px;cursor:pointer;outline:none}
+.stepb{border:none;background:var(--lion);color:var(--jet);font-size:22px;font-weight:700;width:36px;cursor:pointer;line-height:1}
+.stepb:disabled{opacity:.35;cursor:default}
+.kpis{display:flex;gap:26px;padding-bottom:3px}
+.kpi .k{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--jet-70)}
+.kpi .v{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.toolbar{flex:none;display:flex;align-items:center;gap:10px;padding:6px 20px;background:var(--white);border-bottom:1px solid var(--grid);font-size:12px;flex-wrap:wrap}
+.toolbar .sp{flex:1}
+.toolbar .k{color:var(--jet-70)}
+.toolbar input[type=search],.toolbar select{font:inherit;font-size:13px;border:1px solid var(--jet-25);border-radius:5px;padding:4px 8px;background:var(--white)}
+.toolbar input[type=search]{width:240px}
+.toolbar label{font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--jet-70)}
+
+/* detail sheet */
+.sheetwrap{flex:1;min-height:0;overflow:auto;background:var(--white)}
+table.sheet{border-collapse:separate;border-spacing:0;table-layout:fixed;font-variant-numeric:tabular-nums}
+.sheet th,.sheet td{border-right:1px solid var(--grid);border-bottom:1px solid var(--grid);padding:0 6px;height:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:var(--white)}
+.sheet .n{text-align:right}
+.sheet thead th{position:sticky;background:var(--jet);color:var(--white);font-weight:700;text-align:center;border-right-color:rgba(255,255,255,.18);border-bottom-color:rgba(255,255,255,.18);z-index:3}
+.sheet thead tr.h1 th{top:0;height:26px;font-size:12.5px;letter-spacing:.4px}
+.sheet thead tr.h2 th{top:26px;height:22px;font-weight:600;font-size:12px}
+.sheet thead tr.h1 th.sa{background:var(--jet)}
+.sheet thead tr.h1 th.sv{background:#4A3B26}
+.sheet thead tr.h1 th.sb{background:var(--lion);color:var(--jet)}
+.sheet thead tr.h2 th.fut{color:rgba(255,255,255,.45)}
+.sheet thead th.l{text-align:left}
+.sheet thead th.pick{background:var(--lion);color:var(--jet);text-align:left;font-size:12px}
+.sheet th.gap,.sheet td.gap{background:var(--white)!important;border:none!important;padding:0}
+.sheet .f2{position:sticky;left:0;z-index:2;border-right:2px solid var(--jet-25)}
+.sheet thead .f2{z-index:4}
+.sheet td.fut{background:repeating-linear-gradient(135deg,var(--white) 0 6px,#FAFAFA 6px 12px);color:var(--jet-25)}
+.sheet td.ytd{font-weight:700;background:var(--afw)}
+tr.glh td{background:var(--afw);font-weight:700;cursor:pointer;border-top:1px solid var(--jet-25)}
+tr.glh td.ytd{background:#E8E8E8}
+tr.glh td.f2 .chev{display:inline-block;width:12px;transition:transform .12s;margin-right:4px}
+tr.glh.open td.f2 .chev{transform:rotate(90deg)}
+tr.glh.nochev td.f2 .chev{visibility:hidden}
+tr.glh td .cnt{font-weight:400;color:var(--jet-70);font-size:11.5px;margin-left:6px}
+tr.v td.f2{padding-left:24px}
+tr.v td.vend.go{cursor:pointer}
+tr.v td.vend.go:hover{color:var(--lion);text-decoration:underline;text-underline-offset:3px}
+td.vend .tag{font-size:10px;font-weight:600;color:var(--jet-70);margin-left:5px;border:1px solid var(--jet-25);border-radius:3px;padding:0 4px}
+td.vend .tag.bo{border-color:var(--lion);color:var(--jet);background:var(--lion-15)}
+td.vend.noven{color:#8A6A35}
+tr.total td{font-weight:700;font-style:italic;border-top:1.5px solid var(--jet);border-bottom:3px double var(--jet);height:28px}
+tr.total td.ytd{background:var(--afw)}
+tr.spacer td{height:10px;border-right:none;background:var(--white)}
+.split{height:18px}
+.emptybox{padding:30px;text-align:center;color:var(--jet-70)}
+
+/* vendor table */
+.vwrap{background:var(--white);border:1px solid var(--grid);border-radius:10px;overflow:auto;max-height:calc(100vh - 240px)}
+table.vt{border-collapse:separate;border-spacing:0;table-layout:fixed;font-size:12.5px;font-variant-numeric:tabular-nums;min-width:100%}
+.vt th{position:sticky;top:0;background:var(--jet);color:var(--white);font-weight:700;text-align:right;padding:6px 8px;font-size:12px;z-index:2;line-height:1.25;cursor:pointer;user-select:none}
+.vt th.l{text-align:left}
+.vt th .ar{color:var(--lion);margin-left:4px}
+.vt td{padding:0 8px;height:27px;border-bottom:1px solid var(--grid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:var(--white)}
+.vt td.n{text-align:right}
+.vt tr.vr{cursor:pointer}
+.vt tr.vr:hover td{background:var(--lion-10)}
+.vt tr.vr td.nm{font-weight:700}
+.vt tr.vr.open td{background:var(--afw);border-bottom-color:var(--jet-15)}
+.vt .chev{display:inline-block;width:14px;transition:transform .12s;color:var(--jet-70)}
+.vt tr.open .chev{transform:rotate(90deg)}
+.vt tr.gr td{background:#FBFBFB;font-size:12px;height:25px}
+.vt tr.gr td.nm{padding-left:30px;color:var(--jet-70)}
+.vt tr.gr.go{cursor:pointer}
+.vt tr.gr.go:hover td{background:var(--lion-10)}
+.vt tr.bl td{background:#FBFBFB;font-size:11.5px;color:var(--jet-70);white-space:normal;height:auto;padding:5px 8px 7px 30px}
+.vt tfoot td{position:sticky;bottom:0;font-weight:700;border-top:1.5px solid var(--jet);background:var(--afw);height:30px;z-index:1}
+.glpill{display:inline-block;min-width:22px;padding:1px 7px;border-radius:10px;background:var(--afw);color:var(--jet);font-weight:700;text-align:center}
+.glpill.multi{background:var(--lion-30)}
+.vtags{font-size:10px;font-weight:600;border-radius:3px;padding:0 5px;margin-left:6px;border:1px solid var(--jet-25);color:var(--jet-70)}
+.vtags.bo{border-color:var(--lion);background:var(--lion-15);color:var(--jet)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1.5px solid var(--jet-25);background:var(--white);border-radius:999px;padding:3px 11px;font-size:12px;font-weight:600;cursor:pointer;color:var(--jet-70)}
+.chip:hover{border-color:var(--lion);color:var(--jet)}
+.chip.on{background:var(--jet);border-color:var(--jet);color:var(--white)}
+
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(44,44,44,.55);display:none;align-items:center;justify-content:center;z-index:50;padding:24px}
+.modal.show{display:flex}
+.mbox{background:var(--white);border-radius:10px;width:100%;max-width:1100px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;border-top:4px solid var(--lion)}
+.mhead{padding:14px 20px;border-bottom:1px solid var(--jet-15);display:flex;align-items:center;gap:14px}
+.mhead h2{margin:0;font-size:17px}
+.mhead .s{font-size:12px;color:var(--jet-70)}
+.mscroll{overflow:auto;flex:1}
+.drilltbl{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+.drilltbl th{position:sticky;top:0;background:var(--jet);color:var(--white);font-weight:600;padding:6px 10px;text-align:left;font-size:12px}
+.drilltbl td{padding:4px 10px;border-bottom:1px solid var(--jet-08)}
+.drilltbl .n{text-align:right}
+.drilltbl tfoot td{font-weight:700;border-top:1.5px solid var(--jet);background:var(--afw)}
+.drilltbl tr.fut td{color:var(--jet-50)}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--jet);color:var(--white);padding:9px 16px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:60}
+.toast.show{opacity:1}
+
+/* sign-in gate */
+#gate{position:fixed;inset:0;background:var(--jet);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px;z-index:80}
+#gate .brand{margin-bottom:26px;display:flex;flex-direction:column;align-items:center;gap:10px}
+#gate .brand .logo-img{max-width:240px;max-height:48px;width:auto;height:auto;object-fit:contain}
+#gate .brand .logo-fb{color:var(--lion);font-weight:700;letter-spacing:4px;font-size:22px}
+#gate .card{background:var(--white);border-radius:12px;width:min(400px,100%);padding:26px 28px;border-top:4px solid var(--lion)}
+#gate h1{margin:0 0 4px;font-size:20px}
+#gate .lead{margin:0 0 18px;font-size:13.5px;color:var(--jet-70)}
+#gate label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+#gate input{width:100%;font:inherit;font-size:16px;border:1.5px solid var(--jet-25);border-radius:7px;padding:10px 12px;outline:none}
+#gate input:focus{border-color:var(--lion);box-shadow:0 0 0 3px var(--lion-30)}
+#gate #inCode{letter-spacing:8px;font-size:24px;text-align:center;font-weight:700}
+#gate .btn{width:100%;margin-top:14px;padding:10px;font-size:15px}
+#gate .msg{min-height:18px;margin-top:10px;font-size:13px;color:var(--jet-70)}
+#gate .msg.err{color:#8a1f11;font-weight:600}
+#gate .row{display:flex;justify-content:space-between;margin-top:12px;font-size:12.5px}
+#gate .row button{background:none;border:none;cursor:pointer;font:inherit;color:var(--jet);text-decoration:underline;text-decoration-color:var(--lion);text-underline-offset:3px;padding:0}
+#gate .foot{margin-top:18px;color:rgba(255,255,255,.55);font-size:12px;text-align:center;max-width:400px}
+#loading{position:fixed;inset:0;background:rgba(241,241,241,.75);display:flex;align-items:center;justify-content:center;z-index:90}
+#loading .box{background:var(--white);border:1px solid var(--grid);border-radius:10px;padding:18px 26px;font-weight:600;display:flex;align-items:center;gap:12px;box-shadow:0 8px 30px rgba(44,44,44,.15)}
+#loading .spin{width:18px;height:18px;border-radius:50%;border:3px solid var(--lion-30);border-top-color:var(--lion);animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (max-width:900px){.charts{grid-template-columns:1fr}.hbar{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<section id="gate" hidden>
+  <div class="brand">
+    <img class="logo-img" src="../../assets/logo-light.svg" alt="Atlas" onerror="this.style.display='none';var f=document.getElementById('gateFb');if(f)f.hidden=false;">
+    <div class="logo-fb" id="gateFb" hidden>Atlas</div>
+  </div>
+  <div class="card">
+    <h1>OPEX — Actual vs Budget</h1>
+    <p class="lead">Sign in with the email address FP&amp;A gave access to. We'll email you a 6-digit code.</p>
+    <div id="stepEmail">
+      <label for="inEmail">Email</label>
+      <input id="inEmail" type="email" autocomplete="email" placeholder="name@example.com">
+      <button class="btn gold" id="bSend">Email me a code</button>
+      <div class="msg" id="mEmail"></div>
+    </div>
+    <div id="stepCode" hidden>
+      <label for="inCode">6-digit code</label>
+      <input id="inCode" inputmode="numeric" autocomplete="one-time-code" maxlength="7" placeholder="••••••">
+      <div class="msg">If <b id="codeTo"></b> has access, a code is on its way. It expires in 10 minutes.</div>
+      <button class="btn gold" id="bVerify">Sign in</button>
+      <div class="msg" id="mCode"></div>
+      <div class="row"><button id="bBack">Use a different email</button><button id="bResend">Send a new code</button></div>
+    </div>
+  </div>
+  <div class="foot">Access is managed by FP&amp;A. If you don't receive a code, check that you used the address on the access list, then check spam.</div>
+</section>
+
+<div id="loading" hidden><div class="box"><div class="spin"></div><span id="loadMsg">Loading…</span></div></div>
+
+<div id="shell" hidden>
+<header>
+  <div class="hbar">
+    <img class="logo-img" src="../../assets/logo-light.svg" alt="Atlas" onerror="this.style.display='none';var f=document.getElementById('hdrFb');if(f)f.hidden=false;">
+    <div class="logo-fb" id="hdrFb" hidden>Atlas</div>
+    <div class="htitle">
+      <div class="t">FY<span id="fyT"></span> OPEX &nbsp;·&nbsp; <span id="deptT"></span><select id="deptSel" hidden title="Switch dashboard"></select></div>
+      <div class="s">Actual vs Budget &nbsp;·&nbsp; actuals loaded through <span id="lastT"></span> &nbsp;·&nbsp; refreshed <span id="builtT"></span></div>
+    </div>
+    <div class="hspacer"></div>
+    <div class="thru" title="Every YTD number on every tab runs through this month">YTD through <select id="thruSel"></select></div>
+    <div class="whobox"><b id="whoE"></b><span><span id="whoL"></span> · <button id="signOut">Sign out</button></span></div>
+  </div>
+</header>
+<div id="app">
+  <nav class="tabs" id="tabs"></nav>
+
+  <div id="vSummary" class="view">
+    <div class="tiles" id="tiles"></div>
+    <div class="charts">
+      <div class="card"><h3>Monthly OPEX — Actual vs Budget</h3>
+        <div class="sub" id="chMonSub"></div><div id="chMon" class="chbox" style="height:260px"></div></div>
+      <div class="card"><h3>Budget B/(W) by Category</h3><div class="sub" id="chVarSub"></div><div id="chVar" class="chbox"></div></div>
+    </div>
+    <div class="sechd">Category breakdown<span class="sp"></span><span style="text-transform:none;letter-spacing:0;font-weight:600">B/(W) = Budget − Actual · <span class="un">green / positive = under budget</span> · <span class="ov">red / (negative) = over budget</span></span></div>
+    <div class="sumwrap"><table class="sumtbl" id="sumtbl"></table></div>
+    <p class="fnote">Click a category to open it in Category Detail.</p>
+  </div>
+
+  <div id="vFy" class="view" style="display:none">
+    <div id="fyBody"></div>
+    <p class="fnote">Months after the YTD month (top right) are shaded — no actuals or variance yet. Click a category to open it in Category Detail.</p>
+  </div>
+
+  <div id="vVendors" style="display:none;flex-direction:column;flex:1;min-height:0">
+    <div class="toolbar">
+      <input type="search" id="vSearch" placeholder="Search vendor or GL…">
+      <label for="vCat">Category</label><select id="vCat"></select>
+      <div class="chips" id="vChips"></div>
+      <span class="sp"></span>
+      <span class="k" id="vCount"></span>
+      <button class="btn sm" id="vExpand">Expand all</button><button class="btn sm" id="vCollapse">Collapse all</button><button class="btn sm" id="vCsv">Download CSV</button>
+    </div>
+    <div class="view" style="padding-top:12px">
+      <div class="vwrap"><table class="vt" id="vt"></table></div>
+      <p class="fnote" id="vNote"></p>
+    </div>
+  </div>
+
+  <div id="vDetail" style="display:none;flex-direction:column;flex:1;min-height:0">
+    <div class="catbar">
+      <div class="catpick">
+        <label for="catSel">OPEX Category</label>
+        <div class="catrow">
+          <button class="stepb" id="catPrev" title="Previous category">&#8249;</button>
+          <select id="catSel"></select>
+          <button class="stepb" id="catNext" title="Next category">&#8250;</button>
+        </div>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><div class="k">YTD actual</div><div class="v" id="kA"></div></div>
+        <div class="kpi"><div class="k">YTD budget</div><div class="v" id="kB"></div></div>
+        <div class="kpi"><div class="k">B/(W) budget</div><div class="v" id="kV"></div></div>
+        <div class="kpi"><div class="k">FY budget</div><div class="v" id="kF"></div></div>
+        <div class="kpi"><div class="k">Remaining</div><div class="v" id="kR"></div></div>
+      </div>
+    </div>
+    <div class="toolbar">
+      <span class="k">Click a <b>GL</b> to show or hide its vendors · click a <b>vendor</b> to see its transactions · <span style="color:#8A6A35;font-weight:700">gold vendor *</span> = no vendor on the entries, name read from the memo · <b>budget only</b> = budgeted vendor with no matching actuals</span>
+      <span class="sp"></span>
+      <button class="btn sm" id="dExpand">Expand all GLs</button><button class="btn sm" id="dCollapse">Collapse all GLs</button>
+    </div>
+    <div class="sheetwrap" id="dWrap"><table class="sheet" id="dTop"></table><div class="split"></div><table class="sheet" id="dBot"></table></div>
+  </div>
+</div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="mbox">
+    <div class="mhead"><div><h2 id="mTitle"></h2><div class="s" id="mSub"></div></div><div style="flex:1"></div><button class="btn sm" id="mCsv">Download CSV</button><button class="btn sm" id="mClose">Close</button></div>
+    <div class="mscroll" id="mBody"></div>
+  </div>
+</div>
+<div class="tip" id="tip" hidden></div>
+<div class="toast" id="toast"></div>
+<script>
+'use strict';
+/* =====================================================================
+   OPEX Actual vs Budget — client. Everything shown comes from the server,
+   already filtered to what this viewer may see. Labor arrives at GL level
+   only, and only for departments where the viewer has All OPEX access.
+   ===================================================================== */
+const CAL = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const TOKEN_KEY = 'nwOpexAvB_token', THRU_KEY = 'nwOpexAvB_thru';
+const LABOR_ORDER = ['Salary', 'Bonus', 'Benefits', 'Commission', 'Commissions'];
+const ROW_LIMIT = 400;
+const STD_LABOR = ['Salary', 'Bonus', 'Benefits', 'Commissions'];   // always listed for viewers who can see labor
+const EMPTY_CAT = { a: Array(12).fill(0), b: Array(12).fill(0) };
+
+// accounting-style formats: dash for zero, parentheses for negatives
+const acct = n => { const r = Math.round(n || 0); if (!r) return '-'; const s = Math.abs(r).toLocaleString('en-US'); return r < 0 ? `(${s})` : s; };
+const money = n => { const r = Math.round(n || 0); if (!r) return '$0'; const s = '$' + Math.abs(r).toLocaleString('en-US'); return r < 0 ? `(${s})` : s; };
+const short = n => { const a = Math.abs(n), s = '$' + (a >= 1e6 ? (a / 1e6).toFixed(a >= 1e7 ? 1 : 2) + 'M' : a >= 1e3 ? Math.round(a / 1e3) + 'K' : String(Math.round(a))); return n < 0 ? `(${s})` : s; };
+// B/(W) % = (budget − actual) ÷ |budget|  — positive = better (under budget)
+const vpct = (A, B) => { if (Math.abs(B) < 0.5) return Math.abs(A) >= 0.5 ? 'n/a' : '-'; const p = (B - A) / Math.abs(B) * 100; if (Math.abs(p) < 0.05) return '0.0%'; return p < 0 ? `(${Math.abs(p).toFixed(1)}%)` : `${p.toFixed(1)}%`; };
+const vcls = v => v > 0.5 ? 'un' : v < -0.5 ? 'ov' : '';   // v = Budget − Actual
+const sum = a => a.reduce((x, y) => x + y, 0);
+const Z = () => Array(12).fill(0);
+const addTo = (t, a) => { for (let i = 0; i < 12; i++) t[i] += a[i] || 0; return t; };
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $ = id => document.getElementById(id);
+const normKey = s => String(s == null ? '' : s).replace(/[^a-z0-9]/gi, '').toLowerCase();
+const nz = a => a.some(x => Math.abs(x) > 0.004);
+
+/* ------------------------------ state ------------------------------ */
+const APP = { token: '', viewer: null, meta: null, depts: {}, order: [], scope: '', view: 'summary', thru: 9, cat: '', closed: {}, models: {},
+  vf: { q: '', cat: '', mode: 'all', sort: 'a', dir: -1, open: {}, all: false } };
+let YY = '';
+const ml = i => `${CAL[i]}-${YY}`;                               // month label, 0-based
+const ytd = a => { let s = 0; for (let i = 0; i < APP.thru; i++) s += a[i] || 0; return s; };
+const fy = a => sum(a);
+const thruLbl = () => APP.thru === 1 ? ml(0) : `${CAL[0]}–${ml(APP.thru - 1)}`;
+
+/* ------------------------------ model ------------------------------
+   One shape for a department or the consolidated view: categories → GLs → vendors, each with a (actual) and b (budget) by month. */
+const scopeDepts = () => APP.scope === '__cons' ? APP.order : [APP.scope];
+const catRank = (c, labor) => { const i = LABOR_ORDER.indexOf(c); if (labor) return i > -1 ? i : 9; const j = (APP.meta.nonLaborOrder || []).indexOf(c); return 20 + (j > -1 ? j : 50); };
+function model() {
+  if (APP.models[APP.scope]) return APP.models[APP.scope];
+  const cats = {};
+  for (const d of scopeDepts()) {
+    const p = APP.depts[d]; if (!p) continue;
+    for (const [cat, c] of Object.entries(p.cats)) {
+      const C = cats[cat] || (cats[cat] = { cat, labor: !!c.labor, gls: {}, a: Z(), b: Z() });
+      for (const g of c.gls) {
+        const G = C.gls[g.no] || (C.gls[g.no] = { no: g.no, name: g.name, a: Z(), b: Z(), v: {}, depts: new Set() });
+        addTo(G.a, g.a); addTo(G.b, g.b); addTo(C.a, g.a); addTo(C.b, g.b); G.depts.add(d);
+        for (const v of g.v || []) {
+          const V = G.v[v.k] || (G.v[v.k] = { k: v.k, n: v.n, a: Z(), b: Z(), d: !!v.d, bo: !!v.bo, bl: new Set(), depts: new Set() });
+          addTo(V.a, v.a); addTo(V.b, v.b); V.depts.add(d); if (!v.d) V.d = false; if (v.bo) V.bo = true; (v.bl || []).forEach(x => V.bl.add(x));
+        }
+      }
+    }
+  }
+  for (const C of Object.values(cats)) {
+    C.glList = Object.values(C.gls).sort((p, q) => p.no < q.no ? -1 : 1);
+    for (const G of C.glList) G.vList = Object.values(G.v).sort((p, q) => Math.abs(fy(q.a)) + Math.abs(fy(q.b)) - Math.abs(fy(p.a)) - Math.abs(fy(p.b)));
+  }
+  const order = Object.keys(cats).sort((p, q) => (cats[p].labor ? 0 : 100) + catRank(p, cats[p].labor) - ((cats[q].labor ? 0 : 100) + catRank(q, cats[q].labor)) || (p < q ? -1 : 1));
+  const tot = k => order.reduce((t, c) => addTo(t, cats[c][k]), Z());
+  const lab = order.filter(c => cats[c].labor), nl = order.filter(c => !cats[c].labor);
+  const sumCats = (list, k) => list.reduce((t, c) => addTo(t, cats[c][k]), Z());
+  // every category always listed in the breakdowns (zero rows included); labor only where this viewer may see it
+  const showLab = scopeDepts().some(d => APP.depts[d] && APP.depts[d].labor);
+  const labAll = showLab ? STD_LABOR.concat(lab.filter(c => !STD_LABOR.includes(c))) : [];
+  const nlStd = APP.meta.nonLaborOrder || [], nlAll = nlStd.concat(nl.filter(c => !nlStd.includes(c)));
+  const m = { cats, order, lab, nl, labAll, nlAll, showLab, A: tot('a'), B: tot('b'), labA: sumCats(lab, 'a'), labB: sumCats(lab, 'b'), nlA: sumCats(nl, 'a'), nlB: sumCats(nl, 'b'), hasLabor: showLab };
+  APP.models[APP.scope] = m;
+  return m;
+}
+/** Vendors across GLs (non-labor), with one row per department · GL behind each. */
+function vendorIndex() {
+  const M = model(); if (M.vendors) return M.vendors;
+  const V = {};
+  for (const d of scopeDepts()) {
+    const p = APP.depts[d]; if (!p) continue;
+    for (const [cat, c] of Object.entries(p.cats)) { if (c.labor) continue;
+      for (const g of c.gls) for (const v of g.v || []) {
+        const x = V[v.k] || (V[v.k] = { k: v.k, n: v.n, d: !!v.d, bo: !!v.bo, a: Z(), b: Z(), rows: [], cats: new Set(), gls: new Set(), bl: new Set() });
+        addTo(x.a, v.a); addTo(x.b, v.b); if (!v.d) x.d = false; if (!v.bo) x.bo = false; x.cats.add(cat); x.gls.add(g.no); (v.bl || []).forEach(s => x.bl.add(s));
+        x.rows.push({ dept: d, no: g.no, gname: g.name, cat, a: v.a, b: v.b, k: v.k });
+      } }
+  }
+  M.vendors = Object.values(V);
+  return M.vendors;
+}
+
+/* ------------------------------ charts (inline SVG) ------------------------------ */
+const tipEl = $('tip');
+function tip(e, html) { if (!html) { tipEl.hidden = true; return; } tipEl.innerHTML = html; tipEl.hidden = false;
+  const w = tipEl.offsetWidth, h = tipEl.offsetHeight; let x = e.clientX + 14, y = e.clientY + 14;
+  if (x + w > innerWidth - 8) x = e.clientX - w - 14; if (y + h > innerHeight - 8) y = e.clientY - h - 14; tipEl.style.left = x + 'px'; tipEl.style.top = y + 'px'; }
+/* Chart.js versions of the original dashboards' charts, in Atlas colors and font */
+const C_GOOD = '#2E7D4F', C_BAD = '#B3261E', C_GOOD_F = 'rgba(46,125,79,.78)', C_BAD_F = 'rgba(179,38,30,.78)', C_LION = '#C0985C';
+const CHARTS = {};
+function chartDefaults() {
+  if (!window.Chart || chartDefaults.done) return; chartDefaults.done = true;
+  Chart.defaults.font.family = "'Source Sans 3','Source Sans Pro',Arial,sans-serif"; Chart.defaults.font.size = 12; Chart.defaults.color = 'rgba(44,44,44,.72)';
+  Chart.defaults.plugins.tooltip.backgroundColor = '#2C2C2C'; Chart.defaults.plugins.tooltip.titleColor = '#E2C48F'; Chart.defaults.plugins.tooltip.padding = 10;
+  Chart.defaults.plugins.tooltip.cornerRadius = 7; Chart.defaults.plugins.tooltip.titleFont = { weight: '700', size: 12.5 }; Chart.defaults.plugins.tooltip.bodyFont = { size: 12 };
+}
+const axisMoney = v => { const a = Math.abs(v), s = '$' + (a >= 1e6 ? (a / 1e6).toFixed(a % 1e6 ? 1 : 0) + 'M' : a >= 1e3 ? Math.round(a / 1e3) + 'K' : Math.round(a)); return v < 0 ? '(' + s + ')' : s; };
+function canvasIn(el, key) {
+  if (CHARTS[key]) { CHARTS[key].destroy(); delete CHARTS[key]; }
+  if (!window.Chart) { el.innerHTML = '<div class="emptybox">Chart library did not load — refresh the page.</div>'; return null; }
+  chartDefaults(); el.innerHTML = '<canvas></canvas>'; return el.firstChild.getContext('2d');
+}
+/** Monthly OPEX — actual bars (green = at/under budget, red = over) with the budget as a dashed line. */
+function chartMonthly(el, A, B) {
+  const ctx = canvasIn(el, 'mon'); if (!ctx) return;
+  const act = CAL.map((_, i) => i < APP.thru ? Math.round(A[i]) : null), bud = B.map(v => Math.round(v));
+  CHARTS.mon = new Chart(ctx, { type: 'bar', data: { labels: CAL.map((_, i) => ml(i)), datasets: [
+    { label: 'Budget', data: bud, type: 'line', borderColor: C_LION, backgroundColor: 'transparent', borderWidth: 2, borderDash: [5, 3], pointRadius: 3, pointBackgroundColor: C_LION, tension: 0, order: 1 },
+    { label: 'Actual', data: act, backgroundColor: act.map((v, i) => v === null ? 'transparent' : v > bud[i] ? C_BAD_F : C_GOOD_F), borderColor: act.map((v, i) => v === null ? 'transparent' : v > bud[i] ? C_BAD : C_GOOD), borderWidth: 1, borderRadius: 3, order: 2 }
+  ] }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+    plugins: { legend: { position: 'top', labels: { usePointStyle: true, padding: 14, font: { size: 12 },
+        generateLabels: ch => [{ text: 'Budget', pointStyle: 'line', strokeStyle: C_LION, fillStyle: C_LION, lineWidth: 2, lineDash: [5, 3], fontColor: 'rgba(44,44,44,.72)' },
+          { text: 'Actual — at / under budget', pointStyle: 'rect', fillStyle: C_GOOD_F, strokeStyle: C_GOOD, lineWidth: 1, fontColor: 'rgba(44,44,44,.72)' },
+          { text: 'Actual — over budget', pointStyle: 'rect', fillStyle: C_BAD_F, strokeStyle: C_BAD, lineWidth: 1, fontColor: 'rgba(44,44,44,.72)' }] }, onClick: () => {} },
+      tooltip: { callbacks: { label: c => c.parsed.y === null ? null : `${c.dataset.label}: ${money(c.parsed.y)}`,
+        afterBody: items => { const a = items.find(i => i.dataset.label === 'Actual'), b = items.find(i => i.dataset.label === 'Budget');
+          if (!a || !b || a.parsed.y === null) return ['No actuals yet']; const v = b.parsed.y - a.parsed.y; return [`B/(W) budget: ${money(v)} (${vpct(a.parsed.y, b.parsed.y)})`]; } } } },
+    scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { callback: axisMoney, maxTicksLimit: 6 }, grid: { color: 'rgba(44,44,44,.08)' }, border: { display: false } } } } });
+}
+/** Budget B/(W) by category — horizontal bars, green = under budget, red = over; click a bar to open the category. */
+function chartVar(el, rows) {
+  if (!rows.length) { if (CHARTS.var) { CHARTS.var.destroy(); delete CHARTS.var; } el.innerHTML = '<div class="emptybox">No activity yet.</div>'; return; }
+  el.style.height = Math.max(180, Math.min(320, rows.length * 22 + 40)) + 'px';
+  const ctx = canvasIn(el, 'var'); if (!ctx) return;
+  const v = rows.map(r => Math.round(r.v));
+  CHARTS.var = new Chart(ctx, { type: 'bar', data: { labels: rows.map(r => r.label), datasets: [{ label: 'B/(W) budget', data: v,
+    backgroundColor: v.map(x => x >= 0 ? C_GOOD_F : C_BAD_F), borderColor: v.map(x => x >= 0 ? C_GOOD : C_BAD), borderWidth: 1, borderRadius: 3 }] },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false },
+      tooltip: { callbacks: { label: c => { const r = rows[c.dataIndex]; return [`B/(W) budget: ${money(r.v)} (${vpct(r.a, r.b)})`, `Actual: ${money(r.a)}`, `Budget: ${money(r.b)}`]; } } } },
+      onClick: (e, els) => { if (els.length) rows[els[0].index].go(); },
+      onHover: (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default'; },
+      scales: { x: { ticks: { callback: axisMoney, maxTicksLimit: 6 }, grid: { color: 'rgba(44,44,44,.08)' }, border: { display: false } }, y: { grid: { display: false }, ticks: { color: '#2C2C2C' } } } } });
+}
+
+/* ------------------------------ Summary ------------------------------ */
+function renderSummary() {
+  const M = model(), T = APP.thru, A = ytd(M.A), B = ytd(M.B), V = B - A, F = fy(M.B), R = F - A, proj = A / T * 12, mA = M.A[T - 1], mB = M.B[T - 1];
+  const scopeLbl = M.hasLabor ? 'Total OPEX' : 'Non-labor OPEX';
+  const used = F ? Math.max(0, Math.min(1, A / F)) : 0;
+  $('tiles').innerHTML = `
+    <div class="tile hero"><div class="k">YTD actual · ${thruLbl()}</div><div class="v">${money(A)}</div><div class="s">${scopeLbl}${!M.hasLabor ? ' (labor not shown)' : APP.scope === '__cons' && !APP.viewer.laborAll ? ' · labor only for ' + esc(APP.viewer.laborDepts.join(', ')) : ''}</div></div>
+    <div class="tile"><div class="k">YTD budget · ${thruLbl()}</div><div class="v">${money(B)}</div><div class="s">Budget for the same months</div></div>
+    <div class="tile ${V < -0.5 ? 'isov' : V > 0.5 ? 'isun' : ''}"><div class="k">B/(W) budget · YTD</div><div class="v ${vcls(V)}">${money(V)}</div><div class="s"><b class="${vcls(V)}">${vpct(A, B)}</b> ${V > 0.5 ? 'under (better than)' : V < -0.5 ? 'over (worse than)' : 'vs'} YTD budget</div></div>
+    <div class="tile"><div class="k">FY${APP.meta.fy} budget</div><div class="v">${money(F)}</div><div class="s"><b>${money(R)}</b> remaining · ${F ? Math.round(used * 100) : 0}% used</div>
+      <div class="bar" title="${Math.round(used * 100)}% of the full-year budget spent; the line marks ${Math.round(T / 12 * 100)}% of the year gone"><i style="width:${used * 100}%;${used > T / 12 + 0.005 ? 'background:var(--over)' : ''}"></i><u style="left:${T / 12 * 100}%"></u></div></div>
+    <div class="tile"><div class="k">Projected FY (run-rate)</div><div class="v">${money(proj)}</div><div class="s"><b class="${vcls(F - proj)}">${money(F - proj)}</b> B/(W) FY budget</div></div>
+    <div class="tile"><div class="k">${ml(T - 1)} (month)</div><div class="v">${money(mA)}</div><div class="s">Budget <b>${money(mB)}</b> · B/(W) <b class="${vcls(mB - mA)}">${money(mB - mA)}</b></div></div>`;
+  $('chMonSub').textContent = `${scopeLbl} by month · bars = actual (green at / under budget, red over) · dashed line = budget`;
+  chartMonthly($('chMon'), M.A, M.B);
+  $('chVarSub').textContent = `YTD ${thruLbl()} · Budget − Actual · green = under budget, red = over · click a bar to open the category`;
+  chartVar($('chVar'), M.order.map(c => { const C = M.cats[c], a = ytd(C.a), b = ytd(C.b); return { label: c, a, b, v: b - a, go: () => goCat(c) }; })
+    .filter(r => Math.abs(r.a) >= 0.5 || Math.abs(r.b) >= 0.5));
+  // category table
+  const th = (a, b, cls = '') => `<th class="${cls}"><div>${a}</div><div>${b}</div></th>`;
+  const row = (label, a12, b12, cls, go) => { const a = ytd(a12), b = ytd(b12), f = fy(b12), v = b - a, u = f ? a / f : 0;
+    return `<tr class="${cls}" ${go ? `data-go="${esc(go)}"` : ''}><td class="cat">${esc(label)}</td><td class="n act">${acct(a)}</td><td class="n bud">${acct(b)}</td><td class="gap"></td>
+      <td class="n ${vcls(v)}">${acct(v)}</td><td class="n ${vcls(v)}">${vpct(a, b)}</td><td class="gap"></td><td class="n bud">${acct(f)}</td><td class="n">${acct(f - a)}</td>
+      <td class="pbar" title="${Math.round(u * 100)}% of the FY budget used · ${Math.round(T / 12 * 100)}% of the year gone (green = on or under pace, red = ahead of pace)"><span class="mb"><i class="${u > T / 12 + 0.005 ? 'ov' : ''}" style="width:${Math.max(0, Math.min(1, u)) * 100}%"></i></span></td><td class="n" style="font-size:11.5px;color:var(--jet-70)">${f ? Math.round(u * 100) + '%' : ''}</td></tr>`; };
+  const sp = '<tr class="sp"><td colspan="11"></td></tr>';
+  let body = '';
+  const catRow = c => { const C = M.cats[c] || EMPTY_CAT; return row(c, C.a, C.b, M.cats[c] ? 'nl' : 'zero', M.cats[c] ? c : ''); };
+  if (M.showLab) body += `<tr class="grp"><td colspan="11">Labor</td></tr>` + M.labAll.map(catRow).join('') + row('Total Labor', M.labA, M.labB, 'tot') + sp + `<tr class="grp"><td colspan="11">Non-labor</td></tr>`;
+  body += M.nlAll.map(catRow).join('') + row('Total Non-Labor', M.nlA, M.nlB, M.showLab ? 'tot' : 'tot2');
+  if (M.showLab) body += sp + row('Total OPEX', M.A, M.B, 'tot2');
+  $('sumtbl').innerHTML = `<colgroup><col style="width:240px"><col style="width:112px"><col style="width:112px"><col style="width:10px"><col style="width:112px"><col style="width:104px"><col style="width:10px"><col style="width:112px"><col style="width:112px"><col style="width:150px"><col style="width:52px"></colgroup>
+    <thead><tr><th class="tl"><div>${esc(scopeTitle())}</div><div>FY${APP.meta.fy} OPEX</div></th>${th('Actual', 'YTD ' + ml(T - 1))}${th('Budget', 'YTD ' + ml(T - 1))}<th class="gap"></th>${th('B/(W) Budget', '$')}${th('B/(W) Budget', '%')}<th class="gap"></th>${th('Budget', 'FY ' + APP.meta.fy)}${th('Budget', 'Remaining')}<th style="text-align:left" colspan="2"><div>FY budget</div><div>used</div></th></tr></thead>
+    <tbody>${body}</tbody>`;
+}
+$('vSummary').addEventListener('click', e => {
+  const g = e.target.closest('[data-go]'); if (g) return goCat(g.dataset.go);
+});
+
+/* ------------------------------ FY OPEX ------------------------------ */
+function renderFy() {
+  const M = model(), T = APP.thru, cols = `<colgroup><col style="width:230px">${CAL.map(() => '<col style="width:84px">').join('')}<col style="width:10px"><col style="width:108px"></colgroup>`;
+  const sec = (ix, cls, title, sub, totLbl, cell) => {
+    const head = `<thead><tr><th class="tl sh">Category</th>${CAL.map((c, i) => `<th class="sh ${cls !== 'bud' && i >= T ? 'fut' : ''}">${ml(i)}</th>`).join('')}<th class="gap"></th><th class="sh">${totLbl}</th></tr></thead>`;
+    const r = (label, a, b, rc, go) => `<tr class="${rc}" ${go ? `data-go="${esc(go)}"` : ''}><td class="cat">${esc(label)}</td>${CAL.map((_, i) => cell(a, b, i)).join('')}<td class="gap"></td>${cell(a, b, -1)}</tr>`;
+    const sp = '<tr class="sp"><td colspan="15"></td></tr>';
+    let body = '';
+    const cr = c => { const C = M.cats[c] || EMPTY_CAT; return r(c, C.a, C.b, M.cats[c] ? 'nl' : 'zero', M.cats[c] ? c : ''); };
+    if (M.showLab) body += M.labAll.map(cr).join('') + r('Total Labor', M.labA, M.labB, 'tot') + sp;
+    body += M.nlAll.map(cr).join('') + r('Total Non-Labor', M.nlA, M.nlB, M.showLab ? 'tot' : 'tot2');
+    if (M.showLab) body += sp + r('Total OPEX', M.A, M.B, 'tot2');
+    return `<div class="secwrap"><div class="secband ${cls}"><span class="ix">${ix}</span><h2>${title}</h2><span class="s">${sub}</span></div>
+      <div class="sumwrap"><table class="sumtbl">${cols}${head}<tbody>${body}</tbody></table></div></div>`;
+  };
+  const actCell = (a, b, i) => i < 0 ? `<td class="n" style="font-weight:700">${acct(ytd(a))}</td>` : i >= T ? '<td class="n fut"></td>' : `<td class="n">${acct(a[i])}</td>`;
+  const varCell = (a, b, i) => { if (i >= T) return '<td class="n fut"></td>'; const v = i < 0 ? ytd(b) - ytd(a) : b[i] - a[i]; return `<td class="n ${vcls(v)}" ${i < 0 ? 'style="font-weight:700"' : ''}>${acct(v)}</td>`; };
+  const budCell = (a, b, i) => i < 0 ? `<td class="n" style="font-weight:700">${acct(fy(b))}</td>` : `<td class="n bud">${acct(b[i])}</td>`;
+  $('fyBody').innerHTML =
+    sec(1, '', `Actuals by month`, `${esc(scopeTitle())} · actuals through ${ml(T - 1)}`, `YTD ${ml(T - 1)}`, actCell) +
+    sec(2, 'var', `Budget B/(W) by month`, `Budget − Actual · <span style="color:#9ED7B3">green / positive = under budget (better)</span> · <span style="color:#F2A49E">red / (negative) = over budget (worse)</span>`, `YTD ${ml(T - 1)}`, varCell) +
+    sec(3, 'bud', `Budget by month`, `FY${APP.meta.fy} budget as loaded`, `FY ${APP.meta.fy}`, budCell);
+}
+$('vFy').addEventListener('click', e => { const g = e.target.closest('[data-go]'); if (g) goCat(g.dataset.go); });
+
+/* ------------------------------ Spend by Vendor ------------------------------ */
+const VMODES = [['all', 'All vendors'], ['over', 'Over budget'], ['under', 'Under budget'], ['nobud', 'No budget'], ['bo', 'Budget only']];
+const VCOLS = [['n', 'Vendor', 'l', 0], ['g', 'GLs', '', 64], ['c', 'Category', 'l', 190], ['a', 'YTD Actual', '', 122], ['b', 'YTD Budget', '', 122], ['v', 'B/(W) Budget $', '', 132], ['p', 'B/(W) Budget %', '', 112], ['f', 'FY Budget', '', 112], ['r', 'Remaining', '', 112]];
+function vendorRows() {
+  const f = APP.vf, q = f.q.trim().toLowerCase();
+  let rows = vendorIndex().map(v => {
+    const rs = f.cat ? v.rows.filter(r => r.cat === f.cat) : v.rows;
+    if (!rs.length) return null;
+    const a12 = rs.reduce((t, r) => addTo(t, r.a), Z()), b12 = rs.reduce((t, r) => addTo(t, r.b), Z());
+    const a = ytd(a12), b = ytd(b12), F = fy(b12);
+    if (Math.abs(a) < 0.5 && Math.abs(F) < 0.5) return null;
+    return { v, rs, a, b, d: b - a, F, r: F - a, cats: [...new Set(rs.map(r => r.cat))], gls: new Set(rs.map(r => r.no)) };
+  }).filter(Boolean);
+  if (q) rows = rows.filter(x => x.v.n.toLowerCase().includes(q) || x.rs.some(r => (r.no + ' ' + r.gname + ' ' + r.dept).toLowerCase().includes(q)) || [...x.v.bl].some(s => s.toLowerCase().includes(q)));
+  if (f.mode === 'over') rows = rows.filter(x => x.d < -0.5);
+  if (f.mode === 'under') rows = rows.filter(x => x.d > 0.5);
+  if (f.mode === 'nobud') rows = rows.filter(x => Math.abs(x.F) < 0.5);
+  if (f.mode === 'bo') rows = rows.filter(x => Math.abs(x.a) < 0.5 && Math.abs(x.F) >= 0.5);
+  const key = { n: x => x.v.n.toLowerCase(), g: x => x.gls.size, c: x => x.cats.join(','), a: x => x.a, b: x => x.b, v: x => x.d, p: x => Math.abs(x.b) > 0.5 ? x.d / Math.abs(x.b) : (x.d ? 1e9 * Math.sign(x.d) : 0), f: x => x.F, r: x => x.r }[f.sort];
+  rows.sort((p, q2) => { const a = key(p), b = key(q2); return (a < b ? -1 : a > b ? 1 : 0) * f.dir; });
+  return rows;
+}
+function renderVendors() {
+  const M = model(), f = APP.vf, cons = APP.scope === '__cons';
+  $('vSearch').value = f.q;
+  const cats = M.nl.filter(c => M.cats[c].glList.some(g => g.vList.length));
+  $('vCat').innerHTML = `<option value="">All categories</option>` + cats.map(c => `<option value="${esc(c)}" ${c === f.cat ? 'selected' : ''}>${esc(c)}</option>`).join('');
+  $('vChips').innerHTML = VMODES.map(([k, t]) => `<button class="chip ${f.mode === k ? 'on' : ''}" data-mode="${k}">${t}</button>`).join('');
+  const rows = vendorRows(), shown = f.all ? rows : rows.slice(0, ROW_LIMIT);
+  $('vCount').textContent = `${rows.length.toLocaleString()} vendor${rows.length === 1 ? '' : 's'}`;
+  const tot = rows.reduce((t, x) => { t.a += x.a; t.b += x.b; t.F += x.F; return t; }, { a: 0, b: 0, F: 0 });
+  const numCells = (a, b, F) => `<td class="n">${acct(a)}</td><td class="n">${acct(b)}</td><td class="n ${vcls(b - a)}" style="font-weight:700">${acct(b - a)}</td><td class="n ${vcls(b - a)}">${vpct(a, b)}</td><td class="n">${acct(F)}</td><td class="n">${acct(F - a)}</td>`;
+  let body = '';
+  for (const x of shown) {
+    const open = !!f.open[x.v.k], multi = x.gls.size > 1;
+    body += `<tr class="vr ${open ? 'open' : ''}" data-k="${esc(x.v.k)}"><td class="nm" title="${esc(x.v.n)}"><span class="chev">▸</span>${esc(x.v.n)}${x.v.d ? '<span class="vtags" title="No vendor on these entries — name read from the memo / description">memo</span>' : ''}${x.v.bo && Math.abs(x.a) < 0.5 ? '<span class="vtags bo" title="Budgeted vendor with no matching actuals — check the Vendor Match Review tab">budget only</span>' : ''}</td>
+      <td style="text-align:center"><span class="glpill ${multi ? 'multi' : ''}" title="${esc([...x.gls].join(', '))}">${x.gls.size}</span></td><td title="${esc(x.cats.join(', '))}">${esc(x.cats.join(', '))}</td>${numCells(x.a, x.b, x.F)}</tr>`;
+    if (open) {
+      const byGl = {};
+      for (const r of x.rs) { const k = (cons ? r.dept + '|' : '') + r.no; const g = byGl[k] || (byGl[k] = { r, a: Z(), b: Z(), depts: new Set() }); addTo(g.a, r.a); addTo(g.b, r.b); g.depts.add(r.dept); }
+      for (const g of Object.values(byGl).sort((p, q) => ytd(q.a) - ytd(p.a))) {
+        const a = ytd(g.a), b = ytd(g.b), F = fy(g.b), hasA = nz(g.a);
+        body += `<tr class="gr ${hasA ? 'go' : ''}" data-tx="${esc(JSON.stringify({ k: x.v.k, n: x.v.n, no: g.r.no, gname: g.r.gname, depts: [...g.depts] }))}" title="${hasA ? 'Click to see the transactions' : ''}"><td class="nm">${cons ? esc(g.r.dept) + ' · ' : ''}${esc(g.r.no)} ${esc(g.r.gname)}</td><td></td><td>${esc(g.r.cat)}</td>${numCells(a, b, F)}</tr>`;
+      }
+      if (x.v.bl.size) body += `<tr class="bl"><td colspan="9"><b>Budget lines:</b> ${[...x.v.bl].slice(0, 8).map(esc).join(' &nbsp;·&nbsp; ')}</td></tr>`;
+    }
+  }
+  if (!shown.length) body = `<tr><td colspan="9" class="emptybox">No vendors match.</td></tr>`;
+  if (shown.length < rows.length) body += `<tr><td colspan="9" style="text-align:center;height:40px"><button class="btn sm" id="vAll">Show all ${rows.length.toLocaleString()} vendors</button></td></tr>`;
+  $('vt').innerHTML = `<colgroup>${VCOLS.map(c => c[3] ? `<col style="width:${c[3]}px">` : '<col style="min-width:260px">').join('')}</colgroup>
+    <thead><tr>${VCOLS.map(([k, t, cl]) => `<th class="${cl}" data-sort="${k}">${t}${f.sort === k ? `<span class="ar">${f.dir < 0 ? '▼' : '▲'}</span>` : ''}</th>`).join('')}</tr></thead>
+    <tbody>${body}</tbody><tfoot><tr><td>Total (${rows.length.toLocaleString()} vendors)</td><td></td><td></td>${numCells(tot.a, tot.b, tot.F)}</tr></tfoot>`;
+  $('vNote').innerHTML = `YTD ${thruLbl()}. Each vendor combines every GL it was booked to${cons ? ' in every department you can see' : ''} — click a vendor to see the GLs, then a GL to see its transactions. Budget is matched to vendors by the budget line's description (see the <b>Vendor Match Review</b> tab in the data sheet); budget with no vendor sits on <b>No Vendor Listed</b>. Labor (salary, bonus, benefits) isn't shown by vendor.`;
+}
+$('vSearch').oninput = e => { APP.vf.q = e.target.value; APP.vf.all = false; renderVendors(); };
+$('vCat').onchange = e => { APP.vf.cat = e.target.value; renderVendors(); };
+$('vChips').onclick = e => { const b = e.target.closest('[data-mode]'); if (!b) return; APP.vf.mode = b.dataset.mode; if (b.dataset.mode === 'over') { APP.vf.sort = 'v'; APP.vf.dir = 1; } if (b.dataset.mode === 'under') { APP.vf.sort = 'v'; APP.vf.dir = -1; } renderVendors(); };
+$('vExpand').onclick = () => { vendorRows().slice(0, 200).forEach(x => APP.vf.open[x.v.k] = true); renderVendors(); };
+$('vCollapse').onclick = () => { APP.vf.open = {}; renderVendors(); };
+$('vt').addEventListener('click', e => {
+  const th = e.target.closest('th[data-sort]'); if (th) { const k = th.dataset.sort; if (APP.vf.sort === k) APP.vf.dir *= -1; else { APP.vf.sort = k; APP.vf.dir = k === 'n' || k === 'c' ? 1 : -1; } return renderVendors(); }
+  if (e.target.id === 'vAll') { APP.vf.all = true; return renderVendors(); }
+  const gr = e.target.closest('tr.gr.go'); if (gr) { const o = JSON.parse(gr.dataset.tx); return openTx(o.n, o.k, o.no, o.gname, o.depts); }
+  const vr = e.target.closest('tr.vr'); if (vr) { const k = vr.dataset.k; APP.vf.open[k] = !APP.vf.open[k]; renderVendors(); }
+});
+$('vCsv').onclick = () => {
+  const cons = APP.scope === '__cons', out = [['Vendor', 'Department', 'GL #', 'GL Name', 'Category', `YTD Actual (${thruLbl()})`, 'YTD Budget', 'B/(W) Budget $', 'FY Budget', 'Remaining']];
+  for (const x of vendorRows()) for (const r of x.rs) { const a = ytd(r.a), b = ytd(r.b), F = fy(r.b); if (Math.abs(a) < 0.5 && Math.abs(F) < 0.5) continue; out.push([x.v.n, r.dept, r.no, r.gname, r.cat, a, b, b - a, F, F - a].map(v => typeof v === 'number' ? Math.round(v * 100) / 100 : v)); }
+  csv(out, `Spend by Vendor - ${scopeTitle()} - YTD ${ml(APP.thru - 1)}.csv`);
+};
+
+/* ------------------------------ Category Detail ------------------------------ */
+const DW = { f: 300, m: 80, t: 96, g: 14 };
+function detailOpen(cat, no, nVend) { const k = APP.scope + '|' + cat + '|' + no; return APP.closed.hasOwnProperty(k) ? !APP.closed[k] : nVend <= 40; }
+function renderDetail() {
+  const M = model(), T = APP.thru;
+  if (!M.cats[APP.cat]) APP.cat = M.nl[0] || M.order[0] || '';
+  $('catSel').innerHTML = M.order.map(c => `<option value="${esc(c)}" ${c === APP.cat ? 'selected' : ''}>${esc(c)}${M.cats[c].labor ? '  (labor)' : ''}</option>`).join('');
+  $('catPrev').disabled = M.order.indexOf(APP.cat) <= 0; $('catNext').disabled = M.order.indexOf(APP.cat) >= M.order.length - 1;
+  const C = M.cats[APP.cat];
+  if (!C) { $('dTop').innerHTML = `<tbody><tr><td class="emptybox">No activity.</td></tr></tbody>`; $('dBot').innerHTML = ''; return; }
+  const a = ytd(C.a), b = ytd(C.b), F = fy(C.b);
+  $('kA').textContent = money(a); $('kB').textContent = money(b); $('kV').innerHTML = `<span class="${vcls(b - a)}">${money(b - a)} · ${vpct(a, b)}</span>`; $('kF').textContent = money(F); $('kR').textContent = money(F - a);
+  // rows in display order (same for the top and bottom tables)
+  const rows = [];
+  const gls = C.glList.filter(g => nz(g.a) || nz(g.b));
+  for (const g of gls) {
+    const vl = C.labor ? [] : g.vList.filter(v => Math.abs(ytd(v.a)) >= 0.5 || nz(v.b) || nz(v.a.slice(0, T)));
+    const open = !C.labor && detailOpen(APP.cat, g.no, vl.length);
+    rows.push({ kind: 'gl', g, open, n: vl.length });
+    if (open) vl.forEach(v => rows.push({ kind: 'v', g, v }));
+  }
+  const cell = (v, i, k) => i >= T && k !== 'b' ? '<td class="n fut"></td>' : `<td class="n ${k === 'v' ? vcls(v) : ''}">${acct(v)}</td>`;
+  const label = r => r.kind === 'gl'
+    ? `<td class="f2" title="${esc(r.g.no + ' ' + r.g.name)}"><span class="chev">▸</span>${esc(r.g.no)} ${esc(r.g.name)}${C.labor ? '' : `<span class="cnt">${r.n} vendor${r.n === 1 ? '' : 's'}</span>`}</td>`
+    : `<td class="f2 vend ${r.v.d ? 'noven' : ''} ${nz(r.v.a) ? 'go' : ''}" title="${esc(r.v.n)}${nz(r.v.a) ? ' — click for transactions' : ''}${r.v.bl.size ? '\nBudget lines: ' + esc([...r.v.bl].join(' · ')) : ''}">${esc(r.v.n)}${r.v.d ? '<span style="font-weight:700"> *</span>' : ''}${r.v.bo && !nz(r.v.a) ? '<span class="tag bo">budget only</span>' : ''}</td>`;
+  const trAttr = r => r.kind === 'gl' ? `class="glh ${r.open ? 'open' : ''} ${C.labor ? 'nochev' : ''}" data-gl="${esc(r.g.no)}"` : `class="v" data-gl="${esc(r.g.no)}" data-vk="${esc(r.v.k)}"`;
+  const src = r => r.kind === 'gl' ? r.g : r.v;
+  const colsTop = `<colgroup><col style="width:${DW.f}px">${('<col style="width:' + DW.m + 'px">').repeat(12)}<col style="width:${DW.t}px"><col style="width:${DW.g}px">${('<col style="width:' + DW.m + 'px">').repeat(12)}<col style="width:${DW.t}px"></colgroup>`;
+  const mh = (k) => CAL.map((c, i) => `<th class="n ${k !== 'b' && i >= T ? 'fut' : ''}">${ml(i)}</th>`).join('');
+  $('dTop').innerHTML = colsTop + `<thead><tr class="h1"><th class="f2 pick">${esc(APP.cat)}</th><th class="sa" colspan="13">ACTUALS</th><th class="gap"></th><th class="sv" colspan="13">BUDGET B/(W) &nbsp;·&nbsp; Budget − Actual</th></tr>
+    <tr class="h2"><th class="f2 l">GL / Vendor</th>${mh('a')}<th class="n">YTD ${ml(T - 1)}</th><th class="gap"></th>${mh('v')}<th class="n">YTD ${ml(T - 1)}</th></tr></thead><tbody>` +
+    rows.map(r => { const s = src(r); return `<tr ${trAttr(r)}>${label(r)}${CAL.map((_, i) => cell(s.a[i], i, 'a')).join('')}<td class="n ytd">${acct(ytd(s.a))}</td><td class="gap"></td>${CAL.map((_, i) => cell(s.b[i] - s.a[i], i, 'v')).join('')}<td class="n ytd ${vcls(ytd(s.b) - ytd(s.a))}">${acct(ytd(s.b) - ytd(s.a))}</td></tr>`; }).join('') +
+    `<tr class="spacer"><td colspan="28"></td></tr><tr class="total"><td class="f2">${esc(APP.cat)} total</td>${CAL.map((_, i) => cell(C.a[i], i, 'a')).join('')}<td class="n ytd">${acct(a)}</td><td class="gap"></td>${CAL.map((_, i) => cell(C.b[i] - C.a[i], i, 'v')).join('')}<td class="n ytd ${vcls(b - a)}">${acct(b - a)}</td></tr></tbody>`;
+  $('dTop').style.width = (DW.f + DW.m * 24 + DW.t * 2 + DW.g) + 'px';
+  const colsBot = `<colgroup><col style="width:${DW.f}px">${('<col style="width:' + DW.m + 'px">').repeat(12)}<col style="width:${DW.t}px"><col style="width:${DW.t}px"></colgroup>`;
+  $('dBot').innerHTML = colsBot + `<thead><tr class="h1"><th class="f2 pick">${esc(APP.cat)}</th><th class="sb" colspan="14">BUDGET</th></tr>
+    <tr class="h2"><th class="f2 l">GL / Vendor</th>${mh('b')}<th class="n">YTD ${ml(T - 1)}</th><th class="n">FY ${APP.meta.fy}</th></tr></thead><tbody>` +
+    rows.map(r => { const s = src(r); return `<tr ${trAttr(r)}>${label(r)}${CAL.map((_, i) => cell(s.b[i], i, 'b')).join('')}<td class="n ytd">${acct(ytd(s.b))}</td><td class="n ytd">${acct(fy(s.b))}</td></tr>`; }).join('') +
+    `<tr class="spacer"><td colspan="15"></td></tr><tr class="total"><td class="f2">${esc(APP.cat)} total</td>${CAL.map((_, i) => cell(C.b[i], i, 'b')).join('')}<td class="n ytd">${acct(b)}</td><td class="n ytd">${acct(F)}</td></tr></tbody>`;
+  $('dBot').style.width = (DW.f + DW.m * 12 + DW.t * 2) + 'px';
+}
+function goCat(c) { APP.cat = c; go('detail'); $('dWrap').scrollTo(0, 0); }
+$('catSel').onchange = e => { APP.cat = e.target.value; renderDetail(); $('dWrap').scrollTo(0, 0); };
+$('catPrev').onclick = () => { const o = model().order; APP.cat = o[Math.max(0, o.indexOf(APP.cat) - 1)]; renderDetail(); };
+$('catNext').onclick = () => { const o = model().order; APP.cat = o[Math.min(o.length - 1, o.indexOf(APP.cat) + 1)]; renderDetail(); };
+$('dExpand').onclick = () => { const C = model().cats[APP.cat]; if (C) C.glList.forEach(g => APP.closed[APP.scope + '|' + APP.cat + '|' + g.no] = false); renderDetail(); };
+$('dCollapse').onclick = () => { const C = model().cats[APP.cat]; if (C) C.glList.forEach(g => APP.closed[APP.scope + '|' + APP.cat + '|' + g.no] = true); renderDetail(); };
+$('dWrap').addEventListener('click', e => {
+  const C = model().cats[APP.cat]; if (!C) return;
+  const vt = e.target.closest('tr.v td.vend.go');
+  if (vt) { const tr = vt.parentNode, g = C.gls[tr.dataset.gl], v = g && g.v[tr.dataset.vk]; if (v) openTx(v.n, v.k, g.no, g.name, [...v.depts]); return; }
+  const gh = e.target.closest('tr.glh'); if (gh && !C.labor) { const g = C.gls[gh.dataset.gl], k = APP.scope + '|' + APP.cat + '|' + gh.dataset.gl; const vl = g.vList.length; APP.closed[k] = detailOpen(APP.cat, gh.dataset.gl, vl); renderDetail(); }
+});
+
+/* ------------------------------ transactions ------------------------------ */
+let TX_ROWS = [], TX_NAME = '';
+function openTx(name, vk, no, gname, depts) {
+  $('mTitle').textContent = name; $('mSub').textContent = `${no} ${gname}${depts.length > 1 || APP.scope === '__cons' ? ' · ' + depts.join(', ') : ''} · FY${APP.meta.fy} actual transactions`;
+  $('mBody').innerHTML = '<div class="emptybox">Loading…</div>'; $('modal').classList.add('show');
+  Promise.all(depts.map(d => call('getTxns', APP.token, d, no, vk).then(rows => rows.map(r => [d].concat(r))))).then(lists => {
+    TX_ROWS = [].concat(...lists).sort((p, q) => q[7] - p[7] || (p[2] < q[2] ? 1 : -1)); TX_NAME = `${name} - ${no}`;
+    const multi = depts.length > 1, ytdT = TX_ROWS.filter(t => t[7] <= APP.thru).reduce((s, t) => s + t[6], 0), allT = TX_ROWS.reduce((s, t) => s + t[6], 0);
+    $('mBody').innerHTML = TX_ROWS.length ? `<table class="drilltbl"><thead><tr>${multi ? '<th>Department</th>' : ''}<th>Date</th><th>Month</th><th>Type</th><th>Document #</th><th>Memo / description</th><th class="n">Amount</th></tr></thead><tbody>
+      ${TX_ROWS.map(t => `<tr class="${t[7] > APP.thru ? 'fut' : ''}">${multi ? `<td>${esc(t[0])}</td>` : ''}<td>${esc(t[2])}</td><td>${ml(t[7] - 1)}</td><td>${esc(t[3])}</td><td>${esc(t[4])}</td><td>${esc(t[5])}</td><td class="n">${acct(t[6])}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td colspan="${multi ? 6 : 5}">YTD ${thruLbl()}${TX_ROWS.length >= 1500 ? ' (first 1,500 transactions)' : ''}</td><td class="n">${acct(ytdT)}</td></tr>${Math.abs(allT - ytdT) > 0.5 ? `<tr><td colspan="${multi ? 6 : 5}">All FY${APP.meta.fy} transactions loaded (incl. months after ${ml(APP.thru - 1)})</td><td class="n">${acct(allT)}</td></tr>` : ''}</tfoot></table>`
+      : '<div class="emptybox">No transactions.</div>';
+  }).catch(e => { $('mBody').innerHTML = `<div class="emptybox">${esc(errText(e))}</div>`; });
+}
+$('mClose').onclick = () => $('modal').classList.remove('show');
+$('modal').onclick = e => { if (e.target.id === 'modal') $('modal').classList.remove('show'); };
+document.addEventListener('keydown', e => { if (e.key === 'Escape') $('modal').classList.remove('show'); });
+$('mCsv').onclick = () => csv([['Department', 'Date', 'Month', 'Type', 'Document #', 'Memo / description', 'Amount']].concat(TX_ROWS.map(t => [t[0], t[2], ml(t[7] - 1), t[3], t[4], t[5], t[6]])), `${TX_NAME} transactions.csv`);
+function csv(rows, file) {
+  const s = rows.map(r => r.map(v => { v = v == null ? '' : String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }).join(',')).join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + s], { type: 'text/csv;charset=utf-8' })); a.download = file.replace(/[\\/:*?"<>|]/g, '-');
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2600); }
+
+/* ------------------------------ shell ------------------------------ */
+const VIEWS = [{ k: 'summary', t: 'Summary', p: 'vSummary' }, { k: 'fy', t: 'FY OPEX', p: 'vFy' }, { k: 'vendors', t: 'Spend by Vendor', p: 'vVendors', flex: 1 }, { k: 'detail', t: 'Category Detail', p: 'vDetail', flex: 1 }];
+function scopeTitle() { return APP.scope === '__cons' ? (APP.viewer.all ? 'Consolidated' : 'My departments') : APP.scope; }
+function go(view) { APP.view = view; render(); }
+function render() {
+  tip();
+  $('tabs').innerHTML = VIEWS.map(v => `<button data-view="${v.k}" class="${v.k === APP.view ? 'on' : ''}">${v.k === 'fy' ? 'FY ' + APP.meta.fy + ' OPEX' : v.t}</button>`).join('');
+  for (const v of VIEWS) $(v.p).style.display = v.k === APP.view ? (v.flex ? 'flex' : '') : 'none';
+  $('deptSel').value = APP.scope; $('deptT').textContent = scopeTitle();
+  ({ summary: renderSummary, fy: renderFy, vendors: renderVendors, detail: renderDetail })[APP.view]();
+}
+$('tabs').onclick = e => { const b = e.target.closest('button[data-view]'); if (b) go(b.dataset.view); };
+$('deptSel').onchange = e => { APP.scope = e.target.value; APP.vf.open = {}; APP.vf.all = false; render(); };
+$('thruSel').onchange = e => { APP.thru = +e.target.value; try { localStorage.setItem(THRU_KEY, JSON.stringify({ m: APP.thru, built: APP.meta.builtAt })); } catch (x) {} render(); };
+function setupShell() {
+  const v = APP.viewer, m = APP.meta; YY = String(m.fy).slice(2);
+  $('fyT').textContent = m.fy; $('lastT').textContent = ml(m.lastMonth - 1);
+  const b = new Date(m.builtAt); $('builtT').textContent = isNaN(b) ? '' : b.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  $('whoE').textContent = v.email; $('whoL').textContent = v.laborAll ? 'All OPEX' : v.labor ? 'Mixed access' : 'Non-Labor Only';
+  $('whoL').title = v.labor && !v.laborAll ? 'Labor shown for: ' + v.laborDepts.join(', ') : '';
+  let thru = m.through || m.lastMonth;
+  try { const s = JSON.parse(localStorage.getItem(THRU_KEY) || 'null'); if (s && s.built === m.builtAt && s.m >= 1 && s.m <= m.lastMonth) thru = s.m; } catch (x) {}
+  APP.thru = thru;
+  $('thruSel').innerHTML = CAL.slice(0, m.lastMonth).map((c, i) => `<option value="${i + 1}" ${i + 1 === thru ? 'selected' : ''}>${ml(i)}</option>`).join('');
+  const ds = $('deptSel');
+  if (APP.order.length > 1) {
+    ds.hidden = false; $('deptT').hidden = true;
+    ds.innerHTML = `<option value="__cons">${v.all ? 'Consolidated — all departments' : 'Consolidated — my departments'}</option><optgroup label="Department dashboards">${APP.order.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('')}</optgroup>`;
+    APP.scope = '__cons';
+  } else { ds.hidden = true; $('deptT').hidden = false; APP.scope = APP.order[0]; }
+}
+
+/* ------------------------------ server calls + sign-in ------------------------------ */
+const lsGet = () => { try { return localStorage.getItem(TOKEN_KEY) || ''; } catch (e) { return ''; } };
+const lsSet = v => { try { v ? localStorage.setItem(TOKEN_KEY, v) : localStorage.removeItem(TOKEN_KEY); } catch (e) {} };
+function call(fn, ...args) { return new Promise((res, rej) => { const r = google.script.run.withSuccessHandler(res).withFailureHandler(rej); r[fn].apply(r, args); }); }
+const errText = e => (e && e.message ? e.message : String(e)).replace(/^(Exception|Error):\s*/, '');
+const isAuthErr = e => /access denied|sign in again/i.test(errText(e));
+function busy(on, msg) { $('loading').hidden = !on; if (msg) $('loadMsg').textContent = msg; }
+let GATE = { email: '' };
+function showGate(msg) {
+  $('gate').hidden = false; $('shell').hidden = true; $('stepEmail').hidden = false; $('stepCode').hidden = true;
+  const m = $('mEmail'); m.textContent = msg || ''; m.className = 'msg' + (msg ? ' err' : ''); setTimeout(() => $('inEmail').focus(), 50);
+}
+function sendCode() {
+  const email = $('inEmail').value.trim(); if (!email) return;
+  $('bSend').disabled = true; $('mEmail').textContent = '';
+  call('requestAccessCode', email).then(r => {
+    $('bSend').disabled = false;
+    if (!r || !r.ok) { $('mEmail').textContent = (r && r.error) || 'Something went wrong.'; $('mEmail').className = 'msg err'; return; }
+    GATE.email = email; $('codeTo').textContent = email; $('stepEmail').hidden = true; $('stepCode').hidden = false; $('inCode').value = ''; $('mCode').textContent = '';
+    setTimeout(() => $('inCode').focus(), 50);
+  }).catch(e => { $('bSend').disabled = false; $('mEmail').textContent = errText(e); $('mEmail').className = 'msg err'; });
+}
+function verify() {
+  const code = $('inCode').value.replace(/\D/g, '');
+  if (code.length !== 6) { $('mCode').textContent = 'Enter the 6-digit code.'; $('mCode').className = 'msg err'; return; }
+  $('bVerify').disabled = true;
+  call('verifyAccessCode', GATE.email, code).then(r => {
+    $('bVerify').disabled = false;
+    if (!r || !r.ok) { $('mCode').textContent = (r && r.error) || 'Could not sign in.'; $('mCode').className = 'msg err'; return; }
+    APP.token = r.token; lsSet(r.token); $('gate').hidden = true; boot();
+  }).catch(e => { $('bVerify').disabled = false; $('mCode').textContent = errText(e); $('mCode').className = 'msg err'; });
+}
+$('bSend').onclick = sendCode; $('inEmail').onkeydown = e => { if (e.key === 'Enter') sendCode(); };
+$('bVerify').onclick = verify; $('inCode').onkeydown = e => { if (e.key === 'Enter') verify(); };
+$('bBack').onclick = () => { $('stepEmail').hidden = false; $('stepCode').hidden = true; };
+$('bResend').onclick = () => { $('inEmail').value = GATE.email; $('stepEmail').hidden = false; $('stepCode').hidden = true; sendCode(); };
+$('signOut').onclick = () => { const t = APP.token; APP.token = ''; lsSet(''); call('signOut', t).catch(() => {}).then(() => location.reload()); };
+
+/** Browser tripwire: labor must never arrive for a department this viewer can't see labor for. */
+function laborLeak(r) {
+  const ok = new Set(r.viewer.laborDepts || []);
+  for (const p of r.depts) { if (ok.has(p.dept)) continue; for (const [c, x] of Object.entries(p.cats || {})) if (x.labor || LABOR_ORDER.includes(c)) return p.dept + ': ' + c; }
+  return '';
+}
+function boot() {
+  busy(true, 'Loading your dashboard…');
+  call('getData', APP.token).then(r => {
+    const leak = laborLeak(r);
+    if (leak) { try { call('reportLaborLeak', APP.token, leak); } catch (e) {} busy(false); showGate('Something went wrong loading your dashboard. FP&A has been notified — please try again later.'); return; }
+    APP.viewer = r.viewer; APP.meta = r.meta; APP.depts = {}; APP.order = []; APP.models = {};
+    r.depts.forEach(p => { APP.depts[p.dept] = p; APP.order.push(p.dept); });
+    setupShell(); busy(false); $('gate').hidden = true; $('shell').hidden = false; render();
+  }).catch(e => { busy(false); if (isAuthErr(e)) { APP.token = ''; lsSet(''); showGate(''); } else showGate(errText(e)); });
+}
+APP.token = lsGet();
+if (APP.token) boot(); else showGate('');
+
+</script>
+</body>
+</html>

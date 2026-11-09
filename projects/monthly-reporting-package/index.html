@@ -1,0 +1,2147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../../assets/badge.js"></script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monthly Financial Reporting Package — Demo</title>
+<script src="../../assets/vendor/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#1c1c1c;color:#e0e0e0;font-family:'Segoe UI',Arial,sans-serif;font-size:13px}
+header{background:#111;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #c9a84c}
+header .logo{font-size:20px;font-weight:700;color:#c9a84c;letter-spacing:1px}
+header .subtitle{color:#888;font-size:12px}
+.tab-nav{background:#161616;border-bottom:1px solid #333;overflow-x:auto;white-space:nowrap;display:flex;padding:0 12px}
+.tab-nav::-webkit-scrollbar{height:4px}
+.tab-nav::-webkit-scrollbar-thumb{background:#444}
+.tab-btn{display:inline-block;padding:10px 16px;cursor:pointer;border:none;background:none;color:#888;font-size:12px;font-weight:500;border-bottom:2px solid transparent;transition:.2s;white-space:nowrap}
+.tab-btn:hover{color:#c9a84c}
+.tab-btn.active{color:#c9a84c;border-bottom-color:#c9a84c}
+.tab-content{display:none;padding:20px 24px}
+.tab-content.active{display:block}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+.kpi-card{background:#222;border:1px solid #333;border-radius:6px;padding:14px 16px}
+.kpi-card .label{color:#888;font-size:11px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.kpi-card .value{font-size:22px;font-weight:700;color:#e0e0e0}
+.kpi-card .sub{margin-top:6px;display:flex;gap:12px;flex-wrap:wrap}
+.kpi-card .sub-item{font-size:11px}
+.kpi-card .sub-item .slabel{color:#777}
+.kpi-card .sub-item .sval{font-weight:600}
+.positive{color:#4caf50!important}
+.negative{color:#f44336!important}
+.neutral{color:#aaa!important}
+.section-title{font-size:14px;font-weight:700;color:#c9a84c;margin:18px 0 10px;text-transform:uppercase;letter-spacing:.5px}
+.chart-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:16px;margin-bottom:20px}
+.chart-box{background:#222;border:1px solid #333;border-radius:6px;padding:14px}
+.chart-box h4{color:#c9a84c;font-size:12px;font-weight:600;margin-bottom:10px;text-transform:uppercase}
+.chart-box canvas{max-height:200px}
+.toggle-group{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.toggle-btn{padding:5px 14px;border:1px solid #444;background:#1c1c1c;color:#888;border-radius:4px;cursor:pointer;font-size:12px;transition:.2s}
+.toggle-btn.active{background:#c9a84c;color:#111;border-color:#c9a84c;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{background:#2a2a2a;color:#c9a84c;padding:7px 10px;text-align:right;font-size:11px;font-weight:600;text-transform:uppercase;border-bottom:1px solid #333;white-space:nowrap;cursor:pointer}
+thead th:first-child{text-align:left}
+thead th.sortable:hover{color:#fff}
+tbody tr{border-bottom:1px solid #2a2a2a}
+tbody tr:hover{background:#252525}
+tbody td{padding:6px 10px;text-align:right;color:#ccc}
+tbody td:first-child{text-align:left;color:#e0e0e0}
+tfoot td{padding:7px 10px;text-align:right;font-weight:700;color:#c9a84c;border-top:1px solid #444;background:#222}
+tfoot td:first-child{text-align:left}
+.search-bar{padding:6px 12px;background:#2a2a2a;border:1px solid #444;border-radius:4px;color:#e0e0e0;font-size:12px;width:220px;outline:none}
+.search-bar:focus{border-color:#c9a84c}
+.table-controls{display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.table-wrap{overflow-x:auto}
+.select-input{padding:5px 10px;background:#2a2a2a;border:1px solid #444;border-radius:4px;color:#e0e0e0;font-size:12px;outline:none}
+.select-input:focus{border-color:#c9a84c}
+.badge{display:inline-block;padding:2px 7px;border-radius:3px;font-size:11px;font-weight:600}
+.badge-green{background:#1a3a1a;color:#4caf50}
+.badge-red{background:#3a1a1a;color:#f44336}
+.badge-neutral{background:#2a2a2a;color:#888}
+.commentary-box{background:#222;border:1px solid #333;border-radius:6px;padding:16px 20px;line-height:1.8;color:#ccc}
+.commentary-box h3{color:#c9a84c;margin-bottom:10px}
+.commentary-box ul{margin-left:16px;margin-top:8px}
+.commentary-box li{margin-bottom:6px}
+.pl-row-header{font-weight:700;color:#c9a84c;background:#222}
+.pl-indent{padding-left:20px!important}
+.pl-total{font-weight:700;background:#252525;border-top:1px solid #444}
+.pl-grand{font-weight:700;color:#c9a84c;background:#2a2a2a;border-top:2px solid #c9a84c}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:700px){.two-col{grid-template-columns:1fr}.kpi-grid{grid-template-columns:1fr 1fr}.chart-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="logo">Atlas</div>
+    <div class="subtitle">Financial Reporting Package &mdash; December 2025</div>
+  </div>
+  <div style="color:#888;font-size:11px;text-align:right">Data Source: December 2025 Reporting Package.xlsm<br>All figures in USD unless noted</div>
+</header>
+
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('overview',this)">Overview</button>
+  <button class="tab-btn" onclick="switchTab('office-metrics',this)">Office Metrics (TTM)</button>
+  <button class="tab-btn" onclick="switchTab('office-perf',this)">Office Financial Perf</button>
+  <button class="tab-btn" onclick="switchTab('same-office',this)">Same Office Sales</button>
+  <button class="tab-btn" onclick="switchTab('market-share',this)">MIDs Market Share</button>
+  <button class="tab-btn" onclick="switchTab('titleco',this)">Atlas Title</button>
+  <button class="tab-btn" onclick="switchTab('sbl',this)">Atlas Lending</button>
+  <button class="tab-btn" onclick="switchTab('consol-pl',this)">Consolidated P&L</button>
+  <button class="tab-btn" onclick="switchTab('consol-ttm',this)">Consol P&L TTM</button>
+  <button class="tab-btn" onclick="switchTab('entity-pl',this)">P&L by Entity</button>
+  <button class="tab-btn" onclick="switchTab('bshb-pl',this)">BuildCo Pro Forma</button>
+  <button class="tab-btn" onclick="switchTab('bd-pl',this)">Business Dev P&L</button>
+  <button class="tab-btn" onclick="switchTab('opex-cat',this)">OPEX by Category</button>
+  <button class="tab-btn" onclick="switchTab('dept-opex',this)">Department OPEX</button>
+  <button class="tab-btn" onclick="switchTab('balance-sheet',this)">Balance Sheet & CF</button>
+  <button class="tab-btn" onclick="switchTab('commentary',this)">Commentary</button>
+</div>
+
+
+
+<!-- OVERVIEW -->
+<div id="tab-overview" class="tab-content active">
+  <div class="kpi-grid" id="kpiGrid"></div>
+  <div class="section-title">TTM Monthly Trends</div>
+  <div class="chart-grid">
+    <div class="chart-box"><h4>Revenue (TTM)</h4><canvas id="ovRevChart"></canvas></div>
+    <div class="chart-box"><h4>Operating Income (TTM)</h4><canvas id="ovOIChart"></canvas></div>
+    <div class="chart-box"><h4>EBITDA (TTM)</h4><canvas id="ovEBChart"></canvas></div>
+    <div class="chart-box"><h4>Monthly Closings (TTM)</h4><canvas id="ovClsChart"></canvas></div>
+  </div>
+</div>
+
+<!-- OFFICE METRICS TTM -->
+<div id="tab-office-metrics" class="tab-content">
+  <div class="toggle-group">
+    <button class="toggle-btn active" onclick="setOMMetric('deals',this)">Deal Count</button>
+    <button class="toggle-btn" onclick="setOMMetric('dollars',this)">$/Deal</button>
+    <input class="search-bar" id="omSearch" placeholder="Search office…" oninput="renderOMTable()">
+  </div>
+  <div class="table-wrap">
+    <table id="omTable">
+      <thead><tr id="omHead"></tr></thead>
+      <tbody id="omBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- OFFICE FINANCIAL PERFORMANCE -->
+<div id="tab-office-perf" class="tab-content">
+  <div class="toggle-group">
+    <button class="toggle-btn active" onclick="setOPAlloc('incl',this)">Incl. Corp Allocations</button>
+    <button class="toggle-btn" onclick="setOPAlloc('excl',this)">Excl. Corp Allocations</button>
+    <button class="toggle-btn active" onclick="setOPPeriod('dec',this)" style="margin-left:16px">December</button>
+    <button class="toggle-btn" onclick="setOPPeriod('ytd',this)">YTD</button>
+    <input class="search-bar" id="opSearch" placeholder="Search office…" oninput="renderOPTable()">
+  </div>
+  <div class="table-wrap">
+    <table id="opTable">
+      <thead><tr><th onclick="sortOP('n')">Office</th><th onclick="sortOP('r')">Revenue</th><th onclick="sortOP('oi')">Op. Income</th><th onclick="sortOP('m')">Margin</th></tr></thead>
+      <tbody id="opBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SAME OFFICE SALES -->
+<div id="tab-same-office" class="tab-content">
+  <div class="section-title">Same Office Sales — December 2025 vs PY</div>
+  <div class="kpi-grid" id="sosGrid"></div>
+  <div class="section-title">TTM Same Office Sales</div>
+  <div class="kpi-grid" id="sosTTMGrid"></div>
+</div>
+
+<!-- MARKET SHARE -->
+<div id="tab-market-share" class="tab-content">
+  <div class="section-title">Market Share by Metro — TTM Monthly</div>
+  <div class="table-wrap">
+    <table id="msTable">
+      <thead><tr>
+        <th>Market</th><th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th><th>May</th><th>Jun</th><th>Jul</th><th>Aug</th><th>Sep</th><th>Oct</th><th>Nov</th><th>Dec</th><th>TTM</th><th>T3M</th><th>Var (TTM-T3M)</th>
+      </tr></thead>
+      <tbody id="msBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- TITLECO TITLE -->
+<div id="tab-titleco" class="tab-content">
+  <div class="section-title">Atlas Title — 2025 Monthly Performance</div>
+  <div class="chart-grid" style="grid-template-columns:repeat(2,1fr)">
+    <div class="chart-box"><h4>Total Revenue vs Budget</h4><canvas id="titlecoRevChart"></canvas></div>
+    <div class="chart-box"><h4>Total Titles Funded</h4><canvas id="titlecoTitlesChart"></canvas></div>
+    <div class="chart-box"><h4>Net Income</h4><canvas id="titlecoNIChart"></canvas></div>
+    <div class="chart-box"><h4>Texas Penetration Rate</h4><canvas id="titlecoPenetChart"></canvas></div>
+  </div>
+  <div class="section-title" style="margin-top:20px">P&amp;L — Summary Simplified</div>
+  <div class="toggle-group">
+    <button class="toggle-btn active" onclick="setTitlecoPeriod('dec',this)">December</button>
+    <button class="toggle-btn" onclick="setTitlecoPeriod('ytd',this)">YTD</button>
+  </div>
+  <div class="table-wrap">
+    <table id="titlecoTable">
+      <thead><tr id="titlecoHead"></tr></thead>
+      <tbody id="titlecoBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Atlas Lending -->
+<div id="tab-sbl" class="tab-content">
+  <div class="section-title">Atlas Lending — 2025 Monthly Performance</div>
+  <div class="chart-grid" style="grid-template-columns:repeat(2,1fr)">
+    <div class="chart-box"><h4>Total Revenue vs Budget</h4><canvas id="sblRevChart"></canvas></div>
+    <div class="chart-box"><h4>Total Loans (Hard Money + Marketplace)</h4><canvas id="sblLoansChart"></canvas></div>
+    <div class="chart-box"><h4>Net Income</h4><canvas id="sblNIChart"></canvas></div>
+    <div class="chart-box"><h4>Marketplace Penetration Rate</h4><canvas id="sblPenetChart"></canvas></div>
+  </div>
+  <div class="section-title" style="margin-top:20px">P&amp;L — Summary Simplified</div>
+  <div class="toggle-group">
+    <button class="toggle-btn active" onclick="setSBLPeriod('dec',this)">December</button>
+    <button class="toggle-btn" onclick="setSBLPeriod('ytd',this)">YTD</button>
+  </div>
+  <div class="table-wrap">
+    <table id="sblTable">
+      <thead><tr id="sblHead"></tr></thead>
+      <tbody id="sblBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- CONSOLIDATED P&L -->
+<div id="tab-consol-pl" class="tab-content">
+  <div class="section-title">Consolidated P&amp;L — December 2025 &amp; YTD</div>
+  <div class="table-wrap">
+    <table id="consolTable">
+      <thead><tr>
+        <th>Line Item</th>
+        <th>Dec Actual</th><th>Dec Budget</th><th>Dec B/(W)</th>
+        <th>Dec vs PY</th>
+        <th>YTD Actual</th><th>YTD Budget</th><th>YTD B/(W)</th>
+        <th>YTD vs PY</th>
+      </tr></thead>
+      <tbody id="consolBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- CONSOL P&L TTM -->
+<div id="tab-consol-ttm" class="tab-content">
+  <div class="section-title">Consolidated P&amp;L — TTM Monthly (Jan–Dec 2025)</div>
+  <div class="table-wrap">
+    <table id="ttmTable">
+      <thead><tr><th>Line Item</th><th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th><th>May</th><th>Jun</th><th>Jul</th><th>Aug</th><th>Sep</th><th>Oct</th><th>Nov</th><th>Dec</th><th>YTD</th></tr></thead>
+      <tbody id="ttmBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- P&L BY ENTITY -->
+<div id="tab-entity-pl" class="tab-content">
+  <div class="toggle-group">
+    <button class="toggle-btn active" onclick="setEntPeriod('dec',this)">December</button>
+    <button class="toggle-btn" onclick="setEntPeriod('ytd',this)">YTD</button>
+  </div>
+  <div class="table-wrap">
+    <table id="entTable">
+      <thead><tr id="entHead"></tr></thead>
+      <tbody id="entBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- BuildCo PRO FORMA -->
+<div id="tab-bshb-pl" class="tab-content">
+  <div class="toggle-group">
+    <button class="toggle-btn active" onclick="setBSHBPeriod('dec',this)">December</button>
+    <button class="toggle-btn" onclick="setBSHBPeriod('ytd',this)">YTD</button>
+  </div>
+  <div class="table-wrap">
+    <table id="bshbTable">
+      <thead><tr id="bshbHead"></tr></thead>
+      <tbody id="bshbBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- BUSINESS DEV P&L -->
+<div id="tab-bd-pl" class="tab-content">
+  <div class="section-title">Business Development P&amp;L — December 2025 &amp; YTD</div>
+  <div class="table-wrap">
+    <table id="bdTable">
+      <thead><tr>
+        <th>Channel</th>
+        <th>Dec Actual</th><th>Dec PY</th><th>Dec YoY%</th>
+        <th>YTD Actual</th><th>YTD PY</th><th>YTD YoY%</th>
+      </tr></thead>
+      <tbody id="bdBody"></tbody>
+    </table>
+  </div>
+  <div class="section-title" style="margin-top:24px">Deal Count by Channel</div>
+  <div class="table-wrap">
+    <table id="bdDealsTable">
+      <thead><tr>
+        <th>Channel</th>
+        <th>Dec Actual</th><th>Dec PY</th><th>Dec YoY%</th>
+        <th>YTD Actual</th><th>YTD PY</th><th>YTD YoY%</th>
+      </tr></thead>
+      <tbody id="bdDealsBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- OPEX BY CATEGORY -->
+<div id="tab-opex-cat" class="tab-content">
+  <div class="toggle-group">
+    <button class="toggle-btn active" onclick="setOpexCatPeriod('dec',this)">December</button>
+    <button class="toggle-btn" onclick="setOpexCatPeriod('ytd',this)">YTD</button>
+  </div>
+  <div class="table-wrap">
+    <table id="opexCatTable">
+      <thead><tr id="opexCatHead"></tr></thead>
+      <tbody id="opexCatBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- DEPARTMENT OPEX -->
+<div id="tab-dept-opex" class="tab-content">
+  <div class="toggle-group">
+    <label style="color:#888;font-size:12px;margin-right:8px">Department:</label>
+    <select class="select-input" id="deptSelect" onchange="renderDeptOpex(this.value)"></select>
+  </div>
+  <div class="table-wrap">
+    <table id="deptTable">
+      <thead><tr>
+        <th>Category</th>
+        <th>Dec Actual</th><th>Dec Budget</th><th>Dec B/(W)</th>
+        <th>YTD Actual</th><th>YTD Budget</th><th>YTD B/(W)</th>
+      </tr></thead>
+      <tbody id="deptBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- BALANCE SHEET & CF -->
+<div id="tab-balance-sheet" class="tab-content">
+  <div class="two-col">
+    <div>
+      <div class="section-title">Balance Sheet — Dec 2025 vs Dec 2024</div>
+      <div class="table-wrap">
+        <table id="bsTable">
+          <thead><tr><th>Line Item</th><th>Dec 2024</th><th>Dec 2025</th><th>Change</th></tr></thead>
+          <tbody id="bsBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <div class="section-title">Cash Flow Statement</div>
+      <div class="table-wrap">
+        <table id="cfTable">
+          <thead><tr><th>Line Item</th><th>December</th><th>YTD</th></tr></thead>
+          <tbody id="cfBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- COMMENTARY -->
+<div id="tab-commentary" class="tab-content">
+  <div class="commentary-box">
+    <h3>December 2025 — Executive Commentary</h3>
+    <p><strong>Revenue:</strong> December revenue of $13.0M was a record month, exceeding budget by $2.5M (+24.4%) and up 24.3% vs prior year. Commission income drove the beat at $9.2M. HomeGo contributed $1.2M, well above the $111K budget as the partnership ramps.</p>
+    <p style="margin-top:10px"><strong>Gross Margin:</strong> December gross margin of 60.4% was ahead of budget (58.3%) and significantly above prior year (56.4%), reflecting favorable deal economics and mix shift.</p>
+    <p style="margin-top:10px"><strong>Operating Income:</strong> December OI of $2.6M was more than double the budget of $1.2M and up 36% vs PY. EBITDA of $2.5M represents a 19.5% EBITDA margin vs 12.0% budgeted.</p>
+    <p style="margin-top:10px"><strong>Volume:</strong> 658 closings in December, 8.6% ahead of the 606 budget and 9.3% above PY. Average deal spread of $13,965 exceeded the $12,977 budget.</p>
+    <p style="margin-top:10px"><strong>YTD:</strong> Full-year revenue of $132.3M was 5.8% below budget ($140.4M) but in line with PY ($138.6M). Full-year EBITDA of $16.8M (12.7% margin) is in line with budget ($16.3M, 11.6%) and slightly below PY ($20.1M, 14.5%).</p>
+    <p style="margin-top:10px"><strong>Atlas Title:</strong> 348 deals in December vs 355 budgeted. YTD revenue of $8.5M in line with PY.</p>
+    <p style="margin-top:10px"><strong>Atlas Lending:</strong> 66 loans originated in December vs 100 budgeted. YTD origination volume of $14.2M vs $23.3M budget reflects tighter deal economics. Interest income tracking at $4.6M YTD.</p>
+  </div>
+</div>
+
+<script>
+// ── AUTO-GENERATED FROM EXCEL ──
+const KPI = {
+  rev:5703754, rev_bud:4929782, rev_py:4505428,
+  gm:0.6868, gm_bud:0.5232, gm_py:0.5694,
+  ebitda:1055987, ebitda_bud:596294, ebitda_py:767291,
+  ebitda_pct:0.2126, ebitda_pct_bud:0.1141, ebitda_pct_py:0.1808,
+  comm:3727232, comm_bud:3010922, comm_py:3335795,
+  sbl_loans:27, sbl_loans_bud:47, sbl_loans_py:21,
+  sbl_vol:5902841, sbl_vol_bud:8550153, sbl_vol_py:6134672,
+  spar_deals:145, spar_bud:168, spar_py:135,
+  corp_hc:98, corp_hc_bud:103, corp_hc_py:76,
+  cont_hc:204, cont_hc_py:185,
+  closings:261, cls_bud:287, cls_py:251,
+  avg_deal:5968, deal_bud:5230, deal_py:4823,
+};
+const TTM_REV    = [4066083,4073098,4857218,5792697,5452213,4377972,5158199,3921504,4523192,4081187,4316291,5664202];
+const TTM_OI     = [276273,556136,396005,1131423,784549,528244,550634,428286,418014,514290,272476,977165];
+const TTM_EBITDA = [285646,616407,379068,961187,954539,528723,626042,429112,505101,458088,350074,1035447];
+const TTM_GP     = [2055006,2363224,2210370,2569378,2922776,2729349,2306498,2172087,2190104,2883095,2392008,3785359];
+const TTM_CLOSINGS = [205,267,244,291,321,269,269,288,310,306,210,297];
+const CPL_ROWS = [
+  {L:'Revenue',sec:true},
+  {L:'Commission Income',da:3971204,db:2949964,dpy:3024634,ya:41526571,yb:42840822,ypy:45835324,grand:false,total:false,pct:false},
+  {L:'Administrative Fee Income',da:82018,db:80656,dpy:78971,ya:1046238,yb:1019698,ypy:1169872,grand:false,total:false,pct:false},
+  {L:'Acquisition Fee Income',da:66514,db:68402,dpy:69126,ya:831292,yb:798653,ypy:758762,grand:false,total:false,pct:false},
+  {L:'Marketing Fee Income',da:78678,db:0,dpy:0,ya:213475,yb:0,ypy:0,grand:false,total:false,pct:false},
+  {L:'HomeGo Revenue',da:491278,db:52115,dpy:97586,ya:1850234,yb:539095,ypy:1275081,grand:false,total:false,pct:false},
+  {L:'Atlas Lending',da:170889,db:200005,dpy:130955,ya:2230615,yb:1814292,ypy:1923329,grand:false,total:false,pct:false},
+  {L:'Atlas Title',da:293413,db:288759,dpy:245220,ya:3597269,yb:4234869,ypy:3832941,grand:false,total:false,pct:false},
+  {L:'FundCo',da:128309,db:105625,dpy:102125,ya:1411314,yb:1387705,ypy:1598607,grand:false,total:false,pct:false},
+  {L:'Other Fee',da:253942,db:248210,dpy:231906,ya:408001,yb:353293,ypy:363840,grand:false,total:false,pct:false},
+  {L:'Misc. Income',da:1206,db:1540,dpy:2281,ya:24882,yb:16233,ypy:20452,grand:false,total:false,pct:false},
+  {L:'Total Revenue',da:4763987,db:4450182,dpy:4213011,ya:54155069,yb:53761414,ypy:63057276,grand:true,total:false,pct:false},
+  {L:'Cost of Goods Sold',sec:true},
+  {L:'Commission COGS',da:1941422,db:1610418,dpy:1630304,ya:21295285,yb:25133448,ypy:25455347,grand:false,total:false,pct:false},
+  {L:'Non-Commission COGS',da:74211,db:68842,dpy:52478,ya:857042,yb:860730,ypy:854830,grand:false,total:false,pct:false},
+  {L:'Total Cost of Goods Sold',da:2404672,db:2065295,dpy:2064859,ya:25839132,yb:30660842,ypy:24789427,grand:false,total:true,pct:false},
+  {L:'Gross Profit',da:3287436,db:2782365,dpy:2118280,ya:32394550,yb:34242791,ypy:34475761,grand:true,total:false,pct:false},
+  {L:'Gross Margin',da:0.5419,db:0.5959,dpy:0.4861,ya:0.5232,yb:0.5597,ypy:0.5844,grand:false,total:false,pct:true},
+  {L:'Operating Expenses',sec:true},
+  {L:'Labor',sec:true},
+  {L:'Salary',da:973369,db:797176,dpy:790460,ya:9457692,yb:8902187,ypy:9910998,grand:false,total:false,pct:false},
+  {L:'Benefits',da:131982,db:119530,dpy:133146,ya:1511862,yb:1448937,ypy:1488746,grand:false,total:false,pct:false},
+  {L:'Bonus',da:137460,db:243712,dpy:86356,ya:2488792,yb:2689916,ypy:2652963,grand:false,total:false,pct:false},
+  {L:'Commissions',da:2505,db:17777,dpy:9311,ya:110291,yb:190567,ypy:169204,grand:false,total:false,pct:false},
+  {L:'Total Labor Expense',da:1276074,db:1123316,dpy:1046817,ya:13117802,yb:15050352,ypy:12460591,grand:false,total:true,pct:false},
+  {L:'Non-Labor',sec:true},
+  {L:'Bank Charges',da:-15168,db:10390,dpy:12775,ya:138588,yb:110249,ypy:101628,grand:false,total:false,pct:false},
+  {L:'Dues and Subscriptions',da:29222,db:13589,dpy:20212,ya:157351,yb:154128,ypy:167447,grand:false,total:false,pct:false},
+  {L:'Direct Mail',da:0,db:0,dpy:8930,ya:-19556,yb:13324,ypy:540245,grand:false,total:false,pct:false},
+  {L:'Marketing',da:199045,db:79819,dpy:66930,ya:1251372,yb:1048214,ypy:1083465,grand:false,total:false,pct:false},
+  {L:'Office Expense',da:102620,db:99967,dpy:85711,ya:1158196,yb:1238410,ypy:1128489,grand:false,total:false,pct:false},
+  {L:'People',da:43816,db:62103,dpy:44581,ya:630694,yb:773549,ypy:685209,grand:false,total:false,pct:false},
+  {L:'Professional Fees',da:135969,db:95327,dpy:118950,ya:1139367,yb:1356544,ypy:1100385,grand:false,total:false,pct:false},
+  {L:'Rent',da:120555,db:163641,dpy:104784,ya:1831581,yb:1644576,ypy:1667550,grand:false,total:false,pct:false},
+  {L:'T&E',da:110346,db:152910,dpy:116723,ya:1255590,yb:1329890,ypy:946874,grand:false,total:false,pct:false},
+  {L:'Taxes',da:16873,db:20359,dpy:19801,ya:114272,yb:224641,ypy:213079,grand:false,total:false,pct:false},
+  {L:'Technology',da:65732,db:89457,dpy:63376,ya:875846,yb:1114408,ypy:1025964,grand:false,total:false,pct:false},
+  {L:'Tech Consulting',da:33785,db:42434,dpy:32492,ya:527618,yb:474215,ypy:507545,grand:false,total:false,pct:false},
+  {L:'Title Expense',da:61912,db:28331,dpy:23036,ya:283431,yb:1203683,ypy:301259,grand:false,total:false,pct:false},
+  {L:'Total Non-Labor Expense',da:804053,db:805969,dpy:674983,ya:8430033,yb:11614100,ypy:9995946,grand:false,total:true,pct:false},
+  {L:'Depreciation & Amortization',da:79820,db:8706,dpy:11976,ya:150803,yb:100227,ypy:79039,grand:false,total:false,pct:false},
+  {L:'Total Operating Expense',da:2099747,db:1750791,dpy:1530527,ya:22646667,yb:24253714,ypy:24198866,grand:false,total:true,pct:false},
+  {L:'Operating Income',da:958910,db:475281,dpy:690362,ya:6217356,yb:6815513,ypy:9486920,grand:true,total:false,pct:false},
+  {L:'Operating Margin',da:0.1694,db:0.1278,dpy:0.1696,ya:0.1193,yb:0.1249,ypy:0.1632,grand:false,total:false,pct:true},
+  {L:'Interest Expense (AJW LLC)',da:0,db:0,dpy:0,ya:0,yb:0,ypy:0,grand:false,total:false,pct:false},
+  {L:'Other Income / (Expense)',da:58547,db:-7010,dpy:-600,ya:10374,yb:-83867,ypy:-194233,grand:false,total:false,pct:false},
+  {L:'Net Income',da:1080716,db:570805,dpy:693117,ya:7102076,yb:6273603,ypy:7576154,grand:true,total:false,pct:false},
+  {L:'Interest Expense',da:0,db:0,dpy:0,ya:0,yb:0,ypy:0,grand:false,total:false,pct:false},
+  {L:'Interest Income',da:0,db:0,dpy:0,ya:0,yb:0,ypy:0,grand:false,total:false,pct:false},
+  {L:'NCI',da:-127307,db:0,dpy:0,ya:-150285,yb:0,ypy:0,grand:false,total:false,pct:false},
+  {L:'Depreciation & Amortization',da:62970,db:10037,dpy:10481,ya:175209,yb:116449,ypy:79394,grand:false,total:false,pct:false},
+  {L:'EBITDA',da:1177707,db:496569,dpy:771555,ya:6354120,yb:5948535,ypy:7778341,grand:true,total:false,pct:false},
+  {L:'EBITDA Margin',da:0.1675,db:0.1072,dpy:0.1957,ya:0.117,yb:0.1076,ypy:0.1547,grand:false,total:false,pct:true}
+];
+const TTM_PL_ROWS = [
+  {L:'Commission Income',vals:[3587925,3867548,3265655,4000539,4397846,3410393,3546113,3873525,3640205,4084025,4009379,4372813,43453354],grand:false,total:false,pct:false},
+  {L:'Administrative Fee Income',vals:[67967,87533,84391,99208,76488,73421,82486,91188,83384,75988,68129,83000,875333],grand:false,total:false,pct:false},
+  {L:'Acquisition Fee Income',vals:[61709,76177,69362,81451,81480,59842,64523,66535,59770,62483,52113,72772,863041],grand:false,total:false,pct:false},
+  {L:'Marketing Fee Income',vals:[0,0,0,0,0,0,11156,1995,0,45026,65461,63893,221614],grand:false,total:false,pct:false},
+  {L:'HomeGo Revenue',vals:[55352,61023,71987,345048,141390,113757,151170,128886,91299,99114,85325,478920,2078610],grand:false,total:false,pct:false},
+  {L:'Atlas Lending',vals:[127384,99620,149923,131654,188700,203897,191619,162808,155667,183109,154855,214259,1803519],grand:false,total:false,pct:false},
+  {L:'Atlas Title',vals:[262809,267876,322888,280108,372318,246671,271274,291993,248612,409584,255240,324172,3796406],grand:false,total:false,pct:false},
+  {L:'FundCo',vals:[97326,130813,122728,111139,119984,113935,101733,115454,101288,95956,93792,108282,1418732],grand:false,total:false,pct:false},
+  {L:'Other Fee',vals:[5124,4450,15526,6721,5061,6860,6726,11230,8805,44342,20700,212360,343873],grand:false,total:false,pct:false},
+  {L:'Misc. Income',vals:[1187,2964,1592,3509,1609,2346,2190,1974,978,4759,3066,1421,25249],grand:false,total:false,pct:false},
+  {L:'Total Revenue',vals:[4188635,4170687,4899751,5001327,5842162,4231166,4513414,3820382,4323008,5321792,4741426,6151986,61156347],grand:true,total:false,pct:false},
+  {L:'Commission COGS',vals:[1858787,2238808,1835971,2247907,2569754,1868166,2202558,1932273,1798754,2320887,2161177,1805492,26811056],grand:false,total:false,pct:false},
+  {L:'Non-Commission COGS',vals:[55304,26961,37887,60199,61082,78741,77914,65944,78228,70464,85398,79703,772646],grand:false,total:false,pct:false},
+  {L:'Total Cost of Goods Sold',vals:[1808346,2043955,2275376,2223344,2233929,1817440,2368595,2054686,2059260,2123747,1997770,1915893,26802040],grand:false,total:true,pct:false},
+  {L:'Gross Profit',vals:[2098982,2196406,2354516,3004754,3041028,2590966,2426443,2539874,2158693,2743685,2386512,3141040,34763490],grand:true,total:false,pct:false},
+  {L:'Gross Margin',vals:[0.4986,0.5401,0.4968,0.5215,0.4549,0.4677,0.4902,0.6144,0.4608,0.4943,0.5128,0.6105,0.4806],grand:false,total:false,pct:true},
+  {L:'Salary',vals:[855642,683834,749037,694637,731804,916897,981616,768630,815547,923044,831990,1076895,9325743],grand:false,total:false,pct:false},
+  {L:'Benefits',vals:[161007,169822,192374,105554,126377,136486,122309,141169,112235,169808,152615,136873,1613858],grand:false,total:false,pct:false},
+  {L:'Bonus',vals:[241805,197417,162203,185303,238701,219442,210960,194733,209664,255497,201936,131374,2243439],grand:false,total:false,pct:false},
+  {L:'Commissions',vals:[11439,11346,8837,18283,13374,3588,10601,2442,2958,12801,2228,2151,107527],grand:false,total:false,pct:false},
+  {L:'Total Labor Expense',vals:[1103658,1132159,1081636,1318114,1082114,1293282,1190435,1183382,1290947,1480507,1301538,1207262,13062805],grand:false,total:true,pct:false},
+  {L:'Bank Charges',vals:[11768,8437,12346,11411,19264,16187,17086,20463,17384,20569,23238,-15800,140705],grand:false,total:false,pct:false},
+  {L:'Dues and Subscriptions',vals:[11053,14714,13359,14664,14576,10292,13514,15630,12551,18899,25410,27197,206284],grand:false,total:false,pct:false},
+  {L:'Direct Mail',vals:[9835,0,0,0,-32293,0,0,-214,0,0,0,0,-23362],grand:false,total:false,pct:false},
+  {L:'Marketing',vals:[56766,66049,86505,63828,90835,79112,51360,82517,67431,171431,216711,177269,1138071],grand:false,total:false,pct:false},
+  {L:'Office Expense',vals:[79057,91686,97412,111997,110407,104481,95481,85427,110717,103686,113811,122150,1061067],grand:false,total:false,pct:false},
+  {L:'People',vals:[79511,51285,59614,59652,52638,54705,45219,34617,54378,43720,40092,48165,511841],grand:false,total:false,pct:false},
+  {L:'Professional Fees',vals:[79523,55687,88956,69835,93489,102093,83187,98606,126445,115368,203621,135520,1277189],grand:false,total:false,pct:false},
+  {L:'Rent',vals:[147508,136098,140981,124767,125294,139538,130224,117920,117581,150916,108982,124392,1624834],grand:false,total:false,pct:false},
+  {L:'T&E',vals:[48932,108906,282929,89306,53430,147979,61259,62779,77449,55576,51357,130881,1112565],grand:false,total:false,pct:false},
+  {L:'Taxes',vals:[17555,16523,-8572,15204,-14801,9916,13288,11598,11769,12680,10622,18815,104641],grand:false,total:false,pct:false},
+  {L:'Technology',vals:[65424,63275,89584,76281,92231,68081,90440,86700,86790,66488,63674,76344,883139],grand:false,total:false,pct:false},
+  {L:'Tech Consulting',vals:[42584,45929,51977,40931,47625,44937,48016,42980,39976,49579,41665,38819,548843],grand:false,total:false,pct:false},
+  {L:'Title Expense',vals:[28740,20298,21990,10346,13140,7106,9852,20838,25237,18419,7635,61389,234000],grand:false,total:false,pct:false},
+  {L:'Total Non-Labor Expense',vals:[723983,738226,918390,665964,730927,723399,651851,760527,763991,749112,830295,916582,8331923],grand:false,total:true,pct:false},
+  {L:'Depreciation & Amortization',vals:[7791,8347,8007,10048,7771,9011,9591,7523,8140,9635,8874,76313,174201],grand:false,total:false,pct:false},
+  {L:'Total Operating Expense',vals:[1846089,1740557,2118708,1626424,1826092,2097746,1794346,1680865,1959326,2469931,2327941,2024429,22338540],grand:false,total:true,pct:false},
+  {L:'Operating Income',vals:[284303,617374,406742,1073329,929757,568336,590248,480976,503330,441711,305318,972553,6749235],grand:true,total:false,pct:false},
+  {L:'Operating Margin',vals:[0.0775,0.1464,0.0683,0.2235,0.1813,0.1337,0.1144,0.1074,0.1045,0.1001,0.0727,0.1782,0.1343],grand:false,total:false,pct:true},
+  {L:'Interest Expense (AJW LLC)',vals:[0,0,0,0,0,0,0,0,0,0,0,0,0],grand:false,total:false,pct:false},
+  {L:'Other Income / (Expense)',vals:[770,2901,-868,5236,140,300,-8304,-41007,-2414,-617,4132,60275,8400],grand:false,total:false,pct:false},
+  {L:'Net Income',vals:[256872,684899,408775,1209619,908828,603394,508458,362914,450831,529652,297775,1178273,7906834],grand:true,total:false,pct:false},
+  {L:'Interest Expense',vals:[0,0,0,0,0,0,0,0,0,0,0,0,0],grand:false,total:false,pct:false},
+  {L:'Interest Income',vals:[0,0,0,0,0,0,0,0,0,0,0,0,0],grand:false,total:false,pct:false},
+  {L:'NCI',vals:[0,0,0,0,0,0,0,0,0,0,0,-115299,-132635],grand:false,total:false,pct:false},
+  {L:'Depreciation & Amortization',vals:[8222,7918,6764,10589,9501,9612,7352,8729,8509,9511,9245,66237,160730],grand:false,total:false,pct:false},
+  {L:'EBITDA',vals:[314741,660192,338523,933022,867657,566583,623731,449656,497712,446539,278777,1088190,7867876],grand:true,total:false,pct:false},
+  {L:'EBITDA Margin',vals:[0.0836,0.1521,0.0803,0.2004,0.1883,0.1012,0.1238,0.0868,0.0903,0.1124,0.065,0.2158,0.1411],grand:false,total:false,pct:true}
+];
+const ENT_ROWS = [
+  {L:'Commission Income',dv:[0,0,0,0,0,3614075,0,0,150648,143814,0,0,3519970],yv:[0,0,0,0,0,49009565,0,0,377553,413324,0,0,48812768],grand:false,total:false,pct:false},
+  {L:'Administrative Fee Income',dv:[0,0,0,0,0,70570,0,0,0,0,0,0,87954],yv:[0,0,0,0,0,849255,0,0,0,0,0,0,973957],grand:false,total:false,pct:false},
+  {L:'Acquisition Fee Income',dv:[0,0,0,0,0,66020,0,0,0,0,0,0,85073],yv:[0,0,0,0,0,924347,0,0,0,0,0,0,947179],grand:false,total:false,pct:false},
+  {L:'Marketing Fee Income',dv:[0,0,0,0,0,0,0,0,62544,73513,0,0,75235],yv:[0,0,0,0,0,0,26489,0,158690,154592,0,0,203209],grand:false,total:false,pct:false},
+  {L:'HomeGo Revenue',dv:[0,0,0,0,0,477624,0,0,0,0,0,0,571854],yv:[0,0,0,0,0,1994868,0,0,0,0,0,0,2197599],grand:false,total:false,pct:false},
+  {L:'Atlas Lending',dv:[0,0,0,212953,0,0,0,0,0,0,0,0,173350],yv:[0,0,0,1940974,0,0,0,0,0,0,0,0,1799818],grand:false,total:false,pct:false},
+  {L:'Atlas Title',dv:[0,0,0,0,347890,0,0,0,0,0,0,0,293963],yv:[0,0,0,0,3521392,0,0,0,0,0,0,0,3537073],grand:false,total:false,pct:false},
+  {L:'FundCo',dv:[0,0,115399,0,0,0,0,0,0,0,0,0,114595],yv:[0,0,1475372,0,0,0,0,0,0,0,0,0,1174588],grand:false,total:false,pct:false},
+  {L:'Other Fee',dv:[0,0,0,0,0,262733,0,4313,10557,10716,0,0,222424],yv:[0,0,0,0,0,343523,0,4381,21741,19749,0,0,376222],grand:false,total:false,pct:false},
+  {L:'Misc. Income',dv:[0,0,3581,0,0,0,0,0,0,0,0,-2106,1149],yv:[0,0,30711,0,0,0,0,0,0,0,0,-2050,25706],grand:false,total:false,pct:false},
+  {L:'Total Revenue',dv:[0,0,115834,170307,277271,4304952,0,4883,271571,274481,0,-1735,4892582],yv:[0,0,1346339,2199403,4033487,45369623,23686,5226,526777,580138,0,-1725,51663490],grand:true,total:false,pct:false},
+  {L:'Commission COGS',dv:[0,0,0,14669,0,2265915,0,0,57219,47895,0,0,2197730],yv:[0,0,0,164211,0,20985784,0,0,145808,147293,0,0,21708410],grand:false,total:false,pct:false},
+  {L:'Non-Commission COGS',dv:[0,0,63,53090,23689,-1635,0,0,6110,7128,0,0,86576],yv:[0,0,28103,492888,147118,-17981,0,0,15662,16041,0,0,763480],grand:false,total:false,pct:false},
+  {L:'Total Cost of Goods Sold',dv:[0,0,80,81621,19592,1898413,0,0,67145,66867,0,0,1861809],yv:[0,0,31845,743645,145861,23839448,0,0,155137,138137,0,0,22262471],grand:false,total:true,pct:false},
+  {L:'Gross Profit',dv:[0,0,101788,105952,317209,2492316,0,4657,165749,166706,0,-1800,3461105],yv:[0,0,1142879,1077545,3223137,24171565,24086,4509,462859,495957,0,-1859,28079125],grand:true,total:false,pct:false},
+  {L:'Gross Margin',dv:[0,0,1.0,0.6428,1.0549,0.5066,0,1,0.728,0.729,0,1,0.636],yv:[0,0,0.9572,0.5761,1.0714,0.5,1,1,0.6858,0.7864,0,1,0.5451],grand:false,total:false,pct:true},
+  {L:'Salary',dv:[0,0,0,41008,89087,698312,2696,3841,96987,84000,0,0,1076589],yv:[0,0,0,471788,1318894,7712058,24266,8654,244096,284597,0,0,8982363],grand:false,total:false,pct:false},
+  {L:'Benefits',dv:[0,0,0,6456,16453,82550,323,347,18508,17208,0,0,142227],yv:[0,0,0,107120,239604,1378647,2176,695,49632,54866,0,0,1583322],grand:false,total:false,pct:false},
+  {L:'Bonus',dv:[0,0,0,16952,6067,135021,996,0,2491,2395,0,0,125964],yv:[0,0,0,157119,191976,1796378,2457,0,7285,8251,0,0,2231394],grand:false,total:false,pct:false},
+  {L:'Commissions',dv:[0,0,0,0,0,2290,0,0,0,0,0,0,2318],yv:[0,0,0,0,30217,65075,0,0,0,0,0,0,108580],grand:false,total:false,pct:false},
+  {L:'Total Labor Expense',dv:[0,0,0,72341,125453,864386,4086,4111,93250,120032,0,0,1116130],yv:[0,0,0,736454,1682528,10570232,28652,8524,345994,297197,0,0,12962191],grand:false,total:true,pct:false},
+  {L:'Bank Charges',dv:[0,0,3181,406,5282,-31232,-36,0,1718,1709,0,0,-16979],yv:[0,0,39862,11436,70501,30878,-31,0,1585,1531,0,0,144916],grand:false,total:false,pct:false},
+  {L:'Dues and Subscriptions',dv:[0,0,0,2232,35,11257,1754,0,16932,14013,0,0,27938],yv:[0,0,0,15031,6802,149473,2556,0,33611,29781,0,0,160405],grand:false,total:false,pct:false},
+  {L:'Direct Mail',dv:[0,0,0,0,0,0,0,0,0,0,0,0,0],yv:[0,0,0,0,0,-19526,0,0,0,0,0,0,-22080],grand:false,total:false,pct:false},
+  {L:'Marketing',dv:[0,0,0,0,0,87781,0,0,96354,89490,0,0,195174],yv:[0,0,0,583,6414,995199,0,0,316235,328444,0,0,1182826],grand:false,total:false,pct:false},
+  {L:'Office Expense',dv:[0,337,0,3892,5782,83532,2379,0,3714,4056,0,0,97463],yv:[0,5524,0,31619,116227,849041,23607,0,9920,10240,0,0,1074393],grand:false,total:false,pct:false},
+  {L:'People',dv:[0,0,0,0,0,49269,0,0,432,536,0,0,45604],yv:[0,0,0,0,0,521424,0,0,2005,1669,0,0,617673],grand:false,total:false,pct:false},
+  {L:'Professional Fees',dv:[0,0,0,0,4320,123886,218,0,4675,3847,0,0,129026],yv:[0,0,0,31984,80994,955671,1541,0,11881,11972,0,0,1405182],grand:false,total:false,pct:false},
+  {L:'Rent',dv:[0,0,0,820,5733,136147,0,0,6854,6122,0,0,113627],yv:[0,0,0,11644,74830,1679186,0,0,18504,19255,0,0,1627959],grand:false,total:false,pct:false},
+  {L:'T&E',dv:[0,0,0,1931,1856,110766,1282,0,3321,3217,0,0,115754],yv:[0,0,0,14121,80354,1010654,2129,0,12515,13486,0,0,1404118],grand:false,total:false,pct:false},
+  {L:'Taxes',dv:[0,0,0,405,0,16758,0,0,3511,3519,0,0,20274],yv:[0,0,0,2751,0,98593,0,0,4298,3827,0,0,120606],grand:false,total:false,pct:false},
+  {L:'Technology',dv:[0,0,0,5727,0,67673,0,0,1350,1305,0,0,73051],yv:[0,0,0,46266,0,944295,0,0,2376,2032,0,0,799837],grand:false,total:false,pct:false},
+  {L:'Tech Consulting',dv:[0,0,0,0,0,35046,0,0,847,922,0,0,32962],yv:[0,0,0,0,0,455599,0,0,5195,5402,0,0,512181],grand:false,total:false,pct:false},
+  {L:'Title Expense',dv:[0,0,0,0,59324,0,0,0,0,0,0,0,60671],yv:[0,0,0,0,249399,0,0,0,0,0,0,0,229804],grand:false,total:false,pct:false},
+  {L:'Total Non-Labor Expense',dv:[0,344,3802,14756,85819,661118,6322,0,124409,150048,0,0,887604],yv:[0,5253,44949,142870,629676,7619163,25515,0,375772,374178,0,0,7814236],grand:false,total:true,pct:false},
+  {L:'Depreciation & Amortization',dv:[0,0,0,0,0,13719,0,0,62505,0,52323,0,64335],yv:[0,0,0,0,0,103344,0,0,59966,0,51385,0,152933],grand:false,total:false,pct:false},
+  {L:'Total Operating Expense',dv:[0,335,3663,71407,198475,1426989,11159,4596,336027,278348,53453,0,1917646],yv:[0,5860,43840,912221,2680030,19222478,54149,8261,759198,758720,67290,0,23154222],grand:false,total:true,pct:false},
+  {L:'Operating Income',dv:[0,-326,102990,47600,83835,892273,-8770,358,-109914,-61402,-67008,-2046,1152416],yv:[0,-4992,1364059,320289,821446,5339261,-31645,-3642,-309916,-276735,-56400,-1688,7433949],grand:true,total:false,pct:false},
+  {L:'Operating Margin',dv:[0,0,1.0594,0.2317,0.2724,0.2344,0,0.0839,-0.4751,-0.2182,0,1,0.1959],yv:[0,0,0.9411,0.1847,0.3102,0.101,-1.3272,-0.6236,-0.5586,-0.3843,0,1,0.1155],grand:false,total:false,pct:true},
+  {L:'Interest Expense (AJW LLC)',dv:[0,0,0,0,0,0,0,0,0,0,0,0,0],yv:[0,0,0,0,0,0,0,0,0,0,0,0,0],grand:false,total:false,pct:false},
+  {L:'Other Income / (Expense)',dv:[475,0,0,-71500,0,0,0,0,144492,0,128399,0,56929],yv:[17629,0,0,-146724,0,0,0,0,118333,0,138960,0,9692],grand:false,total:false,pct:false},
+  {L:'Net Income',dv:[437,-337,103250,-37377,85495,1041808,-11296,309,14256,-60133,79263,-2233,1279507],yv:[16018,-5965,1388192,188193,897168,4926399,-27208,-3134,-176219,-278639,67505,-2205,6966061],grand:true,total:false,pct:false},
+  {L:'Interest Expense',dv:[0,0,0,0,0,0,0,0,0,0,0,0,0],yv:[0,0,0,0,0,0,0,0,0,0,0,0,0],grand:false,total:false,pct:false},
+  {L:'Interest Income',dv:[0,0,0,0,0,0,0,0,0,0,0,0,0],yv:[0,0,0,0,0,0,0,0,0,0,0,0,0],grand:false,total:false,pct:false},
+  {L:'NCI',dv:[0,0,0,0,0,0,0,0,-120441,0,-126888,0,-133543],yv:[0,0,0,0,0,0,0,0,-117719,0,-128717,0,-145067],grand:false,total:false,pct:false},
+  {L:'Depreciation & Amortization',dv:[0,0,0,0,0,12224,0,0,62205,0,55374,0,69374],yv:[0,0,0,0,0,102455,0,0,61169,0,67266,0,188037],grand:false,total:false,pct:false},
+  {L:'EBITDA',dv:[458,-276,120776,-35643,75115,1112273,-10522,359,-61336,-56532,0,-2274,1053561],yv:[17657,-5249,1275914,173203,1069065,5129494,-32697,-3404,-237397,-277670,0,-1806,7926599],grand:true,total:false,pct:false},
+  {L:'EBITDA Margin',dv:[0,0,0.9593,-0.1575,0.2307,0.182,0,0.0743,-0.2163,-0.2298,0,1,0.1917],yv:[0,0,0.8575,0.0899,0.2811,0.113,-1.2989,-0.6888,-0.5031,-0.4318,0,1,0.1348],grand:false,total:false,pct:true}
+];
+const ENT_NAMES = ['AH', 'Ascension', 'FundCo', 'AL', 'Atlas Title', 'UI', 'MSS Acq', 'Atlas Closing', 'BuildCo LLC', 'BuildCo Svc', 'BuildCo Hldg', 'Angelstone', 'Consolidated'];
+const OM_INCL = [
+  {n:'Arlington',dr:119932.05,do_:32195.60,dm:0.2474,yr:1457118.75,yo:209192.82,ym:0.1813},
+  {n:'Atlanta',dr:96077.7,do_:9520.70,dm:0.0815,yr:1731993.95,yo:342609.86,ym:0.2051},
+  {n:'Atlanta Northeast',dr:155163.14,do_:38457.02,dm:0.2452,yr:1045132.34,yo:212662.35,ym:0.1783},
+  {n:'Austin North',dr:124802,do_:28551.13,dm:0.2014,yr:1098110.1,yo:132072.64,ym:0.1397},
+  {n:'Austin South',dr:4343,do_:-24864.52,dm:-2.44,yr:769666.24,yo:16260.16,ym:0.0221},
+  {n:'Birmingham, AL',dr:24320.61,do_:-16500.1,dm:-0.6774,yr:611689.20,yo:-42172.62,ym:-0.0769},
+  {n:'Boston',dr:126294.39,do_:21170.55,dm:0.1697,yr:973711.19,yo:179911.1,ym:0.1317},
+  {n:'Charlotte',dr:199251.43,do_:32667.64,dm:0.1695,yr:3576065.8,yo:1123684.13,ym:0.2519},
+  {n:'Chicago',dr:75435.77,do_:10096.39,dm:0.1301,yr:1054495.77,yo:147490.06,ym:0.1457},
+  {n:'Columbus',dr:0,do_:0,dm:0,yr:0,yo:-84.10,ym:0},
+  {n:'Dallas',dr:177362.90,do_:42201.96,dm:0.2235,yr:2784038.78,yo:690818.32,ym:0.2913},
+  {n:'Denton',dr:200809.49,do_:35117.71,dm:0.2275,yr:1972474.05,yo:372173.63,ym:0.1986},
+  {n:'Denver',dr:274017.28,do_:76216.91,dm:0.2277,yr:2907403.29,yo:883169.92,ym:0.2414},
+  {n:'Denver North',dr:29296,do_:-14670.80,dm:-0.4287,yr:324133.88,yo:-105552.94,ym:-0.3548},
+  {n:'Fort Worth',dr:82243.11,do_:5331.55,dm:0.0765,yr:1089122.31,yo:185725.81,ym:0.1895},
+  {n:'Greenville',dr:59336.88,do_:4679.00,dm:0.07,yr:490769.51,yo:-89555.74,ym:-0.1588},
+  {n:'Houston Central',dr:177871.18,do_:41108.86,dm:0.2449,yr:2149452.93,yo:575800.85,ym:0.2003},
+  {n:'Indianapolis',dr:46507.1,do_:-13125.52,dm:-0.2886,yr:566162.8,yo:-110348.3,ym:-0.2221},
+  {n:'Inland Empire',dr:97460.82,do_:8210.68,dm:0.0942,yr:907374.09,yo:12403.34,ym:0.0144},
+  {n:'Jacksonville, FL',dr:51883.68,do_:-3545.34,dm:-0.0772,yr:425529.67,yo:-95413.26,ym:-0.2265},
+  {n:'Kansas City',dr:45252.46,do_:-2493.58,dm:-0.0565,yr:615313.22,yo:-17557.57,ym:-0.0263},
+  {n:'Las Vegas',dr:0,do_:0,dm:0,yr:0,yo:-502.77,ym:0},
+  {n:'Los Angeles',dr:240540.61,do_:50193.84,dm:0.1817,yr:2079877.23,yo:353902.4,ym:0.1432},
+  {n:'Nashville South',dr:149879.98,do_:35909.48,dm:0.252,yr:1326832.27,yo:208987.84,ym:0.1473},
+  {n:'Oklahoma City',dr:936,do_:-24804.73,dm:-10.20,yr:159764.24,yo:-272487.35,ym:-0.73},
+  {n:'Orange County',dr:23004.70,do_:-27023.79,dm:-0.8827,yr:132300.62,yo:-186668.17,ym:-1.4175},
+  {n:'Orlando, FL',dr:0,do_:0,dm:0,yr:0,yo:-17136.18,ym:0},
+  {n:'Philadelphia',dr:62558.01,do_:3652,dm:0.064,yr:1554094.72,yo:262396.08,ym:0.1662},
+  {n:'Phoenix',dr:52884.7,do_:-13651.07,dm:-0.232,yr:606649.60,yo:-57873.12,ym:-0.0725},
+  {n:'Pittsburgh, PA',dr:56100,do_:-926.0,dm:-0.0181,yr:378136.79,yo:-99851.71,ym:-0.2397},
+  {n:'Raleigh',dr:86530.07,do_:12250.19,dm:0.1365,yr:1247133.52,yo:369799.20,ym:0.2444},
+  {n:'Salt Lake City, UT',dr:89925.98,do_:14133.63,dm:0.168,yr:774802.57,yo:55143.71,ym:0.0635},
+  {n:'San Antonio Central',dr:83895,do_:10238.2,dm:0.1433,yr:1259493.1,yo:196494.1,ym:0.1878},
+  {n:'San Antonio NE',dr:101556.64,do_:39332.72,dm:0.4107,yr:1433422.25,yo:237805.7,ym:0.1916},
+  {n:'Seattle',dr:0,do_:0,dm:0,yr:0,yo:-493.42,ym:0},
+  {n:'South DFW',dr:82567.36,do_:17543.10,dm:0.1668,yr:983743.17,yo:105858.88,ym:0.1208},
+  {n:'South Dallas',dr:94663.20,do_:25970.90,dm:0.3158,yr:1312066.01,yo:236035.50,ym:0.1692},
+  {n:'St. Louis, MO',dr:46320,do_:-1351.3,dm:-0.0285,yr:742218.42,yo:31602.54,ym:0.0433},
+  {n:'St. Petersburg',dr:0,do_:0,dm:0,yr:0,yo:-6187.16,ym:0},
+  {n:'Tampa',dr:171724.80,do_:45920.45,dm:0.2413,yr:2047138.42,yo:423956.92,ym:0.2193},
+  {n:'Tulsa, OK',dr:15864.1,do_:-16016.00,dm:-1.1562,yr:389050.85,yo:-92430.09,ym:-0.3481},
+  {n:'Virginia Beach, VA',dr:0,do_:0,dm:0,yr:40204,yo:-40403.18,ym:-1.2751},
+  {n:'Washington, DC',dr:74516,do_:-686.34,dm:-0.0096,yr:1001613.5,yo:73863.8,ym:0.0883},
+  {n:'Woodlands',dr:97667.17,do_:20597.5,dm:0.1901,yr:1569102.76,yo:325828.89,ym:0.2057}
+];
+const OM_EXCL = [
+  {n:'Arlington',dr:122784.87,do_:52362.34,dm:0.3398,yr:1312184.87,yo:560806.81,ym:0.3908},
+  {n:'Atlanta',dr:99457.5,do_:34230.28,dm:0.3171,yr:1765942.94,yo:529770.13,ym:0.3332},
+  {n:'Atlanta Northeast',dr:164726.51,do_:74463.04,dm:0.4062,yr:1105642.54,yo:473043.10,ym:0.4079},
+  {n:'Austin North',dr:120815,do_:53820.30,dm:0.391,yr:1199493.2,yo:394488.51,ym:0.3896},
+  {n:'Austin South',dr:4072,do_:-4157.15,dm:-0.7978,yr:759660.31,yo:253763.38,ym:0.4107},
+  {n:'Birmingham, AL',dr:29170.23,do_:4949.2,dm:0.1836,yr:634417.90,yo:209406.56,ym:0.345},
+  {n:'Boston',dr:103555.47,do_:44287.15,dm:0.423,yr:1135125.06,yo:365252.1,ym:0.435},
+  {n:'Charlotte',dr:207635.40,do_:57224.40,dm:0.2723,yr:3945346.3,yo:1219708.04,ym:0.3328},
+  {n:'Chicago',dr:75915.48,do_:31809.51,dm:0.3585,yr:867234.65,yo:386322.74,ym:0.3637},
+  {n:'Columbus',dr:0,do_:0,dm:0,yr:0,yo:-78.98,ym:0},
+  {n:'Dallas',dr:207074.74,do_:59433.59,dm:0.3195,yr:2496951.10,yo:809660.38,ym:0.328},
+  {n:'Denton',dr:169937.42,do_:54139.33,dm:0.3228,yr:1888981.06,yo:776540.61,ym:0.3418},
+  {n:'Denver',dr:280659.13,do_:103884.78,dm:0.3145,yr:2853888.70,yo:936068.71,ym:0.4036},
+  {n:'Denver North',dr:32389,do_:8030.69,dm:0.2448,yr:370617.92,yo:91074.91,ym:0.3003},
+  {n:'Fort Worth',dr:79527.98,do_:29051.52,dm:0.3654,yr:1264303.05,yo:452054.39,ym:0.3162},
+  {n:'Greenville',dr:59939.90,do_:27545.05,dm:0.395,yr:431696.82,yo:194785.09,ym:0.4132},
+  {n:'Houston Central',dr:149034.96,do_:61489.71,dm:0.433,yr:2591110.91,yo:862140.78,ym:0.3366},
+  {n:'Indianapolis',dr:41597.5,do_:6952.91,dm:0.158,yr:573983.9,yo:169924.6,ym:0.3292},
+  {n:'Inland Empire',dr:78784.05,do_:33169.02,dm:0.3326,yr:818461.26,yo:249227.51,ym:0.3237},
+  {n:'Jacksonville, FL',dr:57652.44,do_:16496.01,dm:0.3873,yr:471929.53,yo:178046.31,ym:0.4066},
+  {n:'Kansas City',dr:45987.52,do_:16120.72,dm:0.4133,yr:603271.34,yo:228109.97,ym:0.3301},
+  {n:'Las Vegas',dr:0,do_:0,dm:0,yr:0,yo:-651.75,ym:0},
+  {n:'Los Angeles',dr:305202.06,do_:74251.12,dm:0.2387,yr:2009239.23,yo:586476.3,ym:0.2958},
+  {n:'Nashville South',dr:141663.72,do_:57887.23,dm:0.3368,yr:1162393.05,yo:434002.55,ym:0.3525},
+  {n:'Oklahoma City',dr:1085,do_:-5713.35,dm:-2.64,yr:184695.11,yo:-3393.43,ym:-0.023},
+  {n:'Orange County',dr:28012.95,do_:-2498.17,dm:-0.117,yr:149254.45,yo:-22918.56,ym:-0.1366},
+  {n:'Orlando, FL',dr:0,do_:0,dm:0,yr:0,yo:-16982.47,ym:0},
+  {n:'Philadelphia',dr:78332.89,do_:25779,dm:0.3711,yr:1502162.07,yo:520779.51,ym:0.3981},
+  {n:'Phoenix',dr:57834.8,do_:10022.89,dm:0.1608,yr:599804.74,yo:214828.81,ym:0.3013},
+  {n:'Pittsburgh, PA',dr:50925,do_:22330.0,dm:0.3563,yr:473007.05,yo:149128.40,ym:0.328},
+  {n:'Raleigh',dr:103200.87,do_:35739.20,dm:0.4209,yr:1309809.60,yo:577564.26,ym:0.505},
+  {n:'Salt Lake City, UT',dr:82082.05,do_:38411.57,dm:0.3491,yr:811628.57,yo:299378.64,ym:0.4023},
+  {n:'San Antonio Central',dr:83497,do_:36226.2,dm:0.3945,yr:1248357.9,yo:414870.4,ym:0.3823},
+  {n:'San Antonio NE',dr:90036.25,do_:60484.75,dm:0.659,yr:1274812.06,yo:521763.9,ym:0.4153},
+  {n:'Seattle',dr:0,do_:0,dm:0,yr:0,yo:-424.91,ym:0},
+  {n:'South DFW',dr:75932.65,do_:38680.53,dm:0.4222,yr:971240.89,yo:341584.43,ym:0.4192},
+  {n:'South Dallas',dr:106189.56,do_:44201.34,dm:0.4841,yr:1349228.90,yo:480882.58,ym:0.3573},
+  {n:'St. Louis, MO',dr:56618,do_:20390.2,dm:0.3886,yr:693739.79,yo:291079.25,ym:0.4767},
+  {n:'St. Petersburg',dr:0,do_:0,dm:0,yr:0,yo:-5496.34,ym:0},
+  {n:'Tampa',dr:153195.67,do_:66172.71,dm:0.4456,yr:1734230.23,yo:716617.84,ym:0.3726},
+  {n:'Tulsa, OK',dr:15088.5,do_:3723.34,dm:0.2592,yr:367861.88,yo:172439.50,ym:0.454},
+  {n:'Virginia Beach, VA',dr:0,do_:0,dm:0,yr:32222,yo:-3891.97,ym:-0.0919},
+  {n:'Washington, DC',dr:58667,do_:22325.78,dm:0.3565,yr:840002.7,yo:325670,ym:0.378},
+  {n:'Woodlands',dr:116451.33,do_:47352.7,dm:0.4446,yr:1564310.93,yo:655886.42,ym:0.3058}
+];
+const TTM_DEAL_OFFS = ['Denver', 'Charlotte', 'Dallas', 'Houston Central', 'Philadelphia', 'Woodlands', 'Tampa', 'Denton', 'Arlington', 'Raleigh', 'Atlanta', 'Fort Worth', 'South Dallas', 'Los Angeles', 'San Antonio Central', 'San Antonio NE', 'Austin North', 'Atlanta Northeast', 'South DFW', 'Nashville South', 'Kansas City', 'Austin South', 'Chicago', 'St. Louis, MO', 'Phoenix', 'Birmingham, AL', 'Washington, DC', 'Salt Lake City, UT', 'Inland Empire', 'Boston', 'Tulsa, OK', 'Indianapolis', 'Pittsburgh, PA', 'Jacksonville, FL', 'Greenville', 'Denver North', 'Oklahoma City', 'Orange County', 'Virginia Beach, VA', 'Columbus'];
+const TTM_DEAL_DATA = [
+  [34,27,39.5,21,47,31,42,23,23,45,38,42,242.7],
+  [39,31,20,34,47,43,44,49,23,19,39,36,245],
+  [25,38,39.5,38.5,44,32.5,39,27,29.5,39,37.5,44.5,185],
+  [29,34.5,26.5,33,41,28,34.5,38,41.5,33.5,11.5,29.5,147.2],
+  [18,25,25,37,23,27,42,24,13,35,34,12,137],
+  [18,28.5,26.5,27,15,36,32.5,24,34.5,16,16,17.5,111.5],
+  [22,25,30,18,28,26,24,20,22,22,28,26,137],
+  [21,17.5,20,21.5,16,24.5,32,25.5,32,18,27,31,109],
+  [25.5,19.5,20.5,26.5,26,21.5,17.5,23,30,18.5,17.5,27,122],
+  [30,23,19,16,25,21,23,36,22,18,12,10,101],
+  [22,22,22,23,23,24,18,26,16,20,18,17.5,107.2],
+  [21,19.5,21.5,22,22.5,17.5,18.5,22.5,20.5,23.5,20,17.5,113.9],
+  [20.5,16,20.5,21,19.5,20,19.5,23,18,18,18.5,19.5,107],
+  [11,25,14,26,26,18,14,19,18,16.5,20,14,85.8],
+  [14,19.5,18.5,20.5,17.5,18.5,17,13.5,18.5,19.5,27.5,16.5,99],
+  [17,17.5,15.5,10.5,14.5,20.5,15,15.5,10.5,19.5,12.5,18.5,73],
+  [7,12.5,18,19,18.5,18,10,18,17,9,18,20,69],
+  [14,17,19,13,9,14,14,18,15,21,10,18.5,79.4],
+  [8,18.5,24,15.5,21,15,14.5,8,12,10,10.5,22,74],
+  [13,16,10,11,14,12,12,17,14,18,10,24,70],
+  [6,11,14,15,11,19,16,13,13,13,11,12,61],
+  [15,26.5,10,16,19.5,12,20,4,8,3,3,1,58],
+  [10,12,8,12,21,10,13,7,11,12,9,11,60],
+  [4,8,12,8,9,9,16,17,12,12,14,15,61],
+  [1,8,15,14,17,12,10,10,11,19,9,8,54],
+  [10,11,6,12,14,9,20,8,9,13,3,8,47],
+  [5,7,14,6,12,12,13,10,11,13,6,13,51],
+  [6,4,7,13,14,21,7,6,8,7,14,14,44],
+  [4,9,8,18,7,11,13,8,10,7.5,7,12,47.3],
+  [9,8,10,10,15,12,8,5,5,10,7,11,49],
+  [8,7.5,26.5,8,15,9,1.5,5.5,9,7,4,5,42],
+  [3,5,11,2,6,11,12,11,9,9,9,11,37],
+  [6,3,4,8,4,5,5,13,7,17,13,13,39],
+  [3,7,9,4,4,10,5,11,11,15,6,11,46],
+  [4,7,5,6,4,10,7,6,10,14,7,10,36],
+  [0,0,9.5,11,5,5,5,7,7,4,2,8,23.1],
+  [6,5.5,6.5,9,8,4,1.5,4.5,0,5,12,1,29],
+  [0,1,0,1,2,0,0,4,1,1,4,4,18],
+  [5,2,0,0,1,0,0,0,0,0,0,0,8],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0],
+];
+const TTM_DOLLAR_DATA = [
+  [9720,6648,7147,7974,8079,8451,11081,7006,11563,11411,13081,20452,10174],
+  [10608,10882,7071,10968,8461,6571,9674,14448,5832,13578,9490,9060,8723],
+  [0,8760,0,14058,6710,0,0,11071,5940,10006,6536,6886,8357],
+  [5996,4962,4566,4844,7710,8021,6894,12103,9040,8669,14936,6627,7727],
+  [9064,7619,7102,17262,7249,7673,9567,10043,6166,6433,4908,4550,7136],
+  [8971,8168,7900,9121,10178,6559,7103,6227,5145,5401,7446,5434,8174],
+  [5509,4457,7791,8079,6688,6906,4819,6454,6487,9698,14350,6514,6156],
+  [8049,4175,5581,8967,6226,4896,4524,6412,7798,6918,8702,8439,6517],
+  [6370,5838,6639,6861,6913,7080,4715,6211,7131,9605,6462,5603,7455],
+  [6591,5796,7272,8766,6507,5597,7384,4334,6567,4374,5295,8924,5806],
+  [11127,4838,7431,6080,7591,5617,6817,8396,7646,5414,5051,6453,5495],
+  [6723,6615,4894,5446,8271,6905,8578,6433,5780,3027,8252,4784,5870],
+  [5608,5065,6219,7474,6819,6949,4928,5232,10854,6493,5128,6499,6233],
+  [5738,6809,5960,6591,5947,5200,6187,4948,8824,5055,5858,6688,5949],
+  [7950,6275,6215,4439,6352,4637,6184,5741,4984,5944,5520,5199,5253],
+  [7023,4139,5631,5771,5895,4562,7204,5775,5833,4930,4415,6880,6354],
+  [0,0,4758,6456,11152,5028,4268,5782,6819,2902,7634,4161,4842],
+  [5392,5283,6477,5844,6311,4023,5388,4441,4231,5463,10311,5802,6065],
+  [7032,6285,5229,5798,5509,5959,5000,5494,4501,5022,4598,5901,5073],
+  [5034,5460,6609,5461,5385,5317,5499,3815,6129,7507,7268,4139,5572],
+  [5528,6561,7333,4227,4219,5377,7845,3861,4080,4092,6704,4545,4895],
+  [4674,7289,6907,6943,5568,4264,5708,3365,5482,1868,6299,10353,4656],
+  [7611,6294,4013,5646,5686,4309,3968,3920,4089,4422,6067,4105,4524],
+  [3892,5718,5219,5133,4552,4353,4267,4020,6359,3946,4336,6102,4593],
+  [5458,6758,7573,4252,4825,4689,4236,5918,5858,4897,4895,4014,5701],
+  [8633,4417,3791,5620,5479,4584,5060,5470,4649,3746,7912,3546,4791],
+  [5752,9554,2698,5085,4613,6317,4987,3694,7719,3810,4021,4636,5193],
+  [5303,4466,4182,4535,5252,4942,5607,4476,5812,7136,3730,5374,5065],
+  [3244,5111,5316,4307,3351,6208,4191,3756,6347,3787,4187,6518,4587],
+  [6234,5890,6272,5168,3769,5207,4579,4466,4897,6006,5372,3756,5101],
+  [4878,4661,4781,4386,3591,4279,5059,5182,5334,5038,4599,4522,4100],
+  [3270,4171,5045,11190,3147,4573,2878,4053,4327,4003,5441,4581,5046],
+  [3480,5079,5438,5130,4894,4664,4758,4183,3675,3092,3017,2784,4235],
+  [3876,6823,0,0,1643,0,0,0,0,0,0,0,4247],
+  [3502,4643,3918,5578,4082,5493,8781,4232,4567,3804,2893,3229,3800],
+  [3314,5248,3624,5249,3419,3276,2871,3289,4800,5500,5866,5005,4167],
+  [3581,4490,3594,8455,3492,3645,3817,2976,3247,4127,3003,4536,3884],
+  [3079,3636,2446,3142,2455,2646,2359,4168,3485,4740,3087,3280,3508],
+  [3206,3161,2946,3020,2176,3441,2036,3665,0,2623,2518,974,3077],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0],
+];
+const SOS = {
+  count_py:278,count_cy:290.2,count_yoy:0.0386,
+  deal_py:4943.0,deal_cy:5502.55,deal_yoy:0.0385,
+  vol_py:2895686,vol_cy:3896835,vol_yoy:0.0895,
+  ttm_count_py:3121,ttm_count_cy:3311,ttm_count_yoy:0.0115,
+  ttm_deal_py:6120.72,ttm_deal_cy:5084.24,ttm_deal_yoy:-0.062,
+  ttm_vol_py:49088698,ttm_vol_cy:37585088,ttm_vol_yoy:-0.0429,
+};
+const MS_DATA = [
+  {market:'San Antonio',monthly:[0.0309,0.0559,0.03,0.0387,0.0434,0.0465,0.0284,0.0357,0.0451,0.0334,0.0263,0.035,0.0357],t3m:0.0332,ttm:0.0345,variance:-0.004,isTotal:false},
+  {market:'Fort Worth',monthly:[0.0656,0.0376,0.0497,0.0438,0.0597,0.0545,0.0434,0.0586,0.0415,0.0405,0.046,0.0549,0.039],t3m:0.0377,ttm:0.0423,variance:-0.0065,isTotal:false},
+  {market:'Denver',monthly:[0.0396,0.0475,0.0303,0.0383,0.0612,0.0466,0.0417,0.0325,0.024,0.0328,0.0506,0.0482,0.031],t3m:0.048,ttm:0.0404,variance:0.0043,isTotal:false},
+  {market:'Charlotte',monthly:[0.0351,0.0359,0.0247,0.0355,0.0304,0.041,0.0218,0.0302,0.0322,0.0308,0.0365,0.0374,0.0337],t3m:0.0324,ttm:0.0375,variance:0.0033,isTotal:false},
+  {market:'Dallas',monthly:[0.0425,0.0352,0.0299,0.0306,0.0384,0.034,0.0364,0.0342,0.033,0.035,0.0271,0.0325,0.0323],t3m:0.0357,ttm:0.0345,variance:-0.0019,isTotal:false},
+  {market:'Pittsburgh',monthly:[0.0102,0.0069,0.0046,0.0106,0.0056,0.006,0.0138,0.007,0.0077,0.0058,0.0152,0.0099,0.019],t3m:0.0154,ttm:0.0105,variance:0.0049,isTotal:false},
+  {market:'Philadelphia',monthly:[0.0258,0.0206,0.02,0.0179,0.033,0.0225,0.03,0.0188,0.0253,0.0393,0.0207,0.0121,0.02],t3m:0.0144,ttm:0.0241,variance:-0.005,isTotal:false},
+  {market:'Houston',monthly:[0.0308,0.025,0.0187,0.0233,0.0359,0.0244,0.0249,0.0256,0.0289,0.024,0.0232,0.036,0.0153],t3m:0.0261,ttm:0.0234,variance:-0.0011,isTotal:false},
+  {market:'Jacksonville',monthly:[0.0065,0.0033,0.0037,0.0042,0.0091,0.0118,0.0045,0.0038,0.0102,0.0052,0.0119,0.0147,0.019],t3m:0.0129,ttm:0.0068,variance:0.0059,isTotal:false},
+  {market:'Nashville',monthly:[0.0125,0.0109,0.0114,0.0151,0.0132,0.0101,0.0114,0.0112,0.0081,0.013,0.0125,0.013,0.0172],t3m:0.0136,ttm:0.0129,variance:0.0017,isTotal:false},
+  {market:'Atlanta',monthly:[0.0161,0.017,0.0173,0.0158,0.017,0.0139,0.0146,0.0113,0.0151,0.0142,0.0192,0.0143,0.0168],t3m:0.0137,ttm:0.0165,variance:0.0005,isTotal:false},
+  {market:'Austin',monthly:[0.0274,0.0308,0.0217,0.0213,0.0306,0.0222,0.0256,0.0344,0.0237,0.0239,0.0205,0.0247,0.0113],t3m:0.0194,ttm:0.0255,variance:-0.0076,isTotal:false},
+  {market:'Kansas City',monthly:[0.0071,0.0093,0.0082,0.0058,0.0119,0.0156,0.0108,0.0048,0.0151,0.0135,0.0104,0.0108,0.0116],t3m:0.0107,ttm:0.0114,variance:-0.0001,isTotal:false},
+  {market:'Birmingham',monthly:[0.0093,0.0075,0.0073,0.0115,0.0103,0.0041,0.0116,0.0116,0.0094,0.0165,0.0074,0.0092,0.0097],t3m:0.0097,ttm:0.0092,variance:-0.0007,isTotal:false},
+  {market:'Oklahoma',monthly:[0.0176,0.0167,0.0119,0.0124,0.0172,0.0171,0.0154,0.0112,0.0122,0.0024,0.0096,0.0058,0.0087],t3m:0.0078,ttm:0.0125,variance:-0.0038,isTotal:false},
+  {market:'Greenville',monthly:[0.0058,0.0106,0.0074,0.0049,0.0115,0.0057,0.0074,0.0045,0.0087,0.0071,0.0079,0.0109,0.01],t3m:0.009,ttm:0.0081,variance:0.001,isTotal:false},
+  {market:'Phoenix',monthly:[0.0023,0,0.003,0.0006,0.0042,0.0061,0.0049,0.0068,0.0059,0.004,0.0046,0.0049,0.0073],t3m:0.0056,ttm:0.0043,variance:0.0013,isTotal:false},
+  {market:'St. Louis',monthly:[0.0025,0.0029,0.0067,0.0031,0.006,0.007,0.005,0.0039,0.0056,0.01,0.0088,0.0075,0.0069],t3m:0.007,ttm:0.0055,variance:0.0012,isTotal:false},
+  {market:'Tampa Bay',monthly:[0.009,0.0096,0.0118,0.009,0.0099,0.0082,0.0062,0.0089,0.009,0.0066,0.0066,0.0063,0.0053],t3m:0.0076,ttm:0.0086,variance:-0.001,isTotal:false},
+  {market:'Boston',monthly:[0.0041,0.0096,0.0054,0.0067,0.0061,0.0075,0.0061,0.0111,0.0081,0.0048,0.0032,0.0039,0.0066],t3m:0.0036,ttm:0.0064,variance:-0.0023,isTotal:false},
+  {market:'Indianapolis',monthly:[0.0087,0.0055,0.0046,0.0026,0.0042,0.0071,0.0014,0.0038,0.0069,0.009,0.0074,0.0057,0.0065],t3m:0.0062,ttm:0.0055,variance:0.0008,isTotal:false},
+  {market:'Salt Lake City',monthly:[0.0112,0.0171,0.0087,0.0103,0.0054,0.0096,0.0142,0.0157,0.0263,0.0073,0.007,0.0104,0.0057],t3m:0.0073,ttm:0.0114,variance:-0.0031,isTotal:false},
+  {market:'Los Angeles',monthly:[0.0077,0.007,0.0099,0.004,0.0079,0.0041,0.0106,0.0094,0.0084,0.0058,0.0087,0.0061,0.0055],t3m:0.0057,ttm:0.0075,variance:-0.0003,isTotal:false},
+  {market:'Washington, DC',monthly:[0.0055,0.003,0.0042,0.0028,0.0043,0.0051,0.0018,0.0049,0.0045,0.0056,0.0027,0.0045,0.0046],t3m:0.0042,ttm:0.0038,variance:0.0002,isTotal:false},
+  {market:'Chicago',monthly:[0.0068,0.0047,0.0015,0.005,0.0062,0.0028,0.0042,0.0071,0.0037,0.0044,0.0023,0.0034,0.0036],t3m:0.0033,ttm:0.0041,variance:-0.0008,isTotal:false},
+  {market:'Raleigh',monthly:[0.0151,0.0199,0.0139,0.019,0.012,0.0104,0.0085,0.0136,0.0106,0.01,0.0107,0.0077,0.0026],t3m:0.0056,ttm:0.0096,variance:-0.0036,isTotal:false},
+  {market:'Total Atlas',monthly:[0.0168,0.0151,0.0136,0.0142,0.0171,0.0145,0.0127,0.015,0.0126,0.0143,0.0159,0.0127,0.0137],t3m:0.0138,ttm:0.0152,variance:-0.0006,isTotal:true}
+];
+const OPEX_DEC = [
+  {cat:'Salary',vals:[88384,34167,30923,0,46105,15754,175076,17253,96472,43453,98193,74471,114613,84165,2706,4011,979498],is_total:false},
+  {cat:'Benefits',vals:[5667,3033,2083,1862,2536,1269,3328,42478,15698,8152,14711,4167,6980,15782,340,394,144026],is_total:false},
+  {cat:'Bonus',vals:[19582,4390,6588,0,4775,598,76664,1478,9692,15588,6153,-32486,21682,2251,868,0,130534],is_total:false},
+  {cat:'Commissions',vals:[0,0,1416,0,0,0,0,0,665,0,0,0,0,0,0,0,2166],is_total:false},
+  {cat:'Total Labor Expense',vals:[133466,37253,41986,1884,43862,18335,256049,59331,136335,59222,131620,54724,140554,113684,4209,4124,1298717],is_total:true},
+  {cat:'Bank Charges',vals:[-25020,0,0,0,0,0,0,0,0,436,4997,0,0,0,0,0,-17846],is_total:false},
+  {cat:'Dues and Subscriptions',vals:[0,2615,189,233,3765,0,-1750,21,4683,2057,38,0,290,15909,1733,0,25659],is_total:false},
+  {cat:'Direct Mail',vals:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],is_total:false},
+  {cat:'Marketing',vals:[0,0,37725,0,0,26974,0,0,10945,0,0,0,0,91804,0,0,176026],is_total:false},
+  {cat:'Office Expense',vals:[4901,13613,1257,9249,1224,41,-911,797,58523,3902,6782,0,1034,4741,2524,0,113946],is_total:false},
+  {cat:'People',vals:[0,0,0,0,0,0,0,4828,0,0,0,44277,0,534,0,0,50629],is_total:false},
+  {cat:'Professional Fees',vals:[7220,3029,0,0,94901,0,0,167,3772,0,4633,0,12681,4538,211,0,134670],is_total:false},
+  {cat:'Rent',vals:[0,0,0,1401,0,0,0,0,115216,921,5565,0,0,7514,0,0,122896],is_total:false},
+  {cat:'T&E',vals:[0,522,4553,0,715,755,3928,4451,96850,1641,2303,3380,4922,3287,1304,0,127654],is_total:false},
+  {cat:'Taxes',vals:[0,0,0,10376,0,0,0,0,3714,390,0,0,0,3387,0,0,18651],is_total:false},
+  {cat:'Technology',vals:[0,0,0,-5522,0,0,0,0,1432,4534,0,0,80546,1319,0,0,80117],is_total:false},
+  {cat:'Tech Consulting',vals:[0,0,0,0,0,0,0,0,0,0,0,0,34689,741,0,0,34113],is_total:false},
+  {cat:'Title Expense',vals:[0,0,0,0,0,0,0,0,0,0,69839,0,0,0,0,0,68318],is_total:false},
+  {cat:'Total Non-Labor Expense',vals:[-10156,19410,42047,17355,83140,26069,2015,11072,283967,16049,75264,45080,122212,145350,5255,0,965998],is_total:true},
+  {cat:'Depreciation & Amortization',vals:[0,0,0,13982,0,0,0,0,0,0,0,0,0,59018,0,0,69156],is_total:false},
+  {cat:'Total OPEX',vals:[116559,70494,86056,34566,151725,54722,286169,80707,377435,76954,179392,86484,258157,323753,9573,4213,2051768],is_total:true}
+];
+const OPEX_YTD = [
+  {cat:'Salary',vals:[1126374,354595,268852,0,469761,199295,2042380,215093,1312083,495170,1216196,478573,1406763,238277,19221,6501,10638452],is_total:false},
+  {cat:'Benefits',vals:[107141,50370,27907,22814,48914,23784,84461,560536,276273,114474,251683,70357,142940,57972,2217,678,1474407],is_total:false},
+  {cat:'Bonus',vals:[231152,46129,83869,0,133488,8737,1066803,19298,308180,156744,190167,63789,164661,8295,2881,0,2408600],is_total:false},
+  {cat:'Commissions',vals:[0,0,32824,0,0,0,0,0,6577,0,29351,35238,0,0,0,0,110198],is_total:false},
+  {cat:'Total Labor Expense',vals:[1599557,498668,448267,21307,601586,247909,3333368,836255,2008860,609652,1564917,735518,1698792,308885,28821,7354,13320841],is_total:true},
+  {cat:'Bank Charges',vals:[62812,0,0,0,0,0,0,0,0,11663,70993,0,0,0,0,0,158498],is_total:false},
+  {cat:'Dues and Subscriptions',vals:[67,3600,410,2576,47032,107,16563,3116,44530,13393,8180,2947,1446,28874,2455,0,173845],is_total:false},
+  {cat:'Direct Mail',vals:[0,0,-19644,0,0,0,0,0,0,0,0,0,0,0,0,0,-21412],is_total:false},
+  {cat:'Marketing',vals:[0,0,428323,0,0,326402,0,0,157691,599,6496,0,0,284021,0,0,1218561],is_total:false},
+  {cat:'Office Expense',vals:[70565,211828,5345,55255,26839,5196,16101,1419,588213,27223,138354,71,5217,11441,26229,0,1128748],is_total:false},
+  {cat:'People',vals:[0,0,0,0,0,0,0,58789,0,0,0,472261,0,2052,0,0,554523],is_total:false},
+  {cat:'Professional Fees',vals:[137175,35523,41,62138,653024,31,169,15270,78605,32109,81745,0,129874,9964,1589,0,1267090],is_total:false},
+  {cat:'Rent',vals:[0,0,0,17528,0,0,0,0,1686136,10600,63323,0,0,22364,0,0,1746038],is_total:false},
+  {cat:'T&E',vals:[794,4250,10189,0,8287,3125,66933,417370,559368,14123,71848,14391,38280,13442,2201,0,1192976],is_total:false},
+  {cat:'Taxes',vals:[0,0,0,113904,1340,0,0,0,7716,2764,0,0,0,4181,0,0,113285],is_total:false},
+  {cat:'Technology',vals:[0,0,0,-67125,0,0,0,0,18307,61494,0,0,889890,2413,0,0,818755],is_total:false},
+  {cat:'Tech Consulting',vals:[0,0,0,0,0,0,0,944,0,0,0,0,516051,5419,0,0,577990],is_total:false},
+  {cat:'Title Expense',vals:[0,0,0,0,0,0,0,0,0,0,259348,0,0,0,0,0,269230],is_total:false},
+  {cat:'Total Non-Labor Expense',vals:[238627,254459,438415,180795,707450,340718,84804,542914,3103442,146012,744046,610684,1779054,431128,31131,0,8269426],is_total:true},
+  {cat:'Depreciation & Amortization',vals:[0,0,0,104146,0,0,0,0,0,0,0,0,0,64596,0,0,149194],is_total:false},
+  {cat:'Total OPEX',vals:[1876725,743076,840664,333688,1362231,577512,3269403,1302431,4546611,938735,2263385,1412550,3121551,760170,61377,8582,25582160],is_total:true}
+];
+const OPEX_DEPT_NAMES = ['Accounting', 'BizIntel', 'Bus Dev', 'Corporate', 'Legal', 'Marketing', 'Operations', 'People', 'Sales', 'AL', 'Atlas Title', 'Talent Acq', 'Tech', 'BuildCo', 'RBA', 'Atlas Closing', 'Consolidated'];
+const DEPT_DATA = {
+  'Accounting':{
+    rows:[
+    {L:'Salary',da:79690,db:94600,dbw:3891,ya:1081507,yb:1113131,ybw:59249,total:false},
+    {L:'Benefits',da:5564,db:6182,dbw:1475,ya:126132,yb:106200,ybw:-8509,total:false},
+    {L:'Bonus',da:21461,db:17573,dbw:-1689,ya:259419,yb:200155,ybw:-28712,total:false},
+    {L:'Commissions',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Total Labor',da:135036,db:132682,dbw:3821,ya:1470092,yb:1386084,ybw:13926,total:true},
+    {L:'Bank Charges',da:-24850,db:4160,dbw:30300,ya:77416,yb:24272,ybw:-52166,total:false},
+    {L:'Dues and Subscriptions',da:0,db:0,dbw:0,ya:69,yb:0,ybw:-74,total:false},
+    {L:'Direct Mail',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Marketing',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Office Expense',da:5925,db:5613,dbw:-365,ya:68595,yb:66632,ybw:-719,total:false},
+    {L:'People',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Professional Fees',da:7938,db:8817,dbw:316,ya:118677,yb:167894,ybw:19545,total:false},
+    {L:'Rent',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'T&E',da:0,db:2244,dbw:2367,ya:712,yb:7805,ybw:7282,total:false},
+    {L:'Taxes',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Technology',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Tech Consulting',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Title Expense',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Amortization & Depreciation',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Total Non-Labor',da:-8845,db:20122,dbw:26628,ya:284765,yb:242831,ybw:-24584,total:true},
+    {L:'Total OPEX',da:115346,db:142971,dbw:28310,ya:1879270,yb:1817086,ybw:-9391,total:true}
+  ]
+  },
+  'BizIntel':{
+    rows:[
+    {L:'Salary',da:36750,db:33889,dbw:-323,ya:420935,yb:411142,ybw:-1044,total:false},
+    {L:'Benefits',da:2797,db:3283,dbw:284,ya:47584,yb:40651,ybw:-5208,total:false},
+    {L:'Bonus',da:4430,db:4260,dbw:82,ya:53881,yb:47644,ybw:-601,total:false},
+    {L:'Commissions',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Total Labor',da:38927,db:44646,dbw:84,ya:461053,yb:424479,ybw:-8000,total:true},
+    {L:'Bank Charges',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Dues and Subscriptions',da:2880,db:0,dbw:-2420,ya:3249,yb:0,ybw:-4108,total:false},
+    {L:'Direct Mail',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Marketing',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Office Expense',da:16318,db:22540,dbw:12233,ya:197396,yb:246808,ybw:31121,total:false},
+    {L:'People',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Professional Fees',da:2344,db:0,dbw:-2419,ya:37580,yb:0,ybw:-28077,total:false},
+    {L:'Rent',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'T&E',da:694,db:0,dbw:-649,ya:5149,yb:8649,ybw:3808,total:false},
+    {L:'Taxes',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Technology',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Tech Consulting',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Title Expense',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Amortization & Depreciation',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Total Non-Labor',da:22083,db:27378,dbw:5211,ya:252898,yb:265612,ybw:2523,total:true},
+    {L:'Total OPEX',da:59834,db:58871,dbw:4896,ya:746252,yb:786823,ybw:-5557,total:true}
+  ]
+  },
+  'BuildCo':{
+    rows:[
+    {L:'Salary',da:75193,db:0,dbw:-93649,ya:232325,yb:0,ybw:-269702,total:false},
+    {L:'Benefits',da:18845,db:0,dbw:-19114,ya:61721,yb:0,ybw:-55942,total:false},
+    {L:'Bonus',da:2493,db:0,dbw:-2645,ya:8015,yb:0,ybw:-7415,total:false},
+    {L:'Commissions',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Total Labor',da:116868,db:0,dbw:-110586,ya:357946,yb:0,ybw:-354255,total:true},
+    {L:'Bank Charges',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Dues and Subscriptions',da:15839,db:0,dbw:-16908,ya:26423,yb:0,ybw:-33211,total:false},
+    {L:'Direct Mail',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Marketing',da:93570,db:0,dbw:-84447,ya:279892,yb:0,ybw:-292045,total:false},
+    {L:'Office Expense',da:4459,db:0,dbw:-4034,ya:11874,yb:0,ybw:-10192,total:false},
+    {L:'People',da:524,db:0,dbw:-411,ya:1954,yb:0,ybw:-1988,total:false},
+    {L:'Professional Fees',da:4692,db:0,dbw:-3645,ya:12130,yb:0,ybw:-11520,total:false},
+    {L:'Rent',da:6417,db:0,dbw:-7335,ya:21652,yb:0,ybw:-20786,total:false},
+    {L:'T&E',da:3703,db:0,dbw:-3875,ya:11561,yb:0,ybw:-13215,total:false},
+    {L:'Taxes',da:3960,db:0,dbw:-3530,ya:4336,yb:0,ybw:-3891,total:false},
+    {L:'Technology',da:1555,db:0,dbw:-1451,ya:2185,yb:0,ybw:-2467,total:false},
+    {L:'Tech Consulting',da:862,db:0,dbw:-726,ya:5553,yb:0,ybw:-5313,total:false},
+    {L:'Title Expense',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Amortization & Depreciation',da:60280,db:0,dbw:-50388,ya:62294,yb:0,ybw:-58161,total:false},
+    {L:'Total Non-Labor',da:204612,db:0,dbw:-191408,ya:411871,yb:0,ybw:-474485,total:true},
+    {L:'Total OPEX',da:263354,db:0,dbw:-343414,ya:897593,yb:0,ybw:-704509,total:true}
+  ]
+  },
+  'Bus Dev':{
+    rows:[
+    {L:'Salary',da:27354,db:20188,dbw:-5497,ya:262831,yb:277203,ybw:-10582,total:false},
+    {L:'Benefits',da:2625,db:3889,dbw:1429,ya:33585,yb:32101,ybw:4851,total:false},
+    {L:'Bonus',da:7916,db:5842,dbw:-1949,ya:89472,yb:64662,ybw:-25237,total:false},
+    {L:'Commissions',da:1757,db:5023,dbw:2675,ya:31758,yb:51429,ybw:25049,total:false},
+    {L:'Total Labor',da:38118,db:30646,dbw:-3937,ya:394650,yb:385997,ybw:-4338,total:true},
+    {L:'Bank Charges',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Dues and Subscriptions',da:196,db:0,dbw:-160,ya:383,yb:0,ybw:-386,total:false},
+    {L:'Direct Mail',da:0,db:0,dbw:0,ya:-26005,yb:12620,ybw:39547,total:false},
+    {L:'Marketing',da:38065,db:34969,dbw:-9090,ya:368345,yb:493074,ybw:46856,total:false},
+    {L:'Office Expense',da:1226,db:0,dbw:-1459,ya:5570,yb:0,ybw:-5009,total:false},
+    {L:'People',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Professional Fees',da:0,db:0,dbw:0,ya:41,yb:0,ybw:-41,total:false},
+    {L:'Rent',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'T&E',da:3796,db:0,dbw:-4585,ya:9525,yb:0,ybw:-8981,total:false},
+    {L:'Taxes',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Technology',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Tech Consulting',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Title Expense',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Amortization & Depreciation',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Total Non-Labor',da:39187,db:32323,dbw:-15009,ya:422555,yb:422958,ybw:59726,total:true},
+    {L:'Total OPEX',da:73106,db:63874,dbw:-20075,ya:798369,yb:813698,ybw:54377,total:true},
+    {L:'Marketing',da:37350,db:33205,dbw:-8299,ya:412626,yb:496800,ybw:44250,total:false},
+    {L:'Brand',da:5887,db:4768,dbw:-1271,ya:55975,yb:45566,ybw:-608,total:false},
+    {L:'Demand',da:1284,db:9524,dbw:8390,ya:10195,yb:121985,ybw:95726,total:false},
+    {L:'Supply',da:30653,db:17276,dbw:-14153,ya:345850,yb:292819,ybw:-64418,total:false},
+    {L:'Other Marketing',da:745,db:0,dbw:-592,ya:898,yb:0,ybw:-982,total:false}
+  ]
+  },
+  'Atlas Closing':{
+    rows:[
+    {L:'Salary',da:4389,db:0,dbw:-4294,ya:6820,yb:0,ybw:-6882,total:false},
+    {L:'Benefits',da:322,db:0,dbw:-318,ya:614,yb:0,ybw:-596,total:false},
+    {L:'Bonus',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Commissions',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Total Labor',da:4111,db:0,dbw:-4841,ya:8991,yb:0,ybw:-7590,total:true},
+    {L:'Bank Charges',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Dues and Subscriptions',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Direct Mail',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Marketing',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Office Expense',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'People',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Professional Fees',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Rent',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'T&E',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Taxes',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Technology',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Tech Consulting',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Title Expense',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Amortization & Depreciation',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Total Non-Labor',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:true},
+    {L:'Total OPEX',da:4320,db:0,dbw:-4507,ya:8008,yb:0,ybw:-8380,total:true}
+  ]
+  },
+  'Corporate':{
+    rows:[
+    {L:'Salary',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Benefits',da:1862,db:540,dbw:-1042,ya:22551,yb:8439,ybw:-13278,total:false},
+    {L:'Bonus',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Commissions',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Total Labor',da:1429,db:527,dbw:-1029,ya:20331,yb:9836,ybw:-10805,total:true},
+    {L:'Bank Charges',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Dues and Subscriptions',da:234,db:609,dbw:446,ya:3162,yb:8272,ybw:4083,total:false},
+    {L:'Direct Mail',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Marketing',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Office Expense',da:10332,db:2108,dbw:-8727,ya:46255,yb:27300,ybw:-24771,total:false},
+    {L:'People',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Professional Fees',da:0,db:0,dbw:0,ya:65625,yb:64050,ybw:1794,total:false},
+    {L:'Rent',da:1216,db:1225,dbw:-96,ya:14402,yb:16612,ybw:-1351,total:false},
+    {L:'T&E',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Taxes',da:10152,db:17620,dbw:3937,ya:115284,yb:193402,ybw:74444,total:false},
+    {L:'Technology',da:-6201,db:-5796,dbw:-437,ya:-64938,yb:-68529,ybw:-4611,total:false},
+    {L:'Tech Consulting',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Title Expense',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Amortization & Depreciation',da:14967,db:9147,dbw:-3802,ya:121938,yb:106151,ybw:-829,total:false},
+    {L:'Total Non-Labor',da:27525,db:20932,dbw:-7941,ya:304088,yb:275952,ybw:51312,total:true},
+    {L:'Total OPEX',da:34681,db:20117,dbw:-9486,ya:251706,yb:338580,ybw:38361,total:true}
+  ]
+  },
+  'Legal':{
+    rows:[
+    {L:'Salary',da:45719,db:41116,dbw:972,ya:495506,yb:555417,ybw:47452,total:false},
+    {L:'Benefits',da:2417,db:5121,dbw:1895,ya:47477,yb:56727,ybw:7801,total:false},
+    {L:'Bonus',da:4655,db:7370,dbw:3753,ya:116908,yb:97100,ybw:-30066,total:false},
+    {L:'Commissions',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Total Labor',da:43009,db:60449,dbw:7886,ya:543163,yb:763152,ybw:25729,total:true},
+    {L:'Bank Charges',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Dues and Subscriptions',da:3534,db:3103,dbw:-582,ya:43628,yb:45957,ybw:-2006,total:false},
+    {L:'Direct Mail',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Marketing',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Office Expense',da:1512,db:2211,dbw:978,ya:23528,yb:24240,ybw:274,total:false},
+    {L:'People',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Professional Fees',da:90806,db:53240,dbw:-32943,ya:694858,yb:724267,ybw:23104,total:false},
+    {L:'Rent',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'T&E',da:653,db:0,dbw:-721,ya:7777,yb:3211,ybw:-3570,total:false},
+    {L:'Taxes',da:0,db:184,dbw:226,ya:1382,yb:3407,ybw:1612,total:false},
+    {L:'Technology',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Tech Consulting',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Title Expense',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Amortization & Depreciation',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Total Non-Labor',da:103055,db:61808,dbw:-27429,ya:810648,yb:836483,ybw:19888,total:true},
+    {L:'Total OPEX',da:141213,db:123342,dbw:-20297,ya:1226443,yb:1279940,ybw:40189,total:true}
+  ]
+  },
+  'Marketing':{
+    rows:[
+    {L:'Salary',da:17168,db:23742,dbw:7829,ya:219148,yb:287796,ybw:64052,total:false},
+    {L:'Benefits',da:1107,db:2123,dbw:1422,ya:18709,yb:29440,ybw:7198,total:false},
+    {L:'Bonus',da:791,db:986,dbw:489,ya:8321,yb:13816,ybw:5969,total:false},
+    {L:'Commissions',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Total Labor',da:20926,db:32275,dbw:9978,ya:238698,yb:371754,ybw:82116,total:true},
+    {L:'Bank Charges',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Dues and Subscriptions',da:0,db:142,dbw:107,ya:118,yb:1637,ybw:1535,total:false},
+    {L:'Direct Mail',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Marketing',da:32680,db:32942,dbw:7884,ya:344069,yb:491469,ybw:125367,total:false},
+    {L:'Office Expense',da:41,db:333,dbw:284,ya:6946,yb:3830,ybw:-2021,total:false},
+    {L:'People',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Professional Fees',da:0,db:0,dbw:0,ya:31,yb:0,ybw:-34,total:false},
+    {L:'Rent',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'T&E',da:855,db:852,dbw:58,ya:3087,yb:21170,ybw:15287,total:false},
+    {L:'Taxes',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Technology',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Tech Consulting',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Title Expense',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Amortization & Depreciation',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Total Non-Labor',da:29186,db:40070,dbw:7781,ya:354088,yb:404642,ybw:132346,total:true},
+    {L:'Total OPEX',da:55189,db:67236,dbw:19219,ya:515738,yb:880821,ybw:246772,total:true},
+    {L:'Marketing',da:25360,db:34379,dbw:8374,ya:338512,yb:436277,ybw:140670,total:false},
+    {L:'Brand',da:8085,db:12704,dbw:4215,ya:67769,yb:160321,ybw:74254,total:false},
+    {L:'Demand',da:21928,db:24003,dbw:6041,ya:202721,yb:316452,ybw:73446,total:false},
+    {L:'Supply',da:2082,db:0,dbw:-1853,ya:27498,yb:0,ybw:-31220,total:false},
+    {L:'Other Marketing',da:0,db:0,dbw:0,ya:-2279,yb:0,ybw:2368,total:false}
+  ]
+  },
+  'Operations':{
+    rows:[
+    {L:'Salary',da:185181,db:188511,dbw:-1788,ya:2310916,yb:1947812,ybw:53594,total:false},
+    {L:'Benefits',da:3508,db:3132,dbw:-308,ya:95641,yb:94269,ybw:-4356,total:false},
+    {L:'Bonus',da:81488,db:81734,dbw:867,ya:1005716,yb:925693,ybw:4182,total:false},
+    {L:'Commissions',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Total Labor',da:302280,db:289891,dbw:-1210,ya:3339980,yb:3370172,ybw:55217,total:true},
+    {L:'Bank Charges',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Dues and Subscriptions',da:-1325,db:1481,dbw:3200,ya:15288,yb:17100,ybw:1432,total:false},
+    {L:'Direct Mail',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Marketing',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Office Expense',da:-898,db:1127,dbw:2126,ya:16222,yb:12693,ybw:-5160,total:false},
+    {L:'People',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Professional Fees',da:0,db:0,dbw:0,ya:159,yb:0,ybw:-155,total:false},
+    {L:'Rent',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'T&E',da:5032,db:5853,dbw:2155,ya:66050,yb:83377,ybw:33438,total:false},
+    {L:'Taxes',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Technology',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Tech Consulting',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Title Expense',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Amortization & Depreciation',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Total Non-Labor',da:2026,db:8316,dbw:8420,ya:113656,yb:142744,ybw:32960,total:true},
+    {L:'Total OPEX',da:260433,db:302403,dbw:5865,ya:3717743,yb:3601950,ybw:98120,total:true}
+  ]
+  },
+  'People':{
+    rows:[
+    {L:'Salary',da:17832,db:22050,dbw:1365,ya:197408,yb:277239,ybw:50029,total:false},
+    {L:'Benefits',da:50081,db:51796,dbw:4412,ya:474832,yb:522840,ybw:97595,total:false},
+    {L:'Bonus',da:1404,db:1374,dbw:250,ya:20014,yb:18741,ybw:-1337,total:false},
+    {L:'Commissions',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Total Labor',da:72792,db:70332,dbw:6509,ya:727254,yb:1018990,ybw:148617,total:true},
+    {L:'Bank Charges',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Dues and Subscriptions',da:21,db:0,dbw:-21,ya:3050,yb:85,ybw:-3456,total:false},
+    {L:'Direct Mail',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Marketing',da:0,db:0,dbw:0,ya:0,yb:355,ybw:340,total:false},
+    {L:'Office Expense',da:677,db:604,dbw:-178,ya:1358,yb:6704,ybw:4623,total:false},
+    {L:'People',da:4082,db:5871,dbw:402,ya:56130,yb:64843,ybw:3294,total:false},
+    {L:'Professional Fees',da:152,db:0,dbw:-171,ya:16810,yb:6100,ybw:-9823,total:false},
+    {L:'Rent',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'T&E',da:4296,db:386,dbw:-4538,ya:437342,yb:305845,ybw:-118248,total:false},
+    {L:'Taxes',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Technology',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Tech Consulting',da:0,db:0,dbw:0,ya:1041,yb:0,ybw:-1076,total:false},
+    {L:'Title Expense',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Amortization & Depreciation',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Total Non-Labor',da:10174,db:6142,dbw:-3543,ya:600384,yb:343194,ybw:-154910,total:true},
+    {L:'Total OPEX',da:68646,db:89124,dbw:2822,ya:1172363,yb:1394882,ybw:3338,total:true}
+  ]
+  },
+  'RBA':{
+    rows:[
+    {L:'Salary',da:2517,db:0,dbw:-2908,ya:18287,yb:0,ybw:-20918,total:false},
+    {L:'Benefits',da:318,db:0,dbw:-384,ya:1995,yb:0,ybw:-1805,total:false},
+    {L:'Bonus',da:1032,db:0,dbw:-1013,ya:2565,yb:0,ybw:-2756,total:false},
+    {L:'Commissions',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Total Labor',da:3987,db:0,dbw:-3564,ya:24295,yb:0,ybw:-29652,total:true},
+    {L:'Bank Charges',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Dues and Subscriptions',da:1636,db:0,dbw:-1566,ya:2554,yb:0,ybw:-2380,total:false},
+    {L:'Direct Mail',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Marketing',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Office Expense',da:2715,db:0,dbw:-2949,ya:27418,yb:0,ybw:-26112,total:false},
+    {L:'People',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Professional Fees',da:194,db:0,dbw:-195,ya:1588,yb:0,ybw:-1686,total:false},
+    {L:'Rent',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'T&E',da:1650,db:0,dbw:-1612,ya:2316,yb:0,ybw:-2097,total:false},
+    {L:'Taxes',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Technology',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Tech Consulting',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Title Expense',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Amortization & Depreciation',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Total Non-Labor',da:5444,db:0,dbw:-5927,ya:33426,yb:0,ybw:-31633,total:true},
+    {L:'Total OPEX',da:10188,db:0,dbw:-10517,ya:49527,yb:0,ybw:-48464,total:true}
+  ]
+  },
+  'Sales':{
+    rows:[
+    {L:'Salary',da:101527,db:99391,dbw:4469,ya:1327914,yb:1378766,ybw:14958,total:false},
+    {L:'Benefits',da:19883,db:13173,dbw:-4751,ya:231037,yb:189163,ybw:-55832,total:false},
+    {L:'Bonus',da:11377,db:41584,dbw:27194,ya:251663,yb:393934,ybw:153562,total:false},
+    {L:'Commissions',da:592,db:549,dbw:-110,ya:6539,yb:6321,ybw:-910,total:false},
+    {L:'Total Labor',da:138259,db:176329,dbw:27338,ya:1812881,yb:1781591,ybw:114240,total:true},
+    {L:'Bank Charges',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Dues and Subscriptions',da:3775,db:6286,dbw:1158,ya:49643,yb:69396,ybw:22259,total:false},
+    {L:'Direct Mail',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Marketing',da:10991,db:15218,dbw:3595,ya:165987,yb:204923,ybw:27491,total:false},
+    {L:'Office Expense',da:58344,db:50512,dbw:-4395,ya:531518,yb:676940,ybw:116561,total:false},
+    {L:'People',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Professional Fees',da:4834,db:6696,dbw:2186,ya:77353,yb:71301,ybw:9409,total:false},
+    {L:'Rent',da:109494,db:151662,dbw:24844,ya:1449957,yb:1507040,ybw:215991,total:false},
+    {L:'T&E',da:91816,db:155530,dbw:50160,ya:557138,yb:756101,ybw:195237,total:false},
+    {L:'Taxes',da:3681,db:1541,dbw:-2428,ya:10118,yb:17381,ybw:8228,total:false},
+    {L:'Technology',da:1414,db:2161,dbw:226,ya:19312,yb:26680,ybw:10338,total:false},
+    {L:'Tech Consulting',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Title Expense',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Amortization & Depreciation',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Total Non-Labor',da:304065,db:338254,dbw:75398,ya:2830085,yb:3009734,ybw:689356,total:true},
+    {L:'Total OPEX',da:493034,db:526130,dbw:89126,ya:5023136,yb:5590367,ybw:654739,total:true}
+  ]
+  },
+  'AL OPEX':{
+    rows:[
+    {L:'Salary',da:36624,db:45014,dbw:-98,ya:433971,yb:496639,ybw:17343,total:false},
+    {L:'Benefits',da:8205,db:8773,dbw:2069,ya:108906,yb:112989,ybw:17577,total:false},
+    {L:'Bonus',da:16671,db:16028,dbw:730,ya:131807,yb:202751,ybw:36249,total:false},
+    {L:'Commissions',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Total Labor',da:70550,db:66066,dbw:3050,ya:744478,yb:867299,ybw:79505,total:true},
+    {L:'Bank Charges',da:409,db:1179,dbw:590,ya:11625,yb:13437,ybw:582,total:false},
+    {L:'Dues and Subscriptions',da:2276,db:1565,dbw:-591,ya:14770,yb:16981,ybw:5457,total:false},
+    {L:'Direct Mail',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Marketing',da:0,db:0,dbw:0,ya:616,yb:0,ybw:-549,total:false},
+    {L:'Office Expense',da:3854,db:1536,dbw:-2078,ya:30865,yb:22466,ybw:-5887,total:false},
+    {L:'People',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Professional Fees',da:0,db:710,dbw:558,ya:25866,yb:30146,ybw:4786,total:false},
+    {L:'Rent',da:943,db:738,dbw:-86,ya:10687,yb:11310,ybw:-873,total:false},
+    {L:'T&E',da:1637,db:701,dbw:-1029,ya:13471,yb:4544,ybw:-9413,total:false},
+    {L:'Taxes',da:466,db:928,dbw:383,ya:2606,yb:9273,ybw:7017,total:false},
+    {L:'Technology',da:5174,db:6510,dbw:731,ya:56021,yb:71219,ybw:11578,total:false},
+    {L:'Tech Consulting',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Title Expense',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Amortization & Depreciation',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Total Non-Labor',da:15754,db:12757,dbw:-1368,ya:154601,yb:199753,ybw:10443,total:true},
+    {L:'Total OPEX',da:69433,db:75157,dbw:1429,ya:875794,yb:987399,ybw:78839,total:true}
+  ]
+  },
+  'Atlas Title':{
+    rows:[
+    {L:'Salary',da:104404,db:86569,dbw:-20835,ya:1449494,yb:956346,ybw:-372074,total:false},
+    {L:'Benefits',da:14289,db:16025,dbw:-825,ya:231993,yb:195664,ybw:-39573,total:false},
+    {L:'Bonus',da:5488,db:13544,dbw:9598,ya:231801,yb:195011,ybw:-26201,total:false},
+    {L:'Commissions',da:0,db:3551,dbw:3119,ya:32367,yb:32982,ybw:7156,total:false},
+    {L:'Total Labor',da:123126,db:118142,dbw:-6545,ya:1873028,yb:1209404,ybw:-392303,total:true},
+    {L:'Bank Charges',da:5548,db:6943,dbw:1544,ya:80113,yb:79854,ybw:7945,total:false},
+    {L:'Dues and Subscriptions',da:32,db:103,dbw:70,ya:8662,yb:2315,ybw:-5334,total:false},
+    {L:'Direct Mail',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Marketing',da:0,db:1042,dbw:925,ya:7763,yb:26387,ybw:20236,total:false},
+    {L:'Office Expense',da:5538,db:11998,dbw:5450,ya:150678,yb:119683,ybw:5070,total:false},
+    {L:'People',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Professional Fees',da:3904,db:5910,dbw:1071,ya:76808,yb:43025,ybw:-31540,total:false},
+    {L:'Rent',da:5087,db:5951,dbw:-6,ya:63684,yb:70509,ybw:-3386,total:false},
+    {L:'T&E',da:2215,db:359,dbw:-1452,ya:66723,yb:10900,ybw:-52878,total:false},
+    {L:'Taxes',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Technology',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Tech Consulting',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Title Expense',da:69659,db:26880,dbw:-37031,ya:242658,yb:1133487,ybw:1022303,total:false},
+    {L:'Amortization & Depreciation',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Total Non-Labor',da:76411,db:57418,dbw:-27590,ya:691473,yb:1693077,ybw:914919,total:true},
+    {L:'Total OPEX',da:199960,db:170850,dbw:-36215,ya:2178263,yb:2440845,ybw:455943,total:true}
+  ]
+  },
+  'Talent Acq':{
+    rows:[
+    {L:'Salary',da:83158,db:44446,dbw:-35640,ya:518858,yb:664896,ybw:31418,total:false},
+    {L:'Benefits',da:3208,db:5002,dbw:856,ya:53655,yb:60618,ybw:742,total:false},
+    {L:'Bonus',da:-30757,db:3409,dbw:30903,ya:65023,yb:47677,ybw:-13538,total:false},
+    {L:'Commissions',da:0,db:9741,dbw:9712,ya:33032,yb:97593,ybw:65086,total:false},
+    {L:'Total Labor',da:57036,db:59090,dbw:12757,ya:800051,yb:806866,ybw:95802,total:true},
+    {L:'Bank Charges',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Dues and Subscriptions',da:0,db:0,dbw:0,ya:3757,yb:0,ybw:-3708,total:false},
+    {L:'Direct Mail',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Marketing',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Office Expense',da:0,db:25,dbw:25,ya:89,yb:119,ybw:41,total:false},
+    {L:'People',da:47797,db:57465,dbw:11915,ya:560056,yb:720089,ybw:124919,total:false},
+    {L:'Professional Fees',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Rent',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'T&E',da:2965,db:1611,dbw:-1465,ya:18079,yb:20904,ybw:2670,total:false},
+    {L:'Taxes',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Technology',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Tech Consulting',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Title Expense',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Amortization & Depreciation',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Total Non-Labor',da:45136,db:59506,dbw:10561,ya:456150,yb:717268,ybw:94555,total:true},
+    {L:'Total OPEX',da:107796,db:108191,dbw:26393,ya:1076130,yb:1545986,ybw:216020,total:true}
+  ]
+  },
+  'Tech':{
+    rows:[
+    {L:'Salary',da:107419,db:124020,dbw:5153,ya:1424518,yb:1420673,ybw:12688,total:false},
+    {L:'Benefits',da:8399,db:9880,dbw:1250,ya:126925,yb:125951,ybw:-18027,total:false},
+    {L:'Bonus',da:22515,db:14124,dbw:-4019,ya:171972,yb:173602,ybw:12249,total:false},
+    {L:'Commissions',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Total Labor',da:122152,db:120263,dbw:2331,ya:1571584,yb:1399384,ybw:11128,total:true},
+    {L:'Bank Charges',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Dues and Subscriptions',da:248,db:0,dbw:-288,ya:1529,yb:0,ybw:-1367,total:false},
+    {L:'Direct Mail',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Marketing',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Office Expense',da:945,db:386,dbw:-561,ya:5744,yb:5331,ybw:-591,total:false},
+    {L:'People',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Professional Fees',da:11010,db:9838,dbw:-184,ya:140686,yb:121150,ybw:6055,total:false},
+    {L:'Rent',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'T&E',da:5939,db:2135,dbw:-2572,ya:31606,yb:28731,ybw:-7799,total:false},
+    {L:'Taxes',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Technology',da:73455,db:83818,dbw:17272,ya:813556,yb:1187449,ybw:226288,total:false},
+    {L:'Tech Consulting',da:35393,db:36719,dbw:8555,ya:541119,yb:461868,ybw:3131,total:false},
+    {L:'Title Expense',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Amortization & Depreciation',da:0,db:0,dbw:0,ya:0,yb:0,ybw:0,total:false},
+    {L:'Total Non-Labor',da:125232,db:154514,dbw:22297,ya:1709878,yb:1855569,ybw:233781,total:true},
+    {L:'Total OPEX',da:259417,db:275555,dbw:24206,ya:3619666,yb:3538138,ybw:204608,total:true},
+    {L:'Technology',da:72100,db:101635,dbw:19083,ya:878357,yb:1158124,ybw:189879,total:false},
+    {L:'Hosting',da:14756,db:15393,dbw:2186,ya:154434,yb:195814,ybw:15537,total:false},
+    {L:'Hardware',da:12352,db:2197,dbw:-8184,ya:84081,yb:31064,ybw:-56156,total:false},
+    {L:'Software',da:29997,db:68764,dbw:31957,ya:392544,yb:751199,ybw:294193,total:false},
+    {L:'Outside Services',da:1636,db:5226,dbw:3411,ya:23467,yb:59427,ybw:38242,total:false},
+    {L:'Telecommunications',da:8206,db:701,dbw:-6683,ya:37172,yb:8759,ybw:-30351,total:false},
+    {L:'Other Tech',da:13125,db:5554,dbw:-7126,ya:195938,yb:71624,ybw:-91493,total:false}
+  ]
+  }
+};
+const BSHB_ROWS = [
+  {L:'Commission Income',da:194323,ya:497997,grand:false,total:false,pct:false},
+  {L:'Marketing Fee Income',da:58734,ya:172554,grand:false,total:false,pct:false},
+  {L:'Other Fee',da:12846,ya:24121,grand:false,total:false,pct:false},
+  {L:'Total Revenue',da:274243,ya:721001,grand:false,total:true,pct:false},
+  {L:'Commission COGS',da:78621,ya:218374,grand:false,total:false,pct:false},
+  {L:'Non-Commission COGS',da:7349,ya:15585,grand:false,total:false,pct:false},
+  {L:'Total Cost of Goods Sold',da:67339,ya:223749,grand:false,total:true,pct:false},
+  {L:'Gross Margin',da:213162,ya:496323,grand:true,total:false,pct:false},
+  {L:'Gross Margin %',da:0.81,ya:0.6771,grand:false,total:false,pct:true},
+  {L:'Salary',da:88537,ya:264407,grand:false,total:false,pct:false},
+  {L:'Benefits',da:19085,ya:48533,grand:false,total:false,pct:false},
+  {L:'Bonus',da:2925,ya:7087,grand:false,total:false,pct:false},
+  {L:'Commissions',da:0,ya:0,grand:false,total:false,pct:false},
+  {L:'Total Labor Expense',da:103075,ya:312045,grand:false,total:true,pct:false},
+  {L:'Bank Charges',da:1594,ya:1595,grand:false,total:false,pct:false},
+  {L:'Dues and Subscriptions',da:14910,ya:31258,grand:false,total:false,pct:false},
+  {L:'Direct Mail',da:0,ya:0,grand:false,total:false,pct:false},
+  {L:'Marketing',da:98089,ya:345426,grand:false,total:false,pct:false},
+  {L:'Office Expense',da:4548,ya:11751,grand:false,total:false,pct:false},
+  {L:'People',da:506,ya:1828,grand:false,total:false,pct:false},
+  {L:'Professional Fees',da:4238,ya:12482,grand:false,total:false,pct:false},
+  {L:'Rent',da:6204,ya:16890,grand:false,total:false,pct:false},
+  {L:'T&E',da:3940,ya:12936,grand:false,total:false,pct:false},
+  {L:'Taxes',da:4285,ya:4135,grand:false,total:false,pct:false},
+  {L:'Technology',da:1261,ya:2049,grand:false,total:false,pct:false},
+  {L:'Tech Consulting',da:951,ya:5902,grand:false,total:false,pct:false},
+  {L:'Title Expense',da:0,ya:0,grand:false,total:false,pct:false},
+  {L:'Total Non-Labor Expense',da:145254,ya:449278,grand:false,total:true,pct:false},
+  {L:'Depreciation & Amortization',da:58535,ya:61987,grand:false,total:false,pct:false},
+  {L:'Total OPEX',da:266023,ya:845249,grand:false,total:true,pct:false},
+  {L:'Operating Income',da:-85055,ya:-281447,grand:true,total:false,pct:false},
+  {L:'Operating Margin',da:0,ya:0,grand:false,total:false,pct:false},
+  {L:'Less: Net income attributable to NCI',da:-45119,ya:-97793,grand:false,total:false,pct:false},
+  {L:'Pro Forma Net Income',da:-56338,ya:-175586,grand:true,total:false,pct:false},
+  {L:'Depreciation & Amortization',da:66850,ya:57853,grand:false,total:false,pct:false},
+  {L:'EBITDA',da:-41111,ya:-224168,grand:true,total:false,pct:false},
+  {L:'Deal Count',da:31,ya:38,grand:false,total:false,pct:false},
+  {L:'COGS Detail',da:null,ya:null,grand:false,total:false,pct:false},
+  {L:'Atlas Agents/GMs',da:30708,ya:94561,grand:false,total:false,pct:false},
+  {L:'Big State Employees',da:40212,ya:125974,grand:false,total:false,pct:false},
+  {L:'Property Expenses',da:1508,ya:1894,grand:false,total:false,pct:false}
+];
+const BD_ROWS = [
+  {L:'Direct Mail / Organic',da:71324,dpy:50416,dpct:0.2192,ya:593436,ypy:1490146,ypct:-0.5318,grand:false,total:false},
+  {L:'Direct to Seller Partner',da:144553,dpy:145377,dpct:0.0488,ya:1129240,ypy:1413716,ypct:-0.2263,grand:false,total:false},
+  {L:'Referral Partner',da:305500,dpy:72748,dpct:1.03,ya:2019010,ypy:799578,ypct:0.91,grand:false,total:false},
+  {L:'WAM',da:88718,dpy:19823,dpct:1.21,ya:1034289,ypy:517145,ypct:0.61,grand:false,total:false},
+  {L:'Home Depot',da:472264,dpy:0,dpct:null,ya:1189968,ypy:0,ypct:null,grand:false,total:false},
+  {L:'Total Revenue',da:965933,dpy:294797,dpct:1.06,ya:7021841,ypy:3606779,ypct:0.6483,grand:true,total:false},
+  {L:'Estimated Commissions*',da:294948,dpy:112227,dpct:1.2809,ya:2486979,ypy:1319271,ypct:0.7196,grand:false,total:false},
+  {L:'Estimated Gross Margin',da:770928,dpy:216224,dpct:1.11,ya:3785174,ypy:2879092,ypct:0.5781,grand:true,total:false},
+  {L:'Benefits',da:2074,dpy:1112,dpct:0.9477,ya:36353,ypy:24240,ypct:0.4247,grand:false,total:false},
+  {L:'Bonus',da:8517,dpy:2989,dpct:0.69,ya:104722,ypy:39161,ypct:0.77,grand:false,total:false},
+  {L:'Commissions',da:1827,dpy:2979,dpct:-0.3996,ya:33970,ypy:65751,ypct:-0.5563,grand:false,total:false},
+  {L:'Salary',da:29659,dpy:11445,dpct:1.6873,ya:226592,ypy:134333,ypct:0.9132,grand:false,total:false},
+  {L:'Total Labor Expense',da:42200,dpy:15770,dpct:1.1004,ya:390782,ypy:271145,ypct:0.5074,grand:false,total:true},
+  {L:'Direct Mail',da:0,dpy:8616,dpct:-1,ya:-20629,ypy:670327,ypct:-1.0003,grand:false,total:false},
+  {L:'Marketing',da:43631,dpy:39952,dpct:0.1398,ya:433476,ypy:665226,ypct:-0.4028,grand:false,total:false},
+  {L:'Other',da:6187,dpy:0,dpct:null,ya:16850,ypy:0,ypct:null,grand:false,total:false},
+  {L:'Total Non-Labor Expense',da:47061,dpy:50190,dpct:0.0235,ya:427060,ypy:1107066,ypct:-0.6809,grand:false,total:true},
+  {L:'Total OPEX',da:95507,dpy:69523,dpct:0.375,ya:725897,ypy:1384738,ypct:-0.5374,grand:false,total:true},
+  {L:'Estimated Operating Income',da:660756,dpy:125591,dpct:1.66,ya:3384259,ypy:951364,ypct:0.96,grand:true,total:false},
+  {L:'Direct Mail / Organic',da:15,dpy:7,dpct:0.981,ya:31,ypy:51,ypct:-0.4343,grand:false,total:false},
+  {L:'Direct to Seller Partner',da:9,dpy:20,dpct:-0.5348,ya:43,ypy:61,ypct:-0.4088,grand:false,total:false},
+  {L:'Referral Partner',da:38,dpy:11,dpct:0.89,ya:134,ypy:38,ypct:0.76,grand:false,total:false},
+  {L:'WAM',da:12,dpy:6,dpct:1,ya:81,ypy:34,ypct:0.72,grand:false,total:false},
+  {L:'Total',da:33,dpy:44,dpct:0.5859,ya:285,ypy:168,ypct:0.4248,grand:false,total:true}
+];
+const BS_ASSETS = [
+  {L:'Assets',hdr:true},
+  {L:'Cash & Cash Equivalents',d24:1336405,d25:1631680,grand:false,total:false},
+  {L:'Accounts Receivable',d24:689870,d25:858806,grand:false,total:false},
+  {L:'Loans Receivable (AL)',d24:10392777,d25:10003989,grand:false,total:false},
+  {L:'Prepaid & Other Current',d24:387007,d25:373175,grand:false,total:false},
+  {L:'Total Current Assets',d24:10911242,d25:12568974,grand:false,total:true},
+  {L:'PP&E, Net',d24:95496,d25:127445,grand:false,total:false},
+  {L:'Intangible Assets, Net',d24:0,d25:207714,grand:false,total:false},
+  {L:'Other Long-term Assets',d24:198960,d25:184014,grand:false,total:false},
+  {L:'Total Assets',d24:11860387,d25:11813627,grand:true,total:false}
+];
+const BS_LE = [
+  {L:'Liabilities & Equity',hdr:true},
+  {L:'Accounts Payable',d24:340581,d25:459409,grand:false,total:false},
+  {L:'Accrued Liabilities',d24:858961,d25:997185,grand:false,total:false},
+  {L:'Line of Credit (AL)',d24:9169692,d25:8251390,grand:false,total:false},
+  {L:'Other Current Liabilities',d24:111892,d25:204303,grand:false,total:false},
+  {L:'Total Current Liabilities',d24:9258174,d25:8518744,grand:false,total:true},
+  {L:'Total Liabilities',d24:10980959,d25:11214724,grand:false,total:true},
+  {L:'Total Members\' Equity',d24:1818561,d25:2547088,grand:true,total:false},
+  {L:'Total Liabilities & Equity',d24:10951755,d25:14461820,grand:true,total:false}
+];
+const CF_ROWS = [
+  {L:'Cash Flow from Operations',hdr:true},
+  {L:'Net Income',dec:1210780,ytd:5967669,grand:false,total:false},
+  {L:'D&A Addback',dec:69444,ytd:147363,grand:false,total:false},
+  {L:'Changes in AR',dec:-72704,ytd:-326598,grand:false,total:false},
+  {L:'Changes in Prepaid / Other',dec:-19620,ytd:-77841,grand:false,total:false},
+  {L:'Changes in AP & Accruals',dec:102952,ytd:876724,grand:false,total:false},
+  {L:'Net Cash from Operations',dec:1321486,ytd:8110214,grand:false,total:true},
+  {L:'Cash Flow from Investing',hdr:true},
+  {L:'AL Loan Collections (net)',dec:559914,ytd:121319,grand:false,total:false},
+  {L:'Capex / Intangibles',dec:-25413,ytd:-310027,grand:false,total:false},
+  {L:'Net Cash from Investing',dec:481065,ytd:-265233,grand:false,total:true},
+  {L:'Cash Flow from Financing',hdr:true},
+  {L:'Line of Credit (net paydowns)',dec:-314099,ytd:-873900,grand:false,total:false},
+  {L:'Distributions to Members',dec:-715516,ytd:-6029810,grand:false,total:false},
+  {L:'Net Cash from Financing',dec:-950089,ytd:-7902116,grand:false,total:true},
+  {L:'Net Change in Cash',dec:496081,ytd:311533,grand:true,total:false},
+  {L:'Beginning Cash',dec:1436285,ytd:1526444,grand:false,total:false},
+  {L:'Ending Cash',dec:1908835,ytd:2074783,grand:true,total:false}
+];
+</script>
+<script>
+// ── Atlas Title chart data ──
+const SPAR_REV_MON=[268386.51,272030.47,306058.61,293389.39,290279.04,268677.00,278407.50,249838.07,237307.58,418244.49,327451.65,327685.40];
+const SPAR_REV_BUD=[253670.85,261623.93,285165.00,269434.31,359500.01,326390.19,378629.55,334434.88,356614.21,306780.13,302395.03,345418.15];
+const SPAR_OI_MON=[48903.68,91080.40,64343.12,87221.98,110330.3,49557.33,70660.09,42873.94,24906.1,172214.54,109412.49,87075.99];
+const SPAR_OI_BUD=[45389.74,106845.73,-564761.30,127901.96,178967.20,132830.16,162754.52,149021.76,126655.62,141343.43,134707.41,122701.49];
+const SPAR_NI_MON=[50157.67,105109.14,58130.83,104718.63,91329.4,47759.49,85723.36,42297.90,19104.0,190339.37,115125.24,95386.36];
+const SPAR_TITLES_MON=[137,127,110,140,154,138,130,134,96,124,85,0];
+const SPAR_TX_TITLES=[115,140,117,131,147,111,134,118,113,132,107,0];
+const SPAR_OK_TITLES=[15,12,12,9,32,19,17,0,0,0,0,0];
+const SPAR_TX_PENET=[1.1873,1.1115,1.0161,1.1074,0.9747,0.8275,1.0159,0.7283,0.8567,1.0522,0.9233,0.9289];
+const SPAR_PL=[
+  {L:'2025-12-01 00:00:00',da:0,db:0,dpy:0,ya:0,yb:0,ypy:0,sec:true,pct:false,total:false,grand:false},
+  {L:'First American',da:0,db:0,dpy:455.02,ya:3226.45,yb:0,ypy:536922.5,sec:false,pct:false,total:false,grand:false},
+  {L:'First American Premium Remitted',da:0,db:0,dpy:-60.18,ya:0,yb:0,ypy:-74751.70,sec:false,pct:false,total:false,grand:false},
+  {L:'First American OK',da:26006.94,db:0,dpy:11525.42,ya:146948.22,yb:0,ypy:34772.20,sec:false,pct:false,total:false,grand:false},
+  {L:'First American OK Premium Remitted',da:0,db:0,dpy:-1162.88,ya:-8642.63,yb:0,ypy:-6913.64,sec:false,pct:false,total:false,grand:false},
+  {L:'First National',da:104832.48,db:103817.7,dpy:89007.49,ya:1258446.73,yb:1156205.0,ypy:759812.38,sec:false,pct:false,total:false,grand:false},
+  {L:'First National Premium Remitted',da:-15386.28,db:-16019.61,dpy:-10475.31,ya:-163367.17,yb:-208897.50,ypy:-130260.12,sec:false,pct:false,total:false,grand:false},
+  {L:'Escrow Fees',da:125964.83,db:142470.7,dpy:84257.49,ya:1475121.84,yb:1858247.1,ypy:1449927.67,sec:false,pct:false,total:false,grand:false},
+  {L:'Other Income-E : Copies',da:0,db:0,dpy:0,ya:0,yb:0,ypy:0,sec:false,pct:false,total:false,grand:false},
+  {L:'Title Income : Retained Premium : Title Insurance Premium',da:0,db:0,dpy:0,ya:246.0,yb:0,ypy:0,sec:false,pct:false,total:false,grand:false},
+  {L:'Title Income : Retained Premium : Remitted Premium',da:0,db:0,dpy:0,ya:-20.8,yb:0,ypy:0,sec:false,pct:false,total:false,grand:false},
+  {L:'Other Income-E : Miscellaneous',da:1125.7,db:1354.1,dpy:10550.2,ya:14600.19,yb:15864.9,ypy:150146.84,sec:false,pct:false,total:false,grand:false},
+  {L:'Other Income-E : Courtesy/Notary Closing Fee',da:377.7,db:0,dpy:0,ya:739.58,yb:0,ypy:1142.17,sec:false,pct:false,total:false,grand:false},
+  {L:'Closing Fees Received',da:0,db:0,dpy:0,ya:0,yb:0,ypy:2163.3,sec:false,pct:false,total:false,grand:false},
+  {L:'Refunds/Adjustments',da:-1994.45,db:156.16,dpy:-291.78,ya:-5099.74,yb:1522.85,ypy:1019.7,sec:false,pct:false,total:false,grand:false},
+  {L:'Title Insurance Premium : Fidelity',da:0,db:0,dpy:0,ya:0,yb:0,ypy:889734.21,sec:false,pct:false,total:false,grand:false},
+  {L:'Remitted Premium : Fidelity Premium',da:0,db:0,dpy:0,ya:0,yb:0,ypy:-126922.28,sec:false,pct:false,total:false,grand:false},
+  {L:'Westcor Premium',da:76230.07,db:92641.4,dpy:73134.72,ya:1054049.16,yb:1100774.7,ypy:230572.45,sec:false,pct:false,total:false,grand:false},
+  {L:'Westcor Premium Remitted',da:-12410.74,db:-15492.21,dpy:-12199.90,ya:-159946.20,yb:-160576.59,ypy:-31722.17,sec:false,pct:false,total:false,grand:false},
+  {L:'Total Revenue',da:350109.94,db:285961.26,dpy:219513.25,ya:3574531.60,yb:3759092.25,ypy:3957413.72,sec:false,pct:false,total:false,grand:true},
+  {L:'Cost of Goods Sold',da:0,db:0,dpy:0,ya:0,yb:0,ypy:0,sec:true,pct:false,total:false,grand:false},
+  {L:'Non-Commission COGS',da:20424.29,db:11335.84,dpy:15433.01,ya:168581.16,yb:135422.83,ypy:239410.96,sec:false,pct:false,total:false,grand:false},
+  {L:'Total Cost of Goods Sold',da:22335.56,db:11273.80,dpy:14681.49,ya:168612.01,yb:177073.77,ypy:198195.29,sec:false,pct:false,total:true,grand:false},
+  {L:'Gross Margin',da:313413.89,db:336988.63,dpy:225072.0,ya:2909455.19,yb:3406843.61,ypy:2957777.04,sec:false,pct:false,total:false,grand:true},
+  {L:'Gross Margin %',da:0.9242,db:0.8938,dpy:0.8682,ya:1.0444,yb:0.9946,ypy:0.8201,sec:false,pct:true,total:false,grand:false},
+  {L:'Operating Expenses',da:0,db:0,dpy:0,ya:0,yb:0,ypy:0,sec:true,pct:false,total:false,grand:false},
+  {L:'Labor',da:0,db:0,dpy:0,ya:0,yb:0,ypy:0,sec:true,pct:false,total:false,grand:false},
+  {L:'Salaries',da:105930.86,db:68009.34,dpy:77215.59,ya:1339248.68,yb:884363.42,ypy:662677.56,sec:false,pct:false,total:false,grand:false},
+  {L:'Benefits',da:15435.77,db:14288.64,dpy:14403.07,ya:265896.54,yb:179584.55,ypy:140952.29,sec:false,pct:false,total:false,grand:false},
+  {L:'Bonus',da:5202.7,db:16458.81,dpy:-24162.2,ya:211495.30,yb:177090.51,ypy:113345.5,sec:false,pct:false,total:false,grand:false},
+  {L:'Commissions',da:0,db:3421.52,dpy:0,ya:30340.31,yb:34609.49,ypy:16446.12,sec:false,pct:false,total:false,grand:false},
+  {L:'Total Labor Expense',da:117286.86,db:112331.66,dpy:67137.63,ya:1834789.47,yb:1500909.40,ypy:986190.08,sec:false,pct:false,total:true,grand:false},
+  {L:'Non-Labor',da:0,db:0,dpy:0,ya:0,yb:0,ypy:0,sec:true,pct:false,total:false,grand:false},
+  {L:'Bank Charges',da:4855.98,db:6699.4,dpy:7260.31,ya:81803.12,yb:70159.0,ypy:57627.57,sec:false,pct:false,total:false,grand:false},
+  {L:'Dues and Subscriptions',da:35.79,db:121.02,dpy:145.54,ya:7278.65,yb:2803.74,ypy:2425.31,sec:false,pct:false,total:false,grand:false},
+  {L:'Direct Mail',da:0,db:0,dpy:0,ya:0,yb:0,ypy:0,sec:false,pct:false,total:false,grand:false},
+  {L:'Marketing',da:0,db:874.42,dpy:0,ya:7739.72,yb:28258.1,ypy:1238.75,sec:false,pct:false,total:false,grand:false},
+  {L:'Office Expense',da:5695.71,db:11962.58,dpy:7860.65,ya:140339.87,yb:134382.59,ypy:93612.06,sec:false,pct:false,total:false,grand:false},
+  {L:'People',da:0,db:0,dpy:0,ya:0,yb:0,ypy:0,sec:false,pct:false,total:false,grand:false},
+  {L:'Professional Fees',da:3859.7,db:5098.8,dpy:1546.55,ya:78165.91,yb:51751.8,ypy:39583.33,sec:false,pct:false,total:false,grand:false},
+  {L:'Rent',da:5849.5,db:5169.6,dpy:4765.17,ya:70807.43,yb:77091.39,ypy:66576.00,sec:false,pct:false,total:false,grand:false},
+  {L:'T&E',da:2170.81,db:439.3,dpy:2030.48,ya:73706.80,yb:11156.1,ypy:8495.70,sec:false,pct:false,total:false,grand:false},
+  {L:'Taxes',da:0,db:0,dpy:0,ya:0,yb:0,ypy:0,sec:false,pct:false,total:false,grand:false},
+  {L:'Technology',da:0,db:0,dpy:0,ya:0,yb:0,ypy:0,sec:false,pct:false,total:false,grand:false},
+  {L:'Tech Consulting',da:0,db:0,dpy:0,ya:0,yb:0,ypy:0,sec:false,pct:false,total:false,grand:false},
+  {L:'Title Expense',da:71118.00,db:28831.15,dpy:25857.05,ya:214782.73,yb:1199969.27,ypy:304170.61,sec:false,pct:false,total:false,grand:false},
+  {L:'Total Non-Labor Expense',da:96167.61,db:57335.94,dpy:44498.69,ya:707536.33,yb:1455696.14,ypy:553577.5,sec:false,pct:false,total:true,grand:false},
+  {L:'Total OPEX',da:196345.48,db:175867.30,dpy:100909.35,ya:2593490.70,yb:2796408.33,ypy:1446386.28,sec:false,pct:false,total:true,grand:false},
+  {L:'Operating Income',da:87550.94,db:152943.02,dpy:134935.53,ya:811622.50,yb:915286.08,ypy:1624240.64,sec:false,pct:false,total:false,grand:true},
+  {L:'Operating Margin',da:0.2627,db:0.3924,dpy:0.5546,ya:0.2617,yb:0.2153,ypy:0.4484,sec:false,pct:true,total:false,grand:false},
+  {L:'Net Income',da:71819.51,db:146771.39,dpy:138370.24,ya:935622.41,yb:898809.27,ypy:1904571.68,sec:false,pct:false,total:false,grand:true},
+  {L:'Total Title Check',da:0,db:0,dpy:0,ya:0,yb:0,ypy:0,sec:false,pct:false,total:true,grand:false},
+  {L:'TX Title Funded % Check',da:0,db:0,dpy:0,ya:0,yb:0,ypy:0,sec:false,pct:false,total:false,grand:false},
+  {L:'OK Title Funded % Check',da:0,db:0,dpy:0,ya:0,yb:0,ypy:0,sec:false,pct:false,total:false,grand:false},
+  {L:'Revenue',da:0,db:0,dpy:0,ya:0,yb:0,ypy:0,sec:false,pct:false,total:false,grand:false},
+  {L:'COGS',da:0,db:0,dpy:0,ya:0,yb:0,ypy:0,sec:false,pct:false,total:false,grand:false},
+  {L:'OPEX',da:0,db:0,dpy:0,ya:0,yb:0,ypy:0,sec:false,pct:false,total:false,grand:false},
+  {L:'KPIs',da:0,db:0,dpy:0,ya:0,yb:0,ypy:0,sec:false,pct:false,total:false,grand:false},
+  {L:'Texas Titles Funded',da:91.9,db:110.7,dpy:126.2,ya:1260.8,yb:1275.0,ypy:1422.2,sec:false,pct:false,total:false,grand:false},
+  {L:'Oklahoma Titles Funded',da:0,db:19.0,dpy:15.0,ya:22.8,yb:107.4,ypy:29.2,sec:false,pct:false,total:false,grand:false},
+  {L:'Other States Titles Funded',da:32.1,db:0,dpy:0,ya:67.1,yb:0,ypy:0,sec:false,pct:false,total:false,grand:false},
+  {L:'Subtotal',da:145.5,db:133.3,dpy:135.1,ya:1250.4,yb:1391.4,ypy:1234.4,sec:false,pct:false,total:false,grand:false},
+  {L:'Outside Titles Funded',da:23.0,db:22.3,dpy:14.0,ya:167.5,yb:270.5,ypy:124.0,sec:false,pct:false,total:false,grand:false},
+  {L:'Total Titles Funded',da:144.2,db:136.3,dpy:111.1,ya:1477.7,yb:1912.3,ypy:1480.0,sec:false,pct:false,total:true,grand:false},
+  {L:'Texas Titles Funded as a % of Texas Deals',da:0.8328,db:1.2268,dpy:1.1137,ya:0.9274,yb:1.011,ypy:1.107,sec:false,pct:false,total:false,grand:false},
+  {L:'Oklahoma Titles Funded as a % of Oklahoma Deals',da:0,db:0.6459,dpy:1.2303,ya:0.5179,yb:0.6707,ypy:0.8878,sec:false,pct:false,total:false,grand:false}
+];
+// ── Atlas Lending chart data ──
+const SBL_REV_MON=[136537.00,110229.19,133490.02,127266.26,177827.7,177490.30,153994.41,178623.84,160910.5,169345.97,181999.05,194794.01];
+const SBL_REV_BUD=[106032.29,112373.23,139704.62,154924.49,185710.60,180364.12,153831.83,199313.47,170099.50,175044.15,171997.31,167307.81];
+const SBL_OI_MON=[22891.8,-2972.56,62150.21,34399.90,-1446.02,55522.8,23574.0,17704.88,32733.12,31914.73,14279.9,44091.25];
+const SBL_OI_BUD=[-7551.85,306.57,-8896.07,2291.39,19578.42,37710.44,23881.20,34688.99,34337.76,44059.08,36247.00,43418.93];
+const SBL_HM_LOANS=[8,8,8,15,18,16,13,11,15,15,18,22];
+const SBL_MP_LOANS=[41,36,42,41,31,41,38,35,21,25,43,44];
+const SBL_MP_PENET=[0.0785,0.0647,0.0699,0.0628,0.0517,0.0589,0.0641,0.0597,0.0957,0.0917,0.0818,0.0585];
+const SBL_MP_PENET_BUD=[0.0826,0.0825,0.0991,0.0883,0.11,0.1072,0.1078,0.1361,0.135,0.1593,0.1468,0.1497];
+const SBL_NW_DEALS=[224,288,269,279,288,240,270,293,304,290,256,240];
+const SBL_PL=[
+  {L:'2025-12-01 00:00:00',da:0,df:0,db:0,dpy:0,ya:0,sec:true,pct:false,total:false,grand:false},
+  {L:'Marketplace: Upfront Fees',da:32119.96,df:36057.62,db:84170.51,dpy:38294.31,ya:451133.67,sec:false,pct:false,total:false,grand:false},
+  {L:'Marketplace: Interest Income Strip',da:11383.7,df:9931.5,db:18094.82,dpy:19276.3,ya:162567.48,sec:false,pct:false,total:false,grand:false},
+  {L:'Direct Lending: Interest Income',da:97770.88,df:89310.29,db:65623.6,dpy:44410.06,ya:997339.18,sec:false,pct:false,total:false,grand:false},
+  {L:'Direct Lending: Extension Fees Collected',da:25052.02,df:23766.92,db:5581.31,dpy:3932.9,ya:107556.87,sec:false,pct:false,total:false,grand:false},
+  {L:'Direct Lending: Upfront Fees (Points)',da:21640.87,df:20689.46,db:19801.16,dpy:12900.48,ya:245912.12,sec:false,pct:false,total:false,grand:false},
+  {L:'Direct Lending: Extension Fees Earned',da:2052.1,df:2229.0,db:0,dpy:5489.1,ya:60010.62,sec:false,pct:false,total:false,grand:false},
+  {L:'Direct Lending: Interest Income Reserve',da:-4262.19,df:-3325.53,db:-2647.61,dpy:-5571.13,ya:-36781.13,sec:false,pct:false,total:false,grand:false},
+  {L:'Direct Lending: Inspection Fees',da:0,df:0,db:0,dpy:0,ya:0,sec:false,pct:false,total:false,grand:false},
+  {L:'Direct Lending: Processing Fees',da:6306.0,df:7040.3,db:4802.7,dpy:4172.1,ya:64267.2,sec:false,pct:false,total:false,grand:false},
+  {L:'Direct Lending: Management Fees',da:0,df:0,db:0,dpy:0,ya:0,sec:false,pct:false,total:false,grand:false},
+  {L:'Direct Lending: Miscellaneous Fees',da:2489.39,df:2334.69,db:721.1,dpy:65.11,ya:8631.96,sec:false,pct:false,total:false,grand:false},
+  {L:'Direct Lending: Appraisal Fees',da:0,df:0,db:0,dpy:0,ya:0,sec:false,pct:false,total:false,grand:false},
+  {L:'Direct Lending: Maturity Fees',da:0,df:0,db:0,dpy:0,ya:1903.5,sec:false,pct:false,total:false,grand:false},
+  {L:'Driect Lending: Extension Fees Waived',da:-2020.8,df:-2503.8,db:0,dpy:-5890.5,ya:-55743.73,sec:false,pct:false,total:false,grand:false},
+  {L:'Total Revenue',da:190791.35,df:197408.86,db:179651.50,dpy:131719.11,ya:2182216.77,sec:false,pct:false,total:false,grand:true},
+  {L:'Cost of Goods Sold',da:0,df:0,db:0,dpy:0,ya:0,sec:true,pct:false,total:false,grand:false},
+  {L:'Commission COGS',da:16430.02,df:16097.27,db:25272.55,dpy:13314.21,ya:176668.13,sec:false,pct:false,total:false,grand:false},
+  {L:'Non-Commission COGS',da:65832.32,df:54916.32,db:37067.12,dpy:33893.32,ya:600525.64,sec:false,pct:false,total:false,grand:false},
+  {L:'Total Cost of Goods Sold',da:77740.79,df:73792.56,db:62926.48,dpy:43183.86,ya:673160.87,sec:false,pct:false,total:true,grand:false},
+  {L:'Gross Margin',da:122513.90,df:112061.37,db:119720.31,dpy:76334.97,ya:1252399.90,sec:false,pct:false,total:false,grand:true},
+  {L:'Gross Margin %',da:0.6948,df:0.69,db:0.5688,dpy:0.6358,ya:0.637,sec:false,pct:true,total:false,grand:false},
+  {L:'Operating Expenses',da:0,df:0,db:0,dpy:0,ya:0,sec:true,pct:false,total:false,grand:false},
+  {L:'Labor',da:0,df:0,db:0,dpy:0,ya:0,sec:true,pct:false,total:false,grand:false},
+  {L:'Salaries',da:43888.76,df:35386.43,db:45820.48,dpy:39055.35,ya:464503.70,sec:false,pct:false,total:false,grand:false},
+  {L:'Benefits',da:8095.40,df:7772.03,db:9001.33,dpy:4449.05,ya:103767.22,sec:false,pct:false,total:false,grand:false},
+  {L:'Bonus',da:14754.46,df:16307.48,db:14847.32,dpy:8337.3,ya:153470.90,sec:false,pct:false,total:false,grand:false},
+  {L:'Commissions',da:0,df:0,db:0,dpy:0,ya:0,sec:false,pct:false,total:false,grand:false},
+  {L:'Total Labor Expense',da:67795.65,df:60712.01,db:64911.20,dpy:54587.90,ya:766605.67,sec:false,pct:false,total:true,grand:false},
+  {L:'Non-Labor',da:0,df:0,db:0,dpy:0,ya:0,sec:true,pct:false,total:false,grand:false},
+  {L:'Bank Charges',da:450.79,df:463.68,db:1013.2,dpy:1095.14,ya:13169.25,sec:false,pct:false,total:false,grand:false},
+  {L:'Dues and Subscriptions',da:2086.50,df:1805.05,db:1361.0,dpy:999.13,ya:14156.72,sec:false,pct:false,total:false,grand:false},
+  {L:'Direct Mail',da:0,df:0,db:0,dpy:0,ya:0,sec:false,pct:false,total:false,grand:false},
+  {L:'Marketing',da:0,df:0,db:0,dpy:0,ya:509.74,sec:false,pct:false,total:false,grand:false},
+  {L:'Office Expense',da:3431.35,df:3861.98,db:1890.9,dpy:1842.34,ya:30966.77,sec:false,pct:false,total:false,grand:false},
+  {L:'People',da:0,df:0,db:0,dpy:0,ya:0,sec:false,pct:false,total:false,grand:false},
+  {L:'Professional Fees',da:0,df:0,db:659.7,dpy:4517.5,ya:27753.4,sec:false,pct:false,total:false,grand:false},
+  {L:'Rent',da:983.89,df:1008.05,db:899.3,dpy:574.27,ya:12368.58,sec:false,pct:false,total:false,grand:false},
+  {L:'T&E',da:1515.54,df:1723.17,db:720.1,dpy:1094.8,ya:13378.35,sec:false,pct:false,total:false,grand:false},
+  {L:'Taxes',da:398.4,df:419.3,db:892.29,dpy:1284.17,ya:2467.52,sec:false,pct:false,total:false,grand:false},
+  {L:'Technology',da:4441.56,df:5446.15,db:6524.0,dpy:4378.31,ya:55950.70,sec:false,pct:false,total:false,grand:false},
+  {L:'Tech Consulting',da:0,df:0,db:0,dpy:0,ya:0,sec:false,pct:false,total:false,grand:false},
+  {L:'Title Expense',da:0,df:0,db:0,dpy:0,ya:0,sec:false,pct:false,total:false,grand:false},
+  {L:'Total Non-Labor Expense',da:14509.42,df:0,db:11950.65,dpy:18790.10,ya:167293.54,sec:false,pct:false,total:true,grand:false},
+  {L:'Total OPEX',da:83039.99,df:0,db:79224.40,dpy:60861.29,ya:847171.93,sec:false,pct:false,total:true,grand:false},
+  {L:'Operating Income',da:43680.38,df:0,db:44736.75,dpy:16671.09,ya:280380.81,sec:false,pct:false,total:false,grand:true},
+  {L:'Operating Margin',da:0.2431,df:0,db:0.2116,dpy:0.1223,ya:0.1762,sec:false,pct:true,total:false,grand:false},
+  {L:'Investment Gain (Loss), Net',da:-2057.85,df:-2578.09,db:-6971.97,dpy:-2031.26,ya:-55076.71,sec:false,pct:false,total:false,grand:false},
+  {L:'Loan Loss Provision Expense',da:-79260.26,df:0,db:0,dpy:0,ya:-73747.60,sec:false,pct:false,total:false,grand:false},
+  {L:'Other Income / (Expense)',da:-67441.48,df:-2492.63,db:-6685.71,dpy:-2421.94,ya:-127076.12,sec:false,pct:false,total:false,grand:false},
+  {L:'Net Income',da:-36712.81,df:0,db:28425.59,dpy:14057.22,ya:161089.23,sec:false,pct:false,total:false,grand:true},
+  {L:'Revenue',da:0,df:0,db:0,dpy:0,ya:0,sec:false,pct:false,total:false,grand:false},
+  {L:'COGS',da:0,df:0,db:0,dpy:0,ya:0,sec:false,pct:false,total:false,grand:false},
+  {L:'OPEX',da:0,df:0,db:0,dpy:0,ya:0,sec:false,pct:false,total:false,grand:false},
+  {L:'Other Income/(Expense) Consolidated',da:0,df:0,db:0,dpy:0,ya:0,sec:false,pct:false,total:false,grand:false},
+  {L:'KPIs',da:0,df:0,db:0,dpy:0,ya:0,sec:true,pct:false,total:false,grand:false},
+  {L:'HardMoney Loans',da:22.0,df:0,db:10.0,dpy:9.0,ya:74.7,sec:false,pct:false,total:false,grand:false},
+  {L:'HardMoney Volume',da:857728.6,df:0,db:850520.6,dpy:723655.5,ya:16782730.5,sec:false,pct:false,total:false,grand:false},
+  {L:'Marketplace Loans',da:44.0,df:0,db:37.7,dpy:43.0,ya:214.8,sec:false,pct:false,total:false,grand:false},
+  {L:'Marketplace Volume',da:4676309.8,df:0,db:9829460.38,dpy:4791889.68,ya:61401637.32,sec:false,pct:false,total:false,grand:false},
+  {L:'Marketplace Penetration',da:0.0757,df:0,db:0.1637,dpy:0.07,ya:0.0677,sec:false,pct:false,total:false,grand:false}
+];
+</script>
+
+<script>
+// ── Utilities ───────────────────────────────────────────────────────────────
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function fmt$(v){
+  if(v===null||v===undefined) return '—';
+  const n=Number(v); if(isNaN(n)) return '—';
+  const neg=n<0;
+  const s='$'+Math.abs(Math.round(n)).toLocaleString();
+  return neg?`(${s})`:s;
+}
+function fmtPct(v){
+  if(v===null||v===undefined) return '—';
+  const n=Number(v); if(isNaN(n)) return '—';
+  return (n*100).toFixed(1)+'%';
+}
+function fmtN(v){
+  if(v===null||v===undefined) return '—';
+  const n=Number(v); if(isNaN(n)) return '—';
+  return Math.round(n*10)/10+'';
+}
+function bw(a,b){
+  if(a===null||b===null||a===undefined||b===undefined) return '—';
+  return fmt$(a-b);
+}
+function bwClass(a,b,inverted){
+  if(a===null||b===null) return '';
+  const d=a-b;
+  if(d===0) return '';
+  const good = inverted ? d<0 : d>0;
+  return good?'positive':'negative';
+}
+function yoyPct(a,b){
+  if(!b) return '—';
+  return ((a/b-1)*100).toFixed(1)+'%';
+}
+function yoyClass(a,b,inverted){
+  if(!b) return '';
+  const d=a-b;
+  const good = inverted ? d<0 : d>0;
+  return d===0?'':good?'positive':'negative';
+}
+function td(val, cls=''){
+  return `<td class="${cls}">${val}</td>`;
+}
+
+// ── Tab switching ───────────────────────────────────────────────────────────
+const initializedTabs = new Set();
+function switchTab(id, btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(!initializedTabs.has(id)){
+    initializedTabs.add(id);
+    const inits = {
+      'overview':initOverview,'office-metrics':initOfficeMetrics,
+      'office-perf':initOfficePerf,'same-office':initSameOffice,
+      'market-share':initMarketShare,'titleco':initTitleco,'sbl':initSBL,
+      'consol-pl':initConsolPL,'consol-ttm':initConsolTTM,'entity-pl':initEntityPL,
+      'bshb-pl':initBSHB,'bd-pl':initBDPL,'opex-cat':initOpexCat,
+      'dept-opex':initDeptOpex,'balance-sheet':initBalanceSheet,'commentary':()=>{}
+    };
+    if(inits[id]) inits[id]();
+  }
+}
+
+// ── Chart helper ────────────────────────────────────────────────────────────
+function mkLineChart(id, label, data, color){
+  const ctx = document.getElementById(id);
+  if(!ctx) return;
+  return new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:MONTHS,
+      datasets:[{
+        label,data,borderColor:color||'#c9a84c',backgroundColor:(color||'#c9a84c')+'22',
+        borderWidth:2,pointRadius:3,fill:true,tension:0.3
+      }]
+    },
+    options:{
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{grid:{color:'#333'},ticks:{color:'#888',font:{size:10}}},
+        y:{grid:{color:'#333'},ticks:{color:'#888',font:{size:10},
+          callback:v=>label.includes('%')?v+'%':'$'+Math.round(v/1000)+'K'}}
+      }
+    }
+  });
+}
+function mkBarChart(id, label, data, color){
+  const ctx = document.getElementById(id);
+  if(!ctx) return;
+  return new Chart(ctx,{
+    type:'bar',
+    data:{labels:MONTHS,datasets:[{label,data,backgroundColor:color||'#c9a84c88',borderColor:color||'#c9a84c',borderWidth:1}]},
+    options:{
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{grid:{color:'#333'},ticks:{color:'#888',font:{size:10}}},
+        y:{grid:{color:'#333'},ticks:{color:'#888',font:{size:10},
+          callback:v=>typeof v==='number'&&v>1000?v.toLocaleString():v}}
+      }
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════
+// OVERVIEW
+// ══════════════════════════════════════════════════════════════════
+function initOverview(){
+  const g = document.getElementById('kpiGrid');
+  const kpis = [
+    {label:'Total Revenue',val:fmt$(KPI.rev),sub:[{l:'Budget',v:fmt$(KPI.rev_bud),cls:bwClass(KPI.rev,KPI.rev_bud)},{l:'PY',v:fmt$(KPI.rev_py),cls:yoyClass(KPI.rev,KPI.rev_py)}]},
+    {label:'Gross Margin',val:fmtPct(KPI.gm),sub:[{l:'Budget',v:fmtPct(KPI.gm_bud),cls:bwClass(KPI.gm,KPI.gm_bud)},{l:'PY',v:fmtPct(KPI.gm_py),cls:yoyClass(KPI.gm,KPI.gm_py)}]},
+    {label:'EBITDA',val:fmt$(KPI.ebitda),sub:[{l:'Budget',v:fmt$(KPI.ebitda_bud),cls:bwClass(KPI.ebitda,KPI.ebitda_bud)},{l:'PY',v:fmt$(KPI.ebitda_py),cls:yoyClass(KPI.ebitda,KPI.ebitda_py)},{l:'Margin',v:fmtPct(KPI.ebitda_pct)}]},
+    {label:'Commission Income',val:fmt$(KPI.comm),sub:[{l:'Budget',v:fmt$(KPI.comm_bud),cls:bwClass(KPI.comm,KPI.comm_bud)},{l:'PY',v:fmt$(KPI.comm_py),cls:yoyClass(KPI.comm,KPI.comm_py)}]},
+    {label:'Monthly Closings',val:KPI.closings.toLocaleString(),sub:[{l:'Budget',v:KPI.cls_bud.toLocaleString(),cls:bwClass(KPI.closings,KPI.cls_bud)},{l:'PY',v:KPI.cls_py.toLocaleString(),cls:yoyClass(KPI.closings,KPI.cls_py)}]},
+    {label:'Avg $/Deal (Spread)',val:fmt$(KPI.avg_deal),sub:[{l:'Budget',v:fmt$(KPI.deal_bud),cls:bwClass(KPI.avg_deal,KPI.deal_bud)},{l:'PY',v:fmt$(KPI.deal_py),cls:yoyClass(KPI.avg_deal,KPI.deal_py)}]},
+    {label:'AL Originations',val:KPI.sbl_loans+' loans',sub:[{l:'Vol',v:fmt$(KPI.sbl_vol)},{l:'Budget Loans',v:KPI.sbl_loans_bud.toLocaleString(),cls:bwClass(KPI.sbl_loans,KPI.sbl_loans_bud)},{l:'PY',v:KPI.sbl_loans_py.toLocaleString(),cls:yoyClass(KPI.sbl_loans,KPI.sbl_loans_py)}]},
+    {label:'Atlas Title Deals',val:KPI.spar_deals.toLocaleString(),sub:[{l:'Budget',v:KPI.spar_bud.toLocaleString(),cls:bwClass(KPI.spar_deals,KPI.spar_bud)},{l:'PY',v:KPI.spar_py.toLocaleString(),cls:yoyClass(KPI.spar_deals,KPI.spar_py)}]},
+    {label:'Corp Headcount (W2)',val:KPI.corp_hc.toLocaleString(),sub:[{l:'Budget',v:KPI.corp_hc_bud.toLocaleString()},{l:'PY',v:KPI.corp_hc_py.toLocaleString()}]},
+    {label:'Contractor HC (1099)',val:KPI.cont_hc.toLocaleString(),sub:[{l:'PY',v:KPI.cont_hc_py.toLocaleString(),cls:yoyClass(KPI.cont_hc,KPI.cont_hc_py)}]},
+  ];
+  g.innerHTML = kpis.map(k=>`
+    <div class="kpi-card">
+      <div class="label">${k.label}</div>
+      <div class="value">${k.val}</div>
+      <div class="sub">${k.sub.map(s=>`<div class="sub-item"><span class="slabel">${s.l}: </span><span class="sval ${s.cls||''}">${s.v}</span></div>`).join('')}</div>
+    </div>`).join('');
+  mkLineChart('ovRevChart','Revenue',TTM_REV,'#c9a84c');
+  mkLineChart('ovOIChart','Operating Income',TTM_OI,'#4caf50');
+  mkLineChart('ovEBChart','EBITDA',TTM_EBITDA,'#2196F3');
+  mkBarChart('ovClsChart','Closings',TTM_CLOSINGS,'#c9a84c');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// OFFICE METRICS TTM
+// ══════════════════════════════════════════════════════════════════
+let omMetric = 'deals';
+function setOMMetric(m, btn){
+  omMetric=m;
+  document.querySelectorAll('#tab-office-metrics .toggle-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderOMTable();
+}
+function initOfficeMetrics(){
+  renderOMTable();
+}
+function renderOMTable(){
+  const q = (document.getElementById('omSearch')||{}).value||'';
+  const data = omMetric==='deals' ? TTM_DEAL_DATA : TTM_DOLLAR_DATA;
+  const fmtVal = omMetric==='deals' ? (v=>fmtN(v)) : (v=>fmt$(v));
+  // Header
+  document.getElementById('omHead').innerHTML =
+    '<th>Office</th>'+MONTHS.map(m=>`<th>${m}</th>`).join('')+'<th>TTM</th>';
+  // Rows
+  let html='';
+  TTM_DEAL_OFFS.forEach((name,i)=>{
+    if(q && !name.toLowerCase().includes(q.toLowerCase())) return;
+    const row = data[i];
+    const ttm = row[12];
+    html += `<tr><td>${name}</td>`+
+      row.slice(0,12).map(v=>`<td>${fmtVal(v)}</td>`).join('')+
+      `<td style="font-weight:600;color:#c9a84c">${fmtVal(ttm)}</td></tr>`;
+  });
+  document.getElementById('omBody').innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// OFFICE FINANCIAL PERFORMANCE
+// ══════════════════════════════════════════════════════════════════
+let opAlloc='incl', opPeriod='dec', opSort={col:'r',asc:false};
+function setOPAlloc(a,btn){
+  opAlloc=a;
+  document.querySelectorAll('#tab-office-perf .toggle-btn').slice(0,2).forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderOPTable();
+}
+function setOPPeriod(p,btn){
+  opPeriod=p;
+  // toggle buttons in second group
+  const btns = document.querySelectorAll('#tab-office-perf .toggle-btn');
+  btns[2].classList.remove('active'); btns[3].classList.remove('active');
+  if(btn) btn.classList.add('active');
+  renderOPTable();
+}
+function sortOP(col){
+  if(opSort.col===col) opSort.asc=!opSort.asc;
+  else {opSort.col=col; opSort.asc=false;}
+  renderOPTable();
+}
+function initOfficePerf(){ renderOPTable(); }
+function renderOPTable(){
+  const src = opAlloc==='incl' ? OM_INCL : OM_EXCL;
+  const q = (document.getElementById('opSearch')||{}).value||'';
+  const useDec = opPeriod==='dec';
+  let rows = src.map(o=>({
+    n:o.n,
+    r:  useDec?o.dr:o.yr,
+    oi: useDec?o.do_:o.yo,
+    m:  useDec?o.dm:o.ym
+  })).filter(o=>!q||o.n.toLowerCase().includes(q.toLowerCase()));
+  rows.sort((a,b)=>{
+    const av=a[opSort.col]||0, bv=b[opSort.col]||0;
+    return opSort.asc ? av-bv : bv-av;
+  });
+  document.getElementById('opBody').innerHTML = rows.map(o=>{
+    const mc = o.m>0?'positive':o.m<0?'negative':'neutral';
+    const oic = o.oi>0?'positive':o.oi<0?'negative':'';
+    return `<tr>
+      <td>${o.n}</td>
+      <td>${fmt$(o.r)}</td>
+      <td class="${oic}">${fmt$(o.oi)}</td>
+      <td class="${mc}">${fmtPct(o.m)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SAME OFFICE SALES
+// ══════════════════════════════════════════════════════════════════
+function initSameOffice(){
+  document.getElementById('sosGrid').innerHTML = [
+    {l:'Dec Closings',v:fmtN(SOS.count_cy),sub:[{l:'PY',v:fmtN(SOS.count_py)},{l:'YoY',v:fmtPct(SOS.count_yoy),cls:SOS.count_yoy>=0?'positive':'negative'}]},
+    {l:'Dec $/Deal',v:fmt$(SOS.deal_cy),sub:[{l:'PY',v:fmt$(SOS.deal_py)},{l:'YoY',v:fmtPct(SOS.deal_yoy),cls:SOS.deal_yoy>=0?'positive':'negative'}]},
+    {l:'Dec Volume',v:fmt$(SOS.vol_cy),sub:[{l:'PY',v:fmt$(SOS.vol_py)},{l:'YoY',v:fmtPct(SOS.vol_yoy),cls:SOS.vol_yoy>=0?'positive':'negative'}]},
+  ].map(k=>`<div class="kpi-card"><div class="label">${k.l}</div><div class="value">${k.v}</div><div class="sub">${k.sub.map(s=>`<div class="sub-item"><span class="slabel">${s.l}: </span><span class="sval ${s.cls||''}">${s.v}</span></div>`).join('')}</div></div>`).join('');
+  document.getElementById('sosTTMGrid').innerHTML = [
+    {l:'TTM Closings',v:fmtN(SOS.ttm_count_cy),sub:[{l:'PY',v:fmtN(SOS.ttm_count_py)},{l:'YoY',v:fmtPct(SOS.ttm_count_yoy),cls:SOS.ttm_count_yoy>=0?'positive':'negative'}]},
+    {l:'TTM $/Deal',v:fmt$(SOS.ttm_deal_cy),sub:[{l:'PY',v:fmt$(SOS.ttm_deal_py)},{l:'YoY',v:fmtPct(SOS.ttm_deal_yoy),cls:SOS.ttm_deal_yoy>=0?'positive':'negative'}]},
+    {l:'TTM Volume',v:fmt$(SOS.ttm_vol_cy),sub:[{l:'PY',v:fmt$(SOS.ttm_vol_py)},{l:'YoY',v:fmtPct(SOS.ttm_vol_yoy),cls:SOS.ttm_vol_yoy>=0?'positive':'negative'}]},
+  ].map(k=>`<div class="kpi-card"><div class="label">${k.l}</div><div class="value">${k.v}</div><div class="sub">${k.sub.map(s=>`<div class="sub-item"><span class="slabel">${s.l}: </span><span class="sval ${s.cls||''}">${s.v}</span></div>`).join('')}</div></div>`).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// MARKET SHARE
+// ══════════════════════════════════════════════════════════════════
+function initMarketShare(){
+  document.getElementById('msBody').innerHTML = MS_DATA.map(r=>{
+    const rowCls = r.isTotal ? 'pl-grand' : '';
+    const varCls = r.variance>=0?'positive':'negative';
+    return `<tr class="${rowCls}">
+      <td>${r.market}</td>
+      ${r.monthly.slice(0,12).map(v=>`<td>${fmtPct(v)}</td>`).join('')}
+      <td style="font-weight:600">${fmtPct(r.ttm)}</td>
+      <td>${fmtPct(r.t3m)}</td>
+      <td class="${varCls}">${r.variance>=0?'+':''}${(r.variance*100).toFixed(2)}%</td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// TITLECO TITLE — charts + P&L from SPAR_PL (Summary Simplified)
+// ══════════════════════════════════════════════════════════════════
+const MOS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+let titlecoPer='dec';
+function setTitlecoPeriod(p,btn){
+  titlecoPer=p;
+  document.querySelectorAll('#tab-titleco .toggle-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderTitlecoTable();
+}
+function initTitleco(){
+  // Revenue bar chart
+  new Chart(document.getElementById('titlecoRevChart'),{type:'bar',data:{labels:MOS,datasets:[
+    {label:'Actual',data:SPAR_REV_MON,backgroundColor:'rgba(201,168,76,0.75)',borderColor:'#c9a84c',borderWidth:1},
+    {label:'Budget',data:SPAR_REV_BUD,type:'line',borderColor:'#4caf50',backgroundColor:'transparent',borderWidth:2,pointRadius:3,tension:0.3}
+  ]},options:{responsive:true,plugins:{legend:{labels:{color:'#ccc',font:{size:11}}}},scales:{x:{ticks:{color:'#888'}},y:{ticks:{color:'#888',callback:v=>v>=1000?'$'+(v/1000).toFixed(0)+'K':'$'+v}}}}});
+  // Titles funded bar chart
+  new Chart(document.getElementById('titlecoTitlesChart'),{type:'bar',data:{labels:MOS,datasets:[
+    {label:'TX Titles',data:SPAR_TX_TITLES,backgroundColor:'rgba(201,168,76,0.8)',borderColor:'#c9a84c',borderWidth:1},
+    {label:'OK Titles',data:SPAR_OK_TITLES,backgroundColor:'rgba(100,149,237,0.7)',borderColor:'#6495ed',borderWidth:1}
+  ]},options:{responsive:true,plugins:{legend:{labels:{color:'#ccc',font:{size:11}}}},scales:{x:{stacked:true,ticks:{color:'#888'}},y:{stacked:true,ticks:{color:'#888'}}}}});
+  // Net Income line chart
+  new Chart(document.getElementById('titlecoNIChart'),{type:'line',data:{labels:MOS,datasets:[
+    {label:'Net Income',data:SPAR_NI_MON,borderColor:'#c9a84c',backgroundColor:'rgba(201,168,76,0.15)',fill:true,borderWidth:2,pointRadius:4,tension:0.3}
+  ]},options:{responsive:true,plugins:{legend:{labels:{color:'#ccc',font:{size:11}}}},scales:{x:{ticks:{color:'#888'}},y:{ticks:{color:'#888',callback:v=>v>=1000?'$'+(v/1000).toFixed(0)+'K':'$'+v}}}}});
+  // TX Penetration line chart
+  new Chart(document.getElementById('titlecoPenetChart'),{type:'line',data:{labels:MOS,datasets:[
+    {label:'TX Penetration',data:SPAR_TX_PENET.map(v=>+(v*100).toFixed(1)),borderColor:'#c9a84c',backgroundColor:'transparent',borderWidth:2,pointRadius:4,tension:0.3},
+    {label:'100% Target',data:MOS.map(()=>100),borderColor:'#4caf50',backgroundColor:'transparent',borderWidth:2,borderDash:[6,3],pointRadius:0}
+  ]},options:{responsive:true,plugins:{legend:{labels:{color:'#ccc',font:{size:11}}}},scales:{x:{ticks:{color:'#888'}},y:{ticks:{color:'#888',callback:v=>v+'%'}}}}});
+  renderTitlecoTable();
+}
+const SPAR_SKIP = new Set(['Total Title Check','TX Title Funded % Check','OK Title Funded % Check','Revenue','COGS','OPEX']);
+// Smart KPI formatter: detects pct / volume / count by label
+function kpiType(label){
+  const L=(label||'').toLowerCase();
+  if(L.includes('%')||L.includes('penetration')) return 'pct';
+  if(L.includes('volume')) return 'dollar';
+  return 'count';
+}
+function fmtKPI(v,label){
+  if(v===null||v===undefined) return '—';
+  const n=Number(v); if(isNaN(n)) return '—';
+  const t=kpiType(label);
+  if(t==='pct') return fmtPct(n);
+  if(t==='dollar') return fmt$(n);
+  return Math.round(n).toLocaleString();
+}
+function bwKPI(a,b,label){
+  const t=kpiType(label);
+  if(t==='pct') return ((a-b)*100).toFixed(1)+'pp';
+  if(t==='dollar') return fmt$(a-b);
+  const d=Math.round(a-b); return (d>=0?'+':'')+d.toLocaleString();
+}
+function renderTitlecoTable(){
+  const useDec = titlecoPer==='dec';
+  const cols = 5;
+  if(useDec){
+    document.getElementById('titlecoHead').innerHTML = '<th>Line Item</th><th>Dec Actual</th><th>Dec Budget</th><th>Dec B/(W)</th><th>Dec vs PY</th>';
+  } else {
+    document.getElementById('titlecoHead').innerHTML = '<th>Line Item</th><th>YTD Actual</th><th>YTD Budget</th><th>YTD B/(W)</th><th>YTD vs PY</th>';
+  }
+  let inKPI=false;
+  document.getElementById('titlecoBody').innerHTML = SPAR_PL.map(r=>{
+    if(SPAR_SKIP.has(r.L)) return '';
+    if(r.L === 'KPIs'){ inKPI=true; return `
+      <tr><td colspan="${cols}" style="padding:0"><div style="margin:18px 0 6px;border-top:2px solid #c9a84c;"></div></td></tr>
+      <tr class="pl-row-header"><td colspan="${cols}" style="color:#c9a84c;letter-spacing:.08em">KPIs</td></tr>`; }
+    if(r.sec) return `<tr class="pl-row-header"><td colspan="${cols}">${r.L}</td></tr>`;
+    const rowCls = r.grand?'pl-grand':r.total?'pl-total':'';
+    const a = useDec ? r.da : r.ya;
+    const b = useDec ? r.db : r.yb;
+    const py = useDec ? r.dpy : r.ypy;
+    if(inKPI){
+      const av=fmtKPI(a,r.L), bv=fmtKPI(b,r.L);
+      const bwv=bwKPI(a,b,r.L), bwCls=(a-b)>=0?'positive':'negative';
+      const pyv=bwKPI(a,py,r.L), pyCls=(a-py)>=0?'positive':'negative';
+      return `<tr class="${rowCls}">
+        <td class="pl-indent">${r.L}</td>
+        <td>${av}</td><td style="color:#888">${bv}</td>
+        <td class="${bwCls}">${bwv}</td><td class="${pyCls}">${pyv}</td>
+      </tr>`;
+    }
+    const fmt = v => r.pct ? (v*100).toFixed(1)+'%' : fmt$(v);
+    const bwv = r.pct ? ((a-b)*100).toFixed(1)+'pp' : fmt$(a-b);
+    const bwCls = (a-b)>=0?'positive':'negative';
+    const pyv = r.pct ? ((a-py)*100).toFixed(1)+'pp' : fmt$(a-py);
+    const pyCls = (a-py)>=0?'positive':'negative';
+    return `<tr class="${rowCls}">
+      <td class="pl-indent">${r.L}</td>
+      <td>${fmt(a)}</td>
+      <td style="color:#888">${fmt(b)}</td>
+      <td class="${bwCls}">${bwv}</td>
+      <td class="${pyCls}">${pyv}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// Atlas Lending — charts + P&L from SBL_PL (Summary Simplified)
+// ══════════════════════════════════════════════════════════════════
+let sblPer='dec';
+function setSBLPeriod(p,btn){
+  sblPer=p;
+  document.querySelectorAll('#tab-sbl .toggle-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderSBLTable();
+}
+function initSBL(){
+  // Revenue bar chart
+  new Chart(document.getElementById('sblRevChart'),{type:'bar',data:{labels:MOS,datasets:[
+    {label:'Actual',data:SBL_REV_MON,backgroundColor:'rgba(201,168,76,0.75)',borderColor:'#c9a84c',borderWidth:1},
+    {label:'Budget',data:SBL_REV_BUD,type:'line',borderColor:'#4169e1',backgroundColor:'transparent',borderWidth:2,pointRadius:3,tension:0.3}
+  ]},options:{responsive:true,plugins:{legend:{labels:{color:'#ccc',font:{size:11}}}},scales:{x:{ticks:{color:'#888'}},y:{ticks:{color:'#888',callback:v=>v>=1000?'$'+(v/1000).toFixed(0)+'K':'$'+v}}}}});
+  // Stacked loans bar chart (Hard Money + Marketplace)
+  new Chart(document.getElementById('sblLoansChart'),{type:'bar',data:{labels:MOS,datasets:[
+    {label:'Hard Money',data:SBL_HM_LOANS,backgroundColor:'rgba(201,168,76,0.8)',borderColor:'#c9a84c',borderWidth:1},
+    {label:'Marketplace',data:SBL_MP_LOANS,backgroundColor:'rgba(100,149,237,0.7)',borderColor:'#6495ed',borderWidth:1}
+  ]},options:{responsive:true,plugins:{legend:{labels:{color:'#ccc',font:{size:11}}}},scales:{x:{stacked:true,ticks:{color:'#888'}},y:{stacked:true,ticks:{color:'#888'}}}}});
+  // Net Income line chart
+  new Chart(document.getElementById('sblNIChart'),{type:'line',data:{labels:MOS,datasets:[
+    {label:'Net Income',data:SBL_OI_MON,borderColor:'#c9a84c',backgroundColor:'rgba(201,168,76,0.15)',fill:true,borderWidth:2,pointRadius:4,tension:0.3}
+  ]},options:{responsive:true,plugins:{legend:{labels:{color:'#ccc',font:{size:11}}}},scales:{x:{ticks:{color:'#888'}},y:{ticks:{color:'#888',callback:v=>v>=1000?'$'+(v/1000).toFixed(0)+'K':'$'+v}}}}});
+  // Marketplace penetration line chart
+  new Chart(document.getElementById('sblPenetChart'),{type:'line',data:{labels:MOS,datasets:[
+    {label:'MP Penetration',data:SBL_MP_PENET.map(v=>+(v*100).toFixed(2)),borderColor:'#c9a84c',backgroundColor:'transparent',borderWidth:2,pointRadius:4,tension:0.3},
+    {label:'Budget',data:SBL_MP_PENET_BUD.map(v=>+(v*100).toFixed(2)),borderColor:'#4169e1',backgroundColor:'transparent',borderWidth:2,borderDash:[6,3],pointRadius:0}
+  ]},options:{responsive:true,plugins:{legend:{labels:{color:'#ccc',font:{size:11}}}},scales:{x:{ticks:{color:'#888'}},y:{ticks:{color:'#888',callback:v=>v.toFixed(1)+'%'}}}}});
+  renderSBLTable();
+}
+const SBL_SKIP = new Set(['Revenue','COGS','OPEX','Other Income/(Expense) Consolidated']);
+function renderSBLTable(){
+  const useDec = sblPer==='dec';
+  const cols = useDec ? 5 : 2;
+  if(useDec){
+    document.getElementById('sblHead').innerHTML = '<th>Line Item</th><th>Dec Actual</th><th>Dec Forecast</th><th>Dec Budget</th><th>Dec vs PY</th>';
+  } else {
+    document.getElementById('sblHead').innerHTML = '<th>Line Item</th><th>YTD Actual</th>';
+  }
+  let inKPI=false;
+  document.getElementById('sblBody').innerHTML = SBL_PL.map(r=>{
+    if(SBL_SKIP.has(r.L)) return '';
+    if(r.L === 'KPIs'){ inKPI=true; return `
+      <tr><td colspan="${cols}" style="padding:0"><div style="margin:18px 0 6px;border-top:2px solid #c9a84c;"></div></td></tr>
+      <tr class="pl-row-header"><td colspan="${cols}" style="color:#c9a84c;letter-spacing:.08em">KPIs</td></tr>`; }
+    if(r.sec) return `<tr class="pl-row-header"><td colspan="${cols}">${r.L}</td></tr>`;
+    const rowCls = r.grand?'pl-grand':r.total?'pl-total':'';
+    if(inKPI){
+      if(useDec){
+        const av=fmtKPI(r.da,r.L), bv=fmtKPI(r.db,r.L);
+        const pyv=bwKPI(r.da,r.dpy,r.L), pyCls=(r.da-r.dpy)>=0?'positive':'negative';
+        return `<tr class="${rowCls}">
+          <td class="pl-indent">${r.L}</td>
+          <td>${av}</td><td style="color:#888">—</td><td style="color:#888">${bv}</td>
+          <td class="${pyCls}">${pyv}</td>
+        </tr>`;
+      } else {
+        return `<tr class="${rowCls}">
+          <td class="pl-indent">${r.L}</td>
+          <td>${fmtKPI(r.ya,r.L)}</td>
+        </tr>`;
+      }
+    }
+    const fmt = v => r.pct ? (v*100).toFixed(1)+'%' : fmt$(v);
+    if(useDec){
+      const pyDiff = r.pct ? ((r.da-r.dpy)*100).toFixed(1)+'pp' : fmt$(r.da-r.dpy);
+      const pyCls = (r.da-r.dpy)>=0?'positive':'negative';
+      return `<tr class="${rowCls}">
+        <td class="pl-indent">${r.L}</td>
+        <td>${fmt(r.da)}</td>
+        <td style="color:#888">${fmt(r.df)}</td>
+        <td style="color:#888">${fmt(r.db)}</td>
+        <td class="${pyCls}">${pyDiff}</td>
+      </tr>`;
+    } else {
+      return `<tr class="${rowCls}">
+        <td class="pl-indent">${r.L}</td>
+        <td>${fmt(r.ya)}</td>
+      </tr>`;
+    }
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CONSOLIDATED P&L
+// ══════════════════════════════════════════════════════════════════
+function initConsolPL(){
+  document.getElementById('consolBody').innerHTML = CPL_ROWS.map(r=>{
+    if(r.sec) return `<tr class="pl-row-header"><td colspan="9">${r.L}</td></tr>`;
+    const rowCls = r.grand?'pl-grand':r.total?'pl-total':'';
+    const dBW = r.pct ? ((r.da-r.db)*100).toFixed(1)+'%' : fmt$(r.da-r.db);
+    const dPY = r.pct ? yoyPct(r.da,r.dpy) : fmt$(r.da-r.dpy);
+    const yBW = r.pct ? ((r.ya-r.yb)*100).toFixed(1)+'%' : fmt$(r.ya-r.yb);
+    const yPY = r.pct ? yoyPct(r.ya,r.ypy) : fmt$(r.ya-r.ypy);
+    const dav = r.pct ? fmtPct(r.da) : fmt$(r.da);
+    const dbv = r.pct ? fmtPct(r.db) : fmt$(r.db);
+    const yav = r.pct ? fmtPct(r.ya) : fmt$(r.ya);
+    const ybv = r.pct ? fmtPct(r.yb) : fmt$(r.yb);
+    const dBWcls = r.pct ? bwClass(r.da,r.db) : bwClass(r.da,r.db);
+    const yBWcls = r.pct ? bwClass(r.ya,r.yb) : bwClass(r.ya,r.yb);
+    return `<tr class="${rowCls}">
+      <td class="pl-indent">${r.L}</td>
+      <td>${dav}</td><td style="color:#888">${dbv}</td>
+      <td class="${dBWcls}">${dBW}</td><td class="${yoyClass(r.da,r.dpy)}">${dPY}</td>
+      <td>${yav}</td><td style="color:#888">${ybv}</td>
+      <td class="${yBWcls}">${yBW}</td><td class="${yoyClass(r.ya,r.ypy)}">${yPY}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CONSOL TTM P&L
+// ══════════════════════════════════════════════════════════════════
+function initConsolTTM(){
+  document.getElementById('ttmBody').innerHTML = TTM_PL_ROWS.map(r=>{
+    const rowCls = r.grand?'pl-grand':r.total?'pl-total':'';
+    return `<tr class="${rowCls}">
+      <td class="pl-indent">${r.L}</td>
+      ${r.vals.slice(0,12).map(v=>r.pct?`<td>${fmtPct(v)}</td>`:`<td>${fmt$(v)}</td>`).join('')}
+      <td style="font-weight:600">${r.pct?fmtPct(r.vals[12]):fmt$(r.vals[12])}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// P&L BY ENTITY
+// ══════════════════════════════════════════════════════════════════
+let entPer='dec';
+function setEntPeriod(p,btn){
+  entPer=p;
+  document.querySelectorAll('#tab-entity-pl .toggle-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderEntTable();
+}
+function initEntityPL(){
+  document.getElementById('entHead').innerHTML =
+    '<th>Line Item</th>'+ENT_NAMES.map(n=>`<th>${n}</th>`).join('');
+  renderEntTable();
+}
+function renderEntTable(){
+  const useDec=entPer==='dec';
+  document.getElementById('entHead').innerHTML =
+    '<th>Line Item</th>'+ENT_NAMES.map(n=>`<th>${n}</th>`).join('');
+  document.getElementById('entBody').innerHTML = ENT_ROWS.map(r=>{
+    if(r.sec) return `<tr class="pl-row-header"><td colspan="${ENT_NAMES.length+1}">${r.L}</td></tr>`;
+    const rowCls = r.grand?'pl-grand':r.total?'pl-total':'';
+    const vals = useDec?r.dv:r.yv;
+    return `<tr class="${rowCls}">
+      <td class="pl-indent">${r.L}</td>
+      ${vals.map(v=>r.pct?`<td>${fmtPct(v)}</td>`:`<td>${fmt$(v)}</td>`).join('')}
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// BuildCo PRO FORMA
+// ══════════════════════════════════════════════════════════════════
+let bshbPer='dec';
+function setBSHBPeriod(p,btn){
+  bshbPer=p;
+  document.querySelectorAll('#tab-bshb-pl .toggle-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderBSHBTable();
+}
+function initBSHB(){
+  renderBSHBTable();
+}
+function renderBSHBTable(){
+  const useDec=bshbPer==='dec';
+  document.getElementById('bshbHead').innerHTML=`<th>Line Item</th><th>${useDec?'December':'YTD'}</th>`;
+  document.getElementById('bshbBody').innerHTML = BSHB_ROWS.map(r=>{
+    if(r.L==='COGS Detail') return `<tr class="pl-row-header"><td colspan="2">COGS Detail</td></tr>`;
+    const v = useDec?r.da:r.ya;
+    if(v===null) return '';
+    const rowCls = r.grand?'pl-grand':r.total?'pl-total':'';
+    const valStr = r.pct?fmtPct(v):fmt$(v);
+    return `<tr class="${rowCls}"><td class="pl-indent">${r.L}</td><td>${valStr}</td></tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// BUSINESS DEV P&L
+// ══════════════════════════════════════════════════════════════════
+function initBDPL(){
+  // BD_ROWS contains both P&L rows and deal count rows in one array.
+  // Split: rows with da > 100 are dollar rows; rows with da <= 100 are deal counts.
+  // More reliably: the last 5 rows (deal counts) have da values < 100.
+  const plRows = BD_ROWS.filter(r => r.da === null || r.da > 100 || r.L === 'Total OPEX' || r.L.includes('Income') || r.L.includes('Margin') || r.L.includes('Commissions') || r.L.includes('Revenue') || r.L.includes('Mail') && r.da > 100 || r.L.includes('Expense'));
+  // Easier split: find first row where all dollar values are small (deal counts use values < 200)
+  let splitIdx = BD_ROWS.length;
+  for(let i=BD_ROWS.length-1;i>=0;i--){
+    if(BD_ROWS[i].da > 200 || BD_ROWS[i].dpy > 200) { splitIdx=i+1; break; }
+  }
+  const bdPL = BD_ROWS.slice(0, splitIdx);
+  const bdDeals = BD_ROWS.slice(splitIdx);
+
+  const renderBDRow = (r, isMoney) => {
+    const rowCls = r.grand?'pl-grand':r.total?'pl-total':'';
+    const dpct = r.dpct===null?'—':(r.dpct*100).toFixed(1)+'%';
+    const ypct = r.ypct===null?'—':(r.ypct*100).toFixed(1)+'%';
+    const dpc = r.dpct===null?'':r.dpct>=0?'positive':'negative';
+    const ypc = r.ypct===null?'':r.ypct>=0?'positive':'negative';
+    const fv = isMoney ? fmt$ : fmtN;
+    return `<tr class="${rowCls}">
+      <td>${r.L}</td>
+      <td>${fv(r.da)}</td><td>${fv(r.dpy)}</td><td class="${dpc}">${dpct}</td>
+      <td>${fv(r.ya)}</td><td>${fv(r.ypy)}</td><td class="${ypc}">${ypct}</td>
+    </tr>`;
+  };
+  document.getElementById('bdBody').innerHTML = bdPL.map(r=>renderBDRow(r,true)).join('');
+  document.getElementById('bdDealsBody').innerHTML = bdDeals.map(r=>renderBDRow(r,false)).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// OPEX BY CATEGORY
+// ══════════════════════════════════════════════════════════════════
+let opexCatPer='dec';
+function setOpexCatPeriod(p,btn){
+  opexCatPer=p;
+  document.querySelectorAll('#tab-opex-cat .toggle-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderOpexCatTable();
+}
+function initOpexCat(){
+  renderOpexCatTable();
+}
+function renderOpexCatTable(){
+  const src = opexCatPer==='dec' ? OPEX_DEC : OPEX_YTD;
+  // Header
+  document.getElementById('opexCatHead').innerHTML =
+    '<th>Category</th>'+OPEX_DEPT_NAMES.map(n=>`<th>${n}</th>`).join('')+'<th>Total</th>';
+  // Body
+  document.getElementById('opexCatBody').innerHTML = src.map(r=>{
+    const rowCls = r.is_total?'pl-total':'';
+    const total = r.vals[r.vals.length-1];
+    return `<tr class="${rowCls}">
+      <td>${r.cat}</td>
+      ${r.vals.slice(0,-1).map(v=>`<td>${fmt$(v)}</td>`).join('')}
+      <td style="font-weight:600">${fmt$(total)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// DEPARTMENT OPEX
+// ══════════════════════════════════════════════════════════════════
+function initDeptOpex(){
+  const sel = document.getElementById('deptSelect');
+  sel.innerHTML = Object.keys(DEPT_DATA).map(k=>`<option value="${k}">${k}</option>`).join('');
+  renderDeptOpex(sel.value);
+}
+function renderDeptOpex(dept){
+  const d = DEPT_DATA[dept];
+  if(!d) return;
+  document.getElementById('deptBody').innerHTML = d.rows.map(r=>{
+    const rowCls = r.total?'pl-total':'';
+    const dbw = r.db?fmt$(r.da-r.db):'—';
+    const dbwc = r.db?bwClass(r.da,r.db,r.L.toLowerCase().includes('expense')||r.L.toLowerCase().includes('labor')):'';
+    const ybw = r.yb?fmt$(r.ya-r.yb):'—';
+    const ybwc = r.yb?bwClass(r.ya,r.yb,r.L.toLowerCase().includes('expense')||r.L.toLowerCase().includes('labor')):'';
+    return `<tr class="${rowCls}">
+      <td>${r.L}</td>
+      <td>${fmt$(r.da)}</td><td style="color:#888">${r.db?fmt$(r.db):'—'}</td><td class="${dbwc}">${dbw}</td>
+      <td>${fmt$(r.ya)}</td><td style="color:#888">${r.yb?fmt$(r.yb):'—'}</td><td class="${ybwc}">${ybw}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// BALANCE SHEET & CASH FLOW
+// ══════════════════════════════════════════════════════════════════
+function initBalanceSheet(){
+  const bsRows = [...BS_ASSETS, ...BS_LE];
+  document.getElementById('bsBody').innerHTML = bsRows.map(r=>{
+    if(r.hdr) return `<tr class="pl-row-header"><td colspan="4">${r.L}</td></tr>`;
+    const rowCls = r.grand?'pl-grand':r.total?'pl-total':'';
+    const chg = r.d25-r.d24;
+    const chgCls = chg>=0?'positive':'negative';
+    return `<tr class="${rowCls}">
+      <td class="pl-indent">${r.L}</td>
+      <td>${fmt$(r.d24)}</td>
+      <td>${fmt$(r.d25)}</td>
+      <td class="${chgCls}">${fmt$(chg)}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('cfBody').innerHTML = CF_ROWS.map(r=>{
+    if(r.hdr) return `<tr class="pl-row-header"><td colspan="3">${r.L}</td></tr>`;
+    const rowCls = r.grand?'pl-grand':r.total?'pl-total':'';
+    return `<tr class="${rowCls}">
+      <td class="pl-indent">${r.L}</td>
+      <td>${fmt$(r.dec)}</td>
+      <td>${fmt$(r.ytd)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Init first tab on load ──────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded',()=>{
+  initializedTabs.add('overview');
+  initOverview();
+});
+</script>
+
+</body>
+</html>

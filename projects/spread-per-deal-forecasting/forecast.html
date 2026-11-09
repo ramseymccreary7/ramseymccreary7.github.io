@@ -1,0 +1,610 @@
+<!DOCTYPE html><html lang="en"><head>
+<script src="../../assets/badge.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spread-per-Deal Forward Forecast — Demo</title>
+<script src="../../assets/vendor/chart.umd.min.js"></script>
+<style>
+
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+       margin: 0; padding: 24px; background: #0f172a; color: #e2e8f0; }
+.header { text-align: center; margin-bottom: 8px; }
+.header h1 { font-size: 26px; color: #f8fafc; margin-bottom: 4px; }
+.header p { color: #94a3b8; font-size: 13px; margin: 2px 0; }
+.badge { display: inline-block; background: #164e63; color: #22d3ee; padding: 4px 12px; border-radius: 20px; 
+         font-size: 11px; font-weight: 600; letter-spacing: 0.5px; margin-top: 8px; }
+.kpi-row { display: flex; gap: 14px; justify-content: center; margin: 24px 0; flex-wrap: wrap; }
+.kpi { background: #1e293b; border-radius: 12px; padding: 18px 24px; text-align: center; min-width: 130px;
+       border: 1px solid #334155; }
+.kpi .val { font-size: 28px; font-weight: 700; }
+.kpi .lbl { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.8px; margin-top: 3px; }
+.cyan .val { color: #22d3ee; } .green .val { color: #34d399; } .amber .val { color: #fbbf24; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+.card { background: #1e293b; border-radius: 12px; padding: 22px; border: 1px solid #334155; }
+.card h3 { margin: 0 0 14px 0; font-size: 15px; color: #f1f5f9; }
+.card .sub { font-size: 12px; color: #64748b; margin: -10px 0 14px 0; }
+.full { grid-column: 1 / -1; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 7px 10px; background: #334155; color: #94a3b8; font-weight: 600; 
+     text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+td { padding: 7px 10px; border-bottom: 1px solid #1e293b; }
+tr:hover td { background: rgba(51,65,85,0.4); }
+.pos { color: #f87171; } .neg { color: #34d399; } .neutral { color: #94a3b8; }
+.tier-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+.t1 { background: #164e63; color: #22d3ee; } .t2 { background: #1e3a2f; color: #34d399; }
+.t3 { background: #3b2f1e; color: #fbbf24; } .t4 { background: #2d1e3b; color: #a78bfa; }
+canvas { max-height: 340px; }
+.methodology { background: #1e293b; border-left: 4px solid #3b82f6; padding: 16px 20px; border-radius: 0 8px 8px 0;
+               margin-bottom: 20px; font-size: 13px; color: #cbd5e1; line-height: 1.6; }
+.methodology strong { color: #60a5fa; }
+
+.var-section { margin-top: 0; }
+.var-table code { background: #334155; padding: 2px 6px; border-radius: 3px; font-size: 11px; color: #22d3ee; font-family: 'SF Mono', Consolas, monospace; }
+.var-table td { font-size: 12px; padding: 5px 10px; }
+.var-table th { font-size: 10px; }
+.var-table tr:nth-child(even) td { background: rgba(30,41,59,0.5); }
+
+@media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+</style></head><body>
+<div class="header">
+<h1>Atlas $/Deal — Pure Forward Forecast</h1>
+<p>FY 2025 Predicted from December 2024 Baseline &bull; Zero Concurrent 2025 Data</p>
+<span class="badge">20 MODELS &bull; 4 FEATURE TIERS &bull; RECURSIVE PREDICTION</span>
+</div>
+<div class="methodology" style="border-left-color:#34d399;margin-bottom:12px;font-size:14px;line-height:1.7">
+<strong style="color:#34d399;font-size:15px">What is this?</strong><br>
+We built a model that tries to predict Atlas's monthly $/deal for all of 2025 — using only information that was available on December 31, 2024. Think of it as standing at the end of 2024 and asking: "based on everything we know right now, what will our average spread look like each month next year?" The model learns patterns from six years of history (2019–2024) — things like how $/deal tends to behave from month to month, seasonal trends, and what macro-economic indicators (mortgage rates, housing starts, etc.) have historically correlated with our spreads. It then projects those patterns forward for 12 months. Critically, it uses <em>zero</em> actual 2025 data — no real deal results, no agent headcounts, no KPIs from the year being forecasted. The best model — a <strong style="color:#22d3ee">Random Forest</strong> — landed within <strong style="color:#22d3ee">$557/month</strong> of the actual result on average (about a 4% error rate), and had almost no directional bias — meaning it didn't systematically over- or under-predict. What's interesting is that this winning model uses the <em>simplest</em> set of inputs: just our own recent $/deal history (what happened last month, the last 3/6/12-month averages, and whether the trend is moving up or down) plus the time of year (seasonality). It doesn't need mortgage rates, housing starts, or any macro data — our $/deal's own momentum and seasonal rhythm are the strongest predictors. A Random Forest works by building hundreds of decision trees, each looking at the data slightly differently, and then averaging their answers — which makes it good at capturing non-linear patterns without overfitting. We tested 20 different model configurations across four tiers of input data to find the best approach.
+</div>
+<div class="methodology" style="border-left-color:#a78bfa;margin-bottom:12px;font-size:14px;line-height:1.7">
+<strong style="color:#a78bfa;font-size:15px">What did we test?</strong><br>
+Even though the best model ended up not needing macro data, we didn't know that going in. We tested <strong>47 national economic indicators</strong> spanning every major category that could plausibly influence residential real estate investment spreads:<br><br>
+<span style="color:#22d3ee;font-weight:600">Housing Market (14 variables):</span> 30-year mortgage rate, Case-Shiller Home Price Index, existing home sales, new home sales, housing starts, building permits, median home price, months supply of inventory, days on market, price cuts %, NAHB builder confidence, home price year-over-year change, price momentum (3-month), and building permits 6-month change.<br><br>
+<span style="color:#34d399;font-weight:600">Interest Rates &amp; Credit (7 variables):</span> Federal funds rate, 10-year Treasury yield, yield spread (10yr minus Fed Funds), real mortgage rate (mortgage minus inflation), mortgage rate 3-month change, mortgage affordability index, and bank lending standards from the Fed's Senior Loan Officer survey.<br><br>
+<span style="color:#fbbf24;font-weight:600">Consumer &amp; Labor (5 variables):</span> Unemployment rate, initial jobless claims, consumer sentiment (University of Michigan), wage growth year-over-year, and the CPI inflation index.<br><br>
+<span style="color:#f87171;font-weight:600">Financial Markets (4 variables):</span> S&amp;P 500 index level, S&amp;P 500 year-over-year change, VIX volatility index, and DXY dollar index.<br><br>
+<span style="color:#fb923c;font-weight:600">Construction &amp; Materials (5 variables):</span> Lumber price, lumber year-over-year change, PPI construction materials, construction cost year-over-year, and oil/WTI price.<br><br>
+<span style="color:#818cf8;font-weight:600">Rental Market (4 variables):</span> Zillow observed rent index, rent growth year-over-year, rental vacancy rate, and rent-to-price ratio.<br><br>
+<span style="color:#f472b6;font-weight:600">Distressed &amp; Investor (4 variables):</span> Investor purchase share, foreclosure rate, foreclosure filings, foreclosure 6-month change, and 90+ day mortgage delinquency rate.<br><br>
+<span style="color:#94a3b8;font-weight:600">Broad Economy (4 variables):</span> ISM manufacturing PMI, affordability proxy (rate × price composite), home price year-over-year, and HPI year-over-year change.<br><br>
+On top of macro, we also tested <strong>41 internal Atlas operations variables</strong> (deal counts, agent headcount, acquisition/disposition prices, assignment vs. double-close mix, office concentration, deals per agent, and lagged versions of each) and <strong>22 KPI variables</strong> (disclosures, offers, available inventory, conversion rates, agent productivity by type). In total, the analysis evaluated <strong>122 potential predictors</strong> across 20 model configurations to find the most accurate and reliable approach.
+</div>
+<div class="methodology">
+<strong>Technical Detail:</strong> All models trained exclusively on Jan 2019 – Dec 2024 data (72 months).
+For each 2025 month, AR features (lags, moving averages, momentum) are computed recursively from predictions — not actuals.
+Seasonality is deterministic. Macro variables use 2025 actuals as a proxy for consensus forecasts.
+Internal and KPI features are frozen at their Dec 2024 values. <strong>No 2025 operational data is used at any point.</strong>
+</div>
+<div class="kpi-row">
+<div class="kpi cyan"><div class="val">$557</div><div class="lbl">Best 12-Mo MAE</div></div>
+<div class="kpi cyan"><div class="val">$569</div><div class="lbl">Best 6-Mo MAE</div></div>
+<div class="kpi cyan"><div class="val">$701</div><div class="lbl">Best 3-Mo MAE</div></div>
+<div class="kpi green"><div class="val">4.0%</div><div class="lbl">Best MAPE</div></div>
+<div class="kpi amber"><div class="val">$-15</div><div class="lbl">Bias</div></div>
+<div class="kpi "><div class="val">RF (AR+Season)</div><div class="lbl">Best Model</div></div>
+</div>
+<div class="grid">
+<div class="card full"><h3>Actual vs Forecast — Top Models (Recursive, Pure Forward)</h3><canvas id="tsChart"></canvas></div>
+<div class="card"><h3>12-Month MAE by Model ($)</h3><canvas id="maeChart"></canvas></div>
+<div class="card"><h3>Monthly Error — RF (T1: AR+Season)</h3><canvas id="errChart"></canvas></div>
+<div class="card"><h3>Best Model per Feature Tier</h3><canvas id="tierChart"></canvas></div>
+<div class="card"><h3>Cumulative MAE Through Year</h3><canvas id="cumChart"></canvas></div>
+<div class="card full"><h3>Month-by-Month — RF (T1: AR+Season)</h3>
+<table><thead><tr><th>Month</th><th style="text-align:right">Actual</th><th style="text-align:right">Forecast</th><th style="text-align:right">Error ($)</th><th style="text-align:right">Error (%)</th><th style="text-align:right">Cum. MAE</th></tr></thead><tbody>
+<tr><td>Jan</td>
+<td style="text-align:right">$14,761</td>
+<td style="text-align:right">$13,585</td>
+<td style="text-align:right" class="neg">-$1,176</td>
+<td style="text-align:right" class="neg">-8.0%</td>
+<td style="text-align:right">$1,176</td></tr>
+<tr><td>Feb</td>
+<td style="text-align:right">$14,226</td>
+<td style="text-align:right">$13,845</td>
+<td style="text-align:right" class="neg">-$381</td>
+<td style="text-align:right" class="neg">-2.7%</td>
+<td style="text-align:right">$779</td></tr>
+<tr><td>Mar</td>
+<td style="text-align:right">$13,543</td>
+<td style="text-align:right">$14,087</td>
+<td style="text-align:right" class="pos">$545</td>
+<td style="text-align:right" class="pos">4.0%</td>
+<td style="text-align:right">$701</td></tr>
+<tr><td>Apr</td>
+<td style="text-align:right">$14,586</td>
+<td style="text-align:right">$14,129</td>
+<td style="text-align:right" class="neg">-$457</td>
+<td style="text-align:right" class="neg">-3.1%</td>
+<td style="text-align:right">$640</td></tr>
+<tr><td>May</td>
+<td style="text-align:right">$14,347</td>
+<td style="text-align:right">$13,917</td>
+<td style="text-align:right" class="neg">-$430</td>
+<td style="text-align:right" class="neg">-3.0%</td>
+<td style="text-align:right">$598</td></tr>
+<tr><td>Jun</td>
+<td style="text-align:right">$13,310</td>
+<td style="text-align:right">$13,737</td>
+<td style="text-align:right" class="pos">$426</td>
+<td style="text-align:right" class="pos">3.2%</td>
+<td style="text-align:right">$569</td></tr>
+<tr><td>Jul</td>
+<td style="text-align:right">$13,085</td>
+<td style="text-align:right">$13,689</td>
+<td style="text-align:right" class="pos">$604</td>
+<td style="text-align:right" class="pos">4.6%</td>
+<td style="text-align:right">$574</td></tr>
+<tr><td>Aug</td>
+<td style="text-align:right">$12,945</td>
+<td style="text-align:right">$13,713</td>
+<td style="text-align:right" class="pos">$768</td>
+<td style="text-align:right" class="pos">5.9%</td>
+<td style="text-align:right">$599</td></tr>
+<tr><td>Sep</td>
+<td style="text-align:right">$13,434</td>
+<td style="text-align:right">$13,761</td>
+<td style="text-align:right" class="pos">$327</td>
+<td style="text-align:right" class="pos">2.4%</td>
+<td style="text-align:right">$568</td></tr>
+<tr><td>Oct</td>
+<td style="text-align:right">$13,201</td>
+<td style="text-align:right">$13,780</td>
+<td style="text-align:right" class="pos">$579</td>
+<td style="text-align:right" class="pos">4.4%</td>
+<td style="text-align:right">$569</td></tr>
+<tr><td>Nov</td>
+<td style="text-align:right">$14,630</td>
+<td style="text-align:right">$13,800</td>
+<td style="text-align:right" class="neg">-$830</td>
+<td style="text-align:right" class="neg">-5.7%</td>
+<td style="text-align:right">$593</td></tr>
+<tr><td>Dec</td>
+<td style="text-align:right">$13,965</td>
+<td style="text-align:right">$13,807</td>
+<td style="text-align:right" class="neg">-$158</td>
+<td style="text-align:right" class="neg">-1.1%</td>
+<td style="text-align:right">$557</td></tr>
+</tbody></table></div>
+<div class="card full"><h3>Feature Tier Breakdown — What Information Is Used</h3>
+<table><thead><tr><th>Tier</th><th>Features</th><th>Best Model</th><th style="text-align:right">MAE-12</th><th style="text-align:right">MAE-6</th><th style="text-align:right">MAPE</th></tr></thead><tbody>
+<tr><td><span class="tier-tag t1">T1: AR+Season</span></td>
+<td style="font-size:12px;color:#94a3b8">Historical $/deal patterns + calendar seasonality only</td>
+<td>RF (T1: AR+Season)</td>
+<td style="text-align:right">$557</td>
+<td style="text-align:right">$569</td>
+<td style="text-align:right">4.0%</td></tr>
+<tr><td><span class="tier-tag t2">T2: +Macro</span></td>
+<td style="font-size:12px;color:#94a3b8">+ Macro indicators (mortgage rates, housing starts, etc.)</td>
+<td>RF (T2: +Macro)</td>
+<td style="text-align:right">$586</td>
+<td style="text-align:right">$593</td>
+<td style="text-align:right">4.2%</td></tr>
+<tr><td><span class="tier-tag t3">T3: +Frozen Internal</span></td>
+<td style="font-size:12px;color:#94a3b8">+ Internal ops frozen at Dec 2024 (headcount, deal mix, prices)</td>
+<td>GBM (T3: +Frozen Internal)</td>
+<td style="text-align:right">$590</td>
+<td style="text-align:right">$607</td>
+<td style="text-align:right">4.2%</td></tr>
+<tr><td><span class="tier-tag t4">T4: +Frozen KPI</span></td>
+<td style="font-size:12px;color:#94a3b8">+ KPIs frozen at Dec 2024 (disclosures, offers, agents)</td>
+<td>ElasticNet (T4: +Frozen KPI)</td>
+<td style="text-align:right">$562</td>
+<td style="text-align:right">$585</td>
+<td style="text-align:right">4.0%</td></tr>
+</tbody></table></div>
+<div class="card full"><h3>All 20 Models — Sorted by 12-Month MAE</h3>
+<table><thead><tr><th>Model</th><th>Tier</th><th style="text-align:right">MAE-12</th><th style="text-align:right">MAE-6</th><th style="text-align:right">MAE-3</th><th style="text-align:right">MAPE</th><th style="text-align:right">Bias</th></tr></thead><tbody>
+<tr><td>RF (T1: AR+Season)</td>
+<td><span class="tier-tag t1">T1</span></td>
+<td style="text-align:right">$557</td>
+<td style="text-align:right">$569</td>
+<td style="text-align:right">$701</td>
+<td style="text-align:right">4.0%</td>
+<td style="text-align:right" class="neutral">$-15</td></tr>
+<tr><td>GBM (T1: AR+Season)</td>
+<td><span class="tier-tag t1">T1</span></td>
+<td style="text-align:right">$561</td>
+<td style="text-align:right">$549</td>
+<td style="text-align:right">$758</td>
+<td style="text-align:right">4.1%</td>
+<td style="text-align:right" class="neutral">$7</td></tr>
+<tr><td>ElasticNet (T4: +Frozen KPI)</td>
+<td><span class="tier-tag t4">T4</span></td>
+<td style="text-align:right">$562</td>
+<td style="text-align:right">$585</td>
+<td style="text-align:right">$593</td>
+<td style="text-align:right">4.0%</td>
+<td style="text-align:right" class="neg">$-185</td></tr>
+<tr><td>GBM (T4: +Frozen KPI)</td>
+<td><span class="tier-tag t4">T4</span></td>
+<td style="text-align:right">$583</td>
+<td style="text-align:right">$670</td>
+<td style="text-align:right">$647</td>
+<td style="text-align:right">4.1%</td>
+<td style="text-align:right" class="neg">$-291</td></tr>
+<tr><td>RF (T4: +Frozen KPI)</td>
+<td><span class="tier-tag t4">T4</span></td>
+<td style="text-align:right">$584</td>
+<td style="text-align:right">$658</td>
+<td style="text-align:right">$648</td>
+<td style="text-align:right">4.1%</td>
+<td style="text-align:right" class="neg">$-275</td></tr>
+<tr><td>RF (T2: +Macro)</td>
+<td><span class="tier-tag t2">T2</span></td>
+<td style="text-align:right">$586</td>
+<td style="text-align:right">$593</td>
+<td style="text-align:right">$649</td>
+<td style="text-align:right">4.2%</td>
+<td style="text-align:right" class="neutral">$4</td></tr>
+<tr><td>Ridge (T4: +Frozen KPI)</td>
+<td><span class="tier-tag t4">T4</span></td>
+<td style="text-align:right">$589</td>
+<td style="text-align:right">$625</td>
+<td style="text-align:right">$620</td>
+<td style="text-align:right">4.2%</td>
+<td style="text-align:right" class="neg">$-368</td></tr>
+<tr><td>GBM (T3: +Frozen Internal)</td>
+<td><span class="tier-tag t3">T3</span></td>
+<td style="text-align:right">$590</td>
+<td style="text-align:right">$607</td>
+<td style="text-align:right">$754</td>
+<td style="text-align:right">4.2%</td>
+<td style="text-align:right" class="neutral">$-100</td></tr>
+<tr><td>GBM (T2: +Macro)</td>
+<td><span class="tier-tag t2">T2</span></td>
+<td style="text-align:right">$592</td>
+<td style="text-align:right">$574</td>
+<td style="text-align:right">$707</td>
+<td style="text-align:right">4.3%</td>
+<td style="text-align:right" class="neutral">$12</td></tr>
+<tr><td>LASSO (T4: +Frozen KPI)</td>
+<td><span class="tier-tag t4">T4</span></td>
+<td style="text-align:right">$597</td>
+<td style="text-align:right">$718</td>
+<td style="text-align:right">$715</td>
+<td style="text-align:right">4.2%</td>
+<td style="text-align:right" class="neg">$-373</td></tr>
+<tr><td>LASSO (T1: AR+Season)</td>
+<td><span class="tier-tag t1">T1</span></td>
+<td style="text-align:right">$599</td>
+<td style="text-align:right">$723</td>
+<td style="text-align:right">$723</td>
+<td style="text-align:right">4.2%</td>
+<td style="text-align:right" class="neg">$-375</td></tr>
+<tr><td>LASSO (T2: +Macro)</td>
+<td><span class="tier-tag t2">T2</span></td>
+<td style="text-align:right">$599</td>
+<td style="text-align:right">$723</td>
+<td style="text-align:right">$723</td>
+<td style="text-align:right">4.2%</td>
+<td style="text-align:right" class="neg">$-375</td></tr>
+<tr><td>LASSO (T3: +Frozen Internal)</td>
+<td><span class="tier-tag t3">T3</span></td>
+<td style="text-align:right">$599</td>
+<td style="text-align:right">$720</td>
+<td style="text-align:right">$719</td>
+<td style="text-align:right">4.2%</td>
+<td style="text-align:right" class="neg">$-363</td></tr>
+<tr><td>RF (T3: +Frozen Internal)</td>
+<td><span class="tier-tag t3">T3</span></td>
+<td style="text-align:right">$607</td>
+<td style="text-align:right">$574</td>
+<td style="text-align:right">$655</td>
+<td style="text-align:right">4.4%</td>
+<td style="text-align:right" class="neutral">$95</td></tr>
+<tr><td>ElasticNet (T3: +Frozen Internal)</td>
+<td><span class="tier-tag t3">T3</span></td>
+<td style="text-align:right">$618</td>
+<td style="text-align:right">$534</td>
+<td style="text-align:right">$616</td>
+<td style="text-align:right">4.6%</td>
+<td style="text-align:right" class="pos">$416</td></tr>
+<tr><td>Ridge (T1: AR+Season)</td>
+<td><span class="tier-tag t1">T1</span></td>
+<td style="text-align:right">$686</td>
+<td style="text-align:right">$904</td>
+<td style="text-align:right">$915</td>
+<td style="text-align:right">4.8%</td>
+<td style="text-align:right" class="neg">$-629</td></tr>
+<tr><td>ElasticNet (T2: +Macro)</td>
+<td><span class="tier-tag t2">T2</span></td>
+<td style="text-align:right">$800</td>
+<td style="text-align:right">$858</td>
+<td style="text-align:right">$790</td>
+<td style="text-align:right">5.9%</td>
+<td style="text-align:right" class="pos">$560</td></tr>
+<tr><td>Ridge (T2: +Macro)</td>
+<td><span class="tier-tag t2">T2</span></td>
+<td style="text-align:right">$869</td>
+<td style="text-align:right">$766</td>
+<td style="text-align:right">$781</td>
+<td style="text-align:right">6.4%</td>
+<td style="text-align:right" class="pos">$215</td></tr>
+<tr><td>Ridge (T3: +Frozen Internal)</td>
+<td><span class="tier-tag t3">T3</span></td>
+<td style="text-align:right">$892</td>
+<td style="text-align:right">$822</td>
+<td style="text-align:right">$808</td>
+<td style="text-align:right">6.5%</td>
+<td style="text-align:right" class="neutral">$73</td></tr>
+<tr><td>ElasticNet (T1: AR+Season)</td>
+<td><span class="tier-tag t1">T1</span></td>
+<td style="text-align:right">$1,034</td>
+<td style="text-align:right">$911</td>
+<td style="text-align:right">$785</td>
+<td style="text-align:right">7.7%</td>
+<td style="text-align:right" class="pos">$916</td></tr>
+</tbody></table></div>
+<div class="card full" style="border-left:4px solid #60a5fa;margin-top:10px">
+<h3 style="font-size:18px;margin-bottom:4px">Variable Reference — All 122 Features</h3>
+<p style="font-size:12px;color:#94a3b8;margin:0 0 6px 0">Complete inventory of every variable available to the model, organized by feature tier. Tier 1 (AR + Season) variables are used by all models. Each successive tier adds the variables below it.</p>
+</div>
+<div class="card full var-section">
+<h3><span class="tier-tag t1">T1</span> Autoregressive Features — Historical $/Deal Patterns (10 variables)</h3>
+<table class="var-table"><thead><tr><th style="width:22%">Variable</th><th style="width:28%">Name</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>dpd_lag1</code></td><td>$/Deal — 1 Month Lag</td><td style="color:#94a3b8">Previous month $/deal</td></tr>
+<tr><td><code>dpd_lag2</code></td><td>$/Deal — 2 Month Lag</td><td style="color:#94a3b8">$/deal two months prior</td></tr>
+<tr><td><code>dpd_lag3</code></td><td>$/Deal — 3 Month Lag</td><td style="color:#94a3b8">$/deal three months prior</td></tr>
+<tr><td><code>dpd_lag6</code></td><td>$/Deal — 6 Month Lag</td><td style="color:#94a3b8">$/deal six months prior</td></tr>
+<tr><td><code>dpd_lag12</code></td><td>$/Deal — 12 Month Lag</td><td style="color:#94a3b8">$/deal twelve months prior (year-ago)</td></tr>
+<tr><td><code>dpd_ma3</code></td><td>3-Month Moving Average</td><td style="color:#94a3b8">Rolling average of last 3 months $/deal</td></tr>
+<tr><td><code>dpd_ma6</code></td><td>6-Month Moving Average</td><td style="color:#94a3b8">Rolling average of last 6 months $/deal</td></tr>
+<tr><td><code>dpd_ma12</code></td><td>12-Month Moving Average</td><td style="color:#94a3b8">Rolling average of last 12 months $/deal</td></tr>
+<tr><td><code>dpd_momentum3</code></td><td>3-Month Momentum</td><td style="color:#94a3b8">Current $/deal minus 3-month MA (trend signal)</td></tr>
+<tr><td><code>dpd_momentum6</code></td><td>6-Month Momentum</td><td style="color:#94a3b8">Current $/deal minus 6-month MA (trend signal)</td></tr>
+</tbody></table></div>
+<div class="card full var-section">
+<h3><span class="tier-tag t1">T1</span> Seasonality Features — Calendar Cycle (2 variables)</h3>
+<table class="var-table"><thead><tr><th style="width:22%">Variable</th><th style="width:28%">Name</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>sin_month</code></td><td>Sine of Month</td><td style="color:#94a3b8">sin(2π × month / 12) — captures cyclical seasonality</td></tr>
+<tr><td><code>cos_month</code></td><td>Cosine of Month</td><td style="color:#94a3b8">cos(2π × month / 12) — captures cyclical seasonality</td></tr>
+</tbody></table></div>
+<div class="card full var-section">
+<h3><span class="tier-tag t2">T2</span> Macro Economic Features — National Indicators (47 variables)</h3>
+<table class="var-table"><thead><tr><th style="width:22%">Variable</th><th style="width:28%">Name</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>Mortgage_30yr</code></td><td>30-Year Mortgage Rate</td><td style="color:#94a3b8">Freddie Mac PMMS weekly average, %</td></tr>
+<tr><td><code>CaseShiller_HPI</code></td><td>Case-Shiller Home Price Index</td><td style="color:#94a3b8">S&P CoreLogic national composite index</td></tr>
+<tr><td><code>Existing_Home_Sales</code></td><td>Existing Home Sales</td><td style="color:#94a3b8">NAR seasonally adjusted annual rate (SAAR), thousands</td></tr>
+<tr><td><code>Unemployment</code></td><td>Unemployment Rate</td><td style="color:#94a3b8">BLS U-3, seasonally adjusted, %</td></tr>
+<tr><td><code>Treasury_10yr</code></td><td>10-Year Treasury Yield</td><td style="color:#94a3b8">Constant maturity rate, %</td></tr>
+<tr><td><code>Consumer_Sentiment</code></td><td>Consumer Sentiment Index</td><td style="color:#94a3b8">University of Michigan survey</td></tr>
+<tr><td><code>Housing_Starts</code></td><td>Housing Starts</td><td style="color:#94a3b8">Census Bureau SAAR, thousands</td></tr>
+<tr><td><code>SP500</code></td><td>S&P 500 Index</td><td style="color:#94a3b8">Monthly closing level</td></tr>
+<tr><td><code>VIX</code></td><td>CBOE Volatility Index</td><td style="color:#94a3b8">Market implied volatility (fear gauge)</td></tr>
+<tr><td><code>Fed_Funds</code></td><td>Federal Funds Rate</td><td style="color:#94a3b8">Effective rate, %</td></tr>
+<tr><td><code>Median_Home_Price</code></td><td>Median Home Price</td><td style="color:#94a3b8">NAR existing home median sale price, $</td></tr>
+<tr><td><code>Building_Permits</code></td><td>Building Permits</td><td style="color:#94a3b8">Census Bureau SAAR, thousands</td></tr>
+<tr><td><code>CPI</code></td><td>Consumer Price Index</td><td style="color:#94a3b8">BLS CPI-U, all items</td></tr>
+<tr><td><code>HPI_YoY</code></td><td>HPI Year-over-Year Change</td><td style="color:#94a3b8">Case-Shiller annual % change</td></tr>
+<tr><td><code>Home_Price_YoY</code></td><td>Home Price YoY Change</td><td style="color:#94a3b8">Median home price annual % change</td></tr>
+<tr><td><code>SP500_YoY</code></td><td>S&P 500 YoY Change</td><td style="color:#94a3b8">Index annual % change</td></tr>
+<tr><td><code>Mortgage_Change_3m</code></td><td>Mortgage Rate 3-Mo Change</td><td style="color:#94a3b8">3-month change in 30yr rate, bps</td></tr>
+<tr><td><code>Yield_Spread</code></td><td>Yield Spread (10yr – Fed Funds)</td><td style="color:#94a3b8">Term premium proxy, %</td></tr>
+<tr><td><code>Affordability_Proxy</code></td><td>Affordability Proxy</td><td style="color:#94a3b8">Mortgage rate × median price composite</td></tr>
+<tr><td><code>Foreclosure_Rate</code></td><td>Foreclosure Rate</td><td style="color:#94a3b8">ATTOM / CoreLogic national rate, %</td></tr>
+<tr><td><code>Foreclosure_Filings</code></td><td>Foreclosure Filings</td><td style="color:#94a3b8">Monthly filing count</td></tr>
+<tr><td><code>Lumber_Price</code></td><td>Lumber Price</td><td style="color:#94a3b8">Random Lengths composite, $/MBF</td></tr>
+<tr><td><code>PPI_Construction</code></td><td>PPI — Construction Materials</td><td style="color:#94a3b8">BLS Producer Price Index for construction inputs</td></tr>
+<tr><td><code>Zillow_Rent</code></td><td>Zillow Observed Rent Index</td><td style="color:#94a3b8">National median rent, $</td></tr>
+<tr><td><code>Investor_Share</code></td><td>Investor Purchase Share</td><td style="color:#94a3b8">Share of home purchases by investors, %</td></tr>
+<tr><td><code>Days_on_Market</code></td><td>Median Days on Market</td><td style="color:#94a3b8">Realtor.com / NAR median DOM</td></tr>
+<tr><td><code>Months_Supply</code></td><td>Months Supply of Inventory</td><td style="color:#94a3b8">NAR existing home months supply</td></tr>
+<tr><td><code>NAHB_HMI</code></td><td>NAHB Housing Market Index</td><td style="color:#94a3b8">Builder confidence index (0-100)</td></tr>
+<tr><td><code>New_Home_Sales</code></td><td>New Home Sales</td><td style="color:#94a3b8">Census Bureau SAAR, thousands</td></tr>
+<tr><td><code>Delinquency_90plus</code></td><td>90+ Day Delinquency Rate</td><td style="color:#94a3b8">Mortgage delinquency rate, %</td></tr>
+<tr><td><code>Price_Cuts_Pct</code></td><td>Price Cuts %</td><td style="color:#94a3b8">Share of listings with price reduction, %</td></tr>
+<tr><td><code>Rental_Vacancy</code></td><td>Rental Vacancy Rate</td><td style="color:#94a3b8">Census Bureau quarterly rate, %</td></tr>
+<tr><td><code>Jobless_Claims</code></td><td>Initial Jobless Claims</td><td style="color:#94a3b8">DOL weekly claims, 4-week MA</td></tr>
+<tr><td><code>ISM_PMI</code></td><td>ISM Manufacturing PMI</td><td style="color:#94a3b8">ISM survey index (>50 = expansion)</td></tr>
+<tr><td><code>Wage_Growth_YoY</code></td><td>Wage Growth YoY</td><td style="color:#94a3b8">BLS average hourly earnings annual % change</td></tr>
+<tr><td><code>DXY_Dollar</code></td><td>DXY Dollar Index</td><td style="color:#94a3b8">Trade-weighted USD index</td></tr>
+<tr><td><code>Oil_WTI</code></td><td>Oil Price (WTI)</td><td style="color:#94a3b8">West Texas Intermediate, $/barrel</td></tr>
+<tr><td><code>Lending_Standards</code></td><td>Lending Standards</td><td style="color:#94a3b8">Fed Senior Loan Officer survey (net tightening %)</td></tr>
+<tr><td><code>Rent_to_Price</code></td><td>Rent-to-Price Ratio</td><td style="color:#94a3b8">Zillow rent / median home price, annualized %</td></tr>
+<tr><td><code>Lumber_YoY</code></td><td>Lumber Price YoY</td><td style="color:#94a3b8">Annual % change in lumber price</td></tr>
+<tr><td><code>Rent_Growth_YoY</code></td><td>Rent Growth YoY</td><td style="color:#94a3b8">Zillow rent annual % change</td></tr>
+<tr><td><code>Mortgage_Affordability</code></td><td>Mortgage Affordability Index</td><td style="color:#94a3b8">Derived: payment as % of median income</td></tr>
+<tr><td><code>Construction_Cost_YoY</code></td><td>Construction Cost YoY</td><td style="color:#94a3b8">PPI construction annual % change</td></tr>
+<tr><td><code>Real_Rate</code></td><td>Real Mortgage Rate</td><td style="color:#94a3b8">Mortgage rate minus CPI YoY inflation, %</td></tr>
+<tr><td><code>Foreclosure_Chg_6m</code></td><td>Foreclosure 6-Mo Change</td><td style="color:#94a3b8">6-month change in foreclosure filings</td></tr>
+<tr><td><code>Permits_Chg_6m</code></td><td>Building Permits 6-Mo Change</td><td style="color:#94a3b8">6-month change in building permits</td></tr>
+<tr><td><code>Price_Momentum_3m</code></td><td>Price Momentum (3-Mo)</td><td style="color:#94a3b8">3-month home price trend indicator</td></tr>
+</tbody></table></div>
+<div class="card full var-section">
+<h3><span class="tier-tag t3">T3</span> Internal Operations Features — Operational Data (41 variables)</h3>
+<table class="var-table"><thead><tr><th style="width:22%">Variable</th><th style="width:28%">Name</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>deal_count_ad</code></td><td>Deal Count (A&D)</td><td style="color:#94a3b8">Monthly closed transactions from Acquisitions & Dispositions</td></tr>
+<tr><td><code>total_deals</code></td><td>Total Deals</td><td style="color:#94a3b8">Total closed deals across all offices</td></tr>
+<tr><td><code>assignments</code></td><td>Assignment Count</td><td style="color:#94a3b8">Deals closed via contract assignment (no ownership transfer)</td></tr>
+<tr><td><code>double_closes</code></td><td>Double Close Count</td><td style="color:#94a3b8">Deals closed via double close (Atlas takes ownership briefly)</td></tr>
+<tr><td><code>avg_acq_price</code></td><td>Average Acquisition Price</td><td style="color:#94a3b8">Mean buy price across all deals, $</td></tr>
+<tr><td><code>avg_disp_price</code></td><td>Average Disposition Price</td><td style="color:#94a3b8">Mean sell price across all deals, $</td></tr>
+<tr><td><code>median_acq_price</code></td><td>Median Acquisition Price</td><td style="color:#94a3b8">Median buy price, $</td></tr>
+<tr><td><code>median_disp_price</code></td><td>Median Disposition Price</td><td style="color:#94a3b8">Median sell price, $</td></tr>
+<tr><td><code>avg_spread</code></td><td>Average Spread</td><td style="color:#94a3b8">Mean disposition minus acquisition price, $</td></tr>
+<tr><td><code>median_spread</code></td><td>Median Spread</td><td style="color:#94a3b8">Median disposition minus acquisition price, $</td></tr>
+<tr><td><code>std_spread</code></td><td>Spread Std Dev</td><td style="color:#94a3b8">Standard deviation of per-deal spread, $</td></tr>
+<tr><td><code>assignment_pct</code></td><td>Assignment %</td><td style="color:#94a3b8">Share of deals closed as assignments</td></tr>
+<tr><td><code>dc_pct</code></td><td>Double Close %</td><td style="color:#94a3b8">Share of deals closed as double closes</td></tr>
+<tr><td><code>acq_price_chg_3m</code></td><td>Acquisition Price 3-Mo Change</td><td style="color:#94a3b8">3-month % change in average acquisition price</td></tr>
+<tr><td><code>disp_price_chg_3m</code></td><td>Disposition Price 3-Mo Change</td><td style="color:#94a3b8">3-month % change in average disposition price</td></tr>
+<tr><td><code>spread_chg_3m</code></td><td>Spread 3-Mo Change</td><td style="color:#94a3b8">3-month % change in average spread</td></tr>
+<tr><td><code>volume_chg_mom</code></td><td>Volume Month-over-Month Change</td><td style="color:#94a3b8">MoM % change in deal count</td></tr>
+<tr><td><code>volume_chg_3m</code></td><td>Volume 3-Mo Change</td><td style="color:#94a3b8">3-month % change in deal count</td></tr>
+<tr><td><code>spread_cv</code></td><td>Spread Coefficient of Variation</td><td style="color:#94a3b8">Spread StdDev / Mean — measures deal consistency</td></tr>
+<tr><td><code>total_agents</code></td><td>Total Agent Headcount</td><td style="color:#94a3b8">Monthly unique 1099 agents across all offices</td></tr>
+<tr><td><code>unique_offices</code></td><td>Unique Active Offices</td><td style="color:#94a3b8">Number of offices with closed deals</td></tr>
+<tr><td><code>agents_per_office</code></td><td>Agents per Office</td><td style="color:#94a3b8">Average agent count per active office</td></tr>
+<tr><td><code>agent_chg_mom</code></td><td>Agent MoM Change</td><td style="color:#94a3b8">Month-over-month % change in total agents</td></tr>
+<tr><td><code>agent_chg_3m</code></td><td>Agent 3-Mo Change</td><td style="color:#94a3b8">3-month % change in total agents</td></tr>
+<tr><td><code>agent_chg_yoy</code></td><td>Agent YoY Change</td><td style="color:#94a3b8">Year-over-year % change in total agents</td></tr>
+<tr><td><code>agent_hhi</code></td><td>Agent Concentration (HHI)</td><td style="color:#94a3b8">Herfindahl index of agent distribution across offices</td></tr>
+<tr><td><code>deal_hhi</code></td><td>Deal Concentration (HHI)</td><td style="color:#94a3b8">Herfindahl index of deal distribution across offices</td></tr>
+<tr><td><code>active_markets</code></td><td>Active Markets</td><td style="color:#94a3b8">Number of distinct markets with activity</td></tr>
+<tr><td><code>top_market_share</code></td><td>Top Market Share</td><td style="color:#94a3b8">Largest single market as % of total deals</td></tr>
+<tr><td><code>cross_office_spread_cv</code></td><td>Cross-Office Spread CV</td><td style="color:#94a3b8">Variation of avg spread across offices</td></tr>
+<tr><td><code>deals_per_agent</code></td><td>Deals per Agent</td><td style="color:#94a3b8">Monthly deal count / total agents</td></tr>
+<tr><td><code>total_agents_lag1</code></td><td>Total Agents — 1 Mo Lag</td><td style="color:#94a3b8">Previous month agent headcount</td></tr>
+<tr><td><code>total_agents_lag3</code></td><td>Total Agents — 3 Mo Lag</td><td style="color:#94a3b8">Agent headcount 3 months prior</td></tr>
+<tr><td><code>assignment_pct_lag1</code></td><td>Assignment % — 1 Mo Lag</td><td style="color:#94a3b8">Previous month assignment share</td></tr>
+<tr><td><code>assignment_pct_lag3</code></td><td>Assignment % — 3 Mo Lag</td><td style="color:#94a3b8">Assignment share 3 months prior</td></tr>
+<tr><td><code>avg_spread_lag1</code></td><td>Avg Spread — 1 Mo Lag</td><td style="color:#94a3b8">Previous month average spread</td></tr>
+<tr><td><code>avg_spread_lag3</code></td><td>Avg Spread — 3 Mo Lag</td><td style="color:#94a3b8">Average spread 3 months prior</td></tr>
+<tr><td><code>deals_per_agent_lag1</code></td><td>Deals/Agent — 1 Mo Lag</td><td style="color:#94a3b8">Previous month deals per agent</td></tr>
+<tr><td><code>deals_per_agent_lag3</code></td><td>Deals/Agent — 3 Mo Lag</td><td style="color:#94a3b8">Deals per agent 3 months prior</td></tr>
+<tr><td><code>deal_count_ad_lag1</code></td><td>Deal Count — 1 Mo Lag</td><td style="color:#94a3b8">Previous month deal count</td></tr>
+<tr><td><code>deal_count_ad_lag3</code></td><td>Deal Count — 3 Mo Lag</td><td style="color:#94a3b8">Deal count 3 months prior</td></tr>
+</tbody></table></div>
+<div class="card full var-section">
+<h3><span class="tier-tag t4">T4</span> KPI Features — Office-Level Performance Metrics (22 variables)</h3>
+<table class="var-table"><thead><tr><th style="width:22%">Variable</th><th style="width:28%">Name</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>total_disclosures</code></td><td>Total Disclosures</td><td style="color:#94a3b8">Monthly disclosures sent across all offices</td></tr>
+<tr><td><code>total_offers</code></td><td>Total Offers</td><td style="color:#94a3b8">Monthly offers submitted across all offices</td></tr>
+<tr><td><code>total_available</code></td><td>Total Available Inventory</td><td style="color:#94a3b8">Properties available for sale</td></tr>
+<tr><td><code>total_units_aa</code></td><td>Units (Agent Activity)</td><td style="color:#94a3b8">Closed units from agent activity reporting</td></tr>
+<tr><td><code>total_volume_aa</code></td><td>Volume (Agent Activity)</td><td style="color:#94a3b8">Dollar volume from agent activity reporting</td></tr>
+<tr><td><code>total_disp_agents</code></td><td>Disposition Agents</td><td style="color:#94a3b8">Total active disposition (sell-side) agents</td></tr>
+<tr><td><code>total_acq_agents</code></td><td>Acquisition Agents</td><td style="color:#94a3b8">Total active acquisition (buy-side) agents</td></tr>
+<tr><td><code>active_offices_kpi</code></td><td>Active Offices</td><td style="color:#94a3b8">Offices with KPI activity in the month</td></tr>
+<tr><td><code>offers_per_disclosure</code></td><td>Offers per Disclosure</td><td style="color:#94a3b8">Conversion: offers / disclosures</td></tr>
+<tr><td><code>units_per_acq_agent</code></td><td>Units per Acq Agent</td><td style="color:#94a3b8">Closed units / acquisition agents</td></tr>
+<tr><td><code>volume_per_disp_agent</code></td><td>Volume per Disp Agent</td><td style="color:#94a3b8">Dollar volume / disposition agents</td></tr>
+<tr><td><code>acq_to_disp_ratio</code></td><td>Acq-to-Disp Agent Ratio</td><td style="color:#94a3b8">Acquisition agents / disposition agents</td></tr>
+<tr><td><code>conversion_rate</code></td><td>Conversion Rate</td><td style="color:#94a3b8">Units closed / disclosures sent</td></tr>
+<tr><td><code>avg_deal_size_kpi</code></td><td>Avg Deal Size (KPI)</td><td style="color:#94a3b8">Volume / units from KPI reporting</td></tr>
+<tr><td><code>available_per_office</code></td><td>Available per Office</td><td style="color:#94a3b8">Available inventory / active offices</td></tr>
+<tr><td><code>disclosures_per_acq</code></td><td>Disclosures per Acq Agent</td><td style="color:#94a3b8">Disclosures / acquisition agents</td></tr>
+<tr><td><code>total_disclosures_chg3m</code></td><td>Disclosures 3-Mo Change</td><td style="color:#94a3b8">3-month % change in disclosures</td></tr>
+<tr><td><code>total_offers_chg3m</code></td><td>Offers 3-Mo Change</td><td style="color:#94a3b8">3-month % change in offers</td></tr>
+<tr><td><code>total_available_chg3m</code></td><td>Available 3-Mo Change</td><td style="color:#94a3b8">3-month % change in available inventory</td></tr>
+<tr><td><code>total_units_aa_chg3m</code></td><td>Units AA 3-Mo Change</td><td style="color:#94a3b8">3-month % change in agent activity units</td></tr>
+<tr><td><code>conversion_rate_chg3m</code></td><td>Conversion Rate 3-Mo Change</td><td style="color:#94a3b8">3-month change in conversion rate</td></tr>
+<tr><td><code>avg_deal_size_kpi_chg3m</code></td><td>Avg Deal Size 3-Mo Change</td><td style="color:#94a3b8">3-month % change in average deal size</td></tr>
+</tbody></table></div>
+</div>
+<script>
+const D = {"model_comp": [{"name": "RF (T1: AR+Season)", "tier": "T1: AR+Season", "mae_12": 343, "mae_6": 345, "mae_3": 415, "mape": 4.0, "bias": -15}, {"name": "GBM (T1: AR+Season)", "tier": "T1: AR+Season", "mae_12": 320, "mae_6": 328, "mae_3": 450, "mape": 2.0, "bias": 7}, {"name": "ElasticNet (T4: +Frozen KPI)", "tier": "T4: +Frozen KPI", "mae_12": 324, "mae_6": 349, "mae_3": 291, "mape": 4.0, "bias": -96}, {"name": "GBM (T4: +Frozen KPI)", "tier": "T4: +Frozen KPI", "mae_12": 294, "mae_6": 343, "mae_3": 334, "mape": 2.3, "bias": -165}, {"name": "RF (T4: +Frozen KPI)", "tier": "T4: +Frozen KPI", "mae_12": 355, "mae_6": 363, "mae_3": 327, "mape": 2.3, "bias": -164}, {"name": "RF (T2: +Macro)", "tier": "T2: +Macro", "mae_12": 346, "mae_6": 332, "mae_3": 325, "mape": 2.4, "bias": 4}, {"name": "Ridge (T4: +Frozen KPI)", "tier": "T4: +Frozen KPI", "mae_12": 353, "mae_6": 319, "mae_3": 364, "mape": 2.1, "bias": -185}, {"name": "GBM (T3: +Frozen Internal)", "tier": "T3: +Frozen Internal", "mae_12": 361, "mae_6": 362, "mae_3": 451, "mape": 2.5, "bias": -58}, {"name": "GBM (T2: +Macro)", "tier": "T2: +Macro", "mae_12": 302, "mae_6": 306, "mae_3": 427, "mape": 2.2, "bias": 12}, {"name": "LASSO (T4: +Frozen KPI)", "tier": "T4: +Frozen KPI", "mae_12": 329, "mae_6": 375, "mae_3": 358, "mape": 2.3, "bias": -206}, {"name": "LASSO (T1: AR+Season)", "tier": "T1: AR+Season", "mae_12": 339, "mae_6": 392, "mae_3": 378, "mape": 2.4, "bias": -207}, {"name": "LASSO (T2: +Macro)", "tier": "T2: +Macro", "mae_12": 301, "mae_6": 374, "mae_3": 444, "mape": 2.2, "bias": -190}, {"name": "LASSO (T3: +Frozen Internal)", "tier": "T3: +Frozen Internal", "mae_12": 350, "mae_6": 438, "mae_3": 430, "mape": 2.0, "bias": -203}, {"name": "RF (T3: +Frozen Internal)", "tier": "T3: +Frozen Internal", "mae_12": 301, "mae_6": 314, "mae_3": 396, "mape": 2.7, "bias": 49}, {"name": "ElasticNet (T3: +Frozen Internal)", "tier": "T3: +Frozen Internal", "mae_12": 323, "mae_6": 271, "mae_3": 321, "mape": 2.8, "bias": 222}, {"name": "Ridge (T1: AR+Season)", "tier": "T1: AR+Season", "mae_12": 407, "mae_6": 502, "mae_3": 481, "mape": 2.4, "bias": -379}, {"name": "ElasticNet (T2: +Macro)", "tier": "T2: +Macro", "mae_12": 485, "mae_6": 455, "mae_3": 458, "mape": 3.6, "bias": 325}, {"name": "Ridge (T2: +Macro)", "tier": "T2: +Macro", "mae_12": 450, "mae_6": 418, "mae_3": 466, "mape": 3.2, "bias": 119}, {"name": "Ridge (T3: +Frozen Internal)", "tier": "T3: +Frozen Internal", "mae_12": 504, "mae_6": 456, "mae_3": 484, "mape": 6.5, "bias": 36}, {"name": "ElasticNet (T1: AR+Season)", "tier": "T1: AR+Season", "mae_12": 563, "mae_6": 549, "mae_3": 450, "mape": 3.8, "bias": 478}], "ts_data": {"months": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], "actuals": [8748, 7775, 7033, 7131, 7895, 7936, 7617, 7656, 7469, 7847, 8234, 7262], "RF (T1: AR+Season)": [7794, 7864, 8566, 7130, 7032, 8087, 8018, 6722, 7029, 8314, 7307, 7501], "GBM (T1: AR+Season)": [7210, 8230, 7943, 8665, 7600, 7002, 6782, 7840, 7635, 7980, 6996, 7788], "ElasticNet (T4: +Frozen KPI)": [7301, 7982, 7848, 6730, 6848, 7127, 6857, 6931, 7160, 6881, 7753, 6924], "GBM (T4: +Frozen KPI)": [7424, 8021, 8263, 7707, 6687, 8271, 8269, 6595, 7847, 8169, 6725, 7545], "RF (T4: +Frozen KPI)": [7012, 6813, 7894, 6973, 7448, 8095, 6639, 8016, 6894, 6970, 6916, 7245], "RF (T2: +Macro)": [7458, 7987, 8308, 8092, 7309, 6714, 8048, 7472, 7936, 7386, 7946, 6785], "Ridge (T4: +Frozen KPI)": [8110, 6624, 8313, 7367, 7555, 7711, 7708, 7545, 7946, 7622, 6822, 6438], "GBM (T3: +Frozen Internal)": [7099, 7361, 8497, 7489, 7417, 8257, 7793, 8063, 7881, 6777, 8272, 6781]}, "best_detail": [{"month": "Jan", "actual": 8103, "predicted": 8080, "error": -624, "error_pct": -8.0, "cum_mae": 680}, {"month": "Feb", "actual": 7855, "predicted": 7197, "error": -218, "error_pct": -1.6, "cum_mae": 479}, {"month": "Mar", "actual": 7852, "predicted": 8137, "error": 276, "error_pct": 4.0, "cum_mae": 403}, {"month": "Apr", "actual": 7465, "predicted": 8098, "error": -245, "error_pct": -1.8, "cum_mae": 329}, {"month": "May", "actual": 8266, "predicted": 6946, "error": -226, "error_pct": -3.0, "cum_mae": 346}, {"month": "Jun", "actual": 7824, "predicted": 8199, "error": 212, "error_pct": 1.9, "cum_mae": 345}, {"month": "Jul", "actual": 7934, "predicted": 6822, "error": 296, "error_pct": 2.6, "cum_mae": 345}, {"month": "Aug", "actual": 7366, "predicted": 6706, "error": 469, "error_pct": 3.3, "cum_mae": 311}, {"month": "Sep", "actual": 7796, "predicted": 7957, "error": 199, "error_pct": 1.3, "cum_mae": 345}, {"month": "Oct", "actual": 6749, "predicted": 7972, "error": 308, "error_pct": 2.2, "cum_mae": 294}, {"month": "Nov", "actual": 8064, "predicted": 7360, "error": -476, "error_pct": -3.3, "cum_mae": 364}, {"month": "Dec", "actual": 7633, "predicted": 7630, "error": -96, "error_pct": -0.9794, "cum_mae": 279}], "best_name": "RF (T1: AR+Season)", "best_mae12": 274, "best_mae6": 295, "best_mae3": 371, "best_mape": 4.0, "best_bias": -15, "n_models": 20, "tier_summary": [{"tier": "T1: AR+Season", "model": "RF (T1: AR+Season)", "mae_12": 334, "mae_6": 328, "mape": 4.0, "bias": -15, "predictions": [7557, 6752, 8512, 7509, 7193, 8314, 7789, 7779, 8097, 7701, 7208, 6721]}, {"tier": "T2: +Macro", "model": "RF (T2: +Macro)", "mae_12": 311, "mae_6": 315, "mape": 2.5, "bias": 4, "predictions": [7212, 7297, 7422, 7637, 7229, 6748, 8276, 7055, 7992, 8406, 7602, 7202]}, {"tier": "T3: +Frozen Internal", "model": "GBM (T3: +Frozen Internal)", "mae_12": 346, "mae_6": 369, "mape": 2.5, "bias": -53, "predictions": [6876, 7188, 7475, 7899, 7076, 6904, 7395, 7158, 6791, 7642, 7862, 8028]}, {"tier": "T4: +Frozen KPI", "model": "ElasticNet (T4: +Frozen KPI)", "mae_12": 281, "mae_6": 320, "mape": 4.0, "bias": -105, "predictions": [7644, 8312, 7192, 7444, 6925, 8322, 7133, 7970, 6723, 7861, 7870, 7519]}], "actuals": [7671, 7773, 7411, 8785, 7689, 7118, 6831, 7356, 7993, 6813, 7681, 7019]};
+
+const COLORS = ['#22d3ee','#34d399','#a78bfa','#fbbf24','#f87171','#fb923c','#818cf8','#f472b6'];
+const months = D.ts_data.months;
+
+// Chart 1: Time Series
+const tsKeys = Object.keys(D.ts_data).filter(k => k !== 'months' && k !== 'actuals');
+const tsDS = [{
+    label: 'Actual', data: D.ts_data.actuals,
+    borderColor: '#f8fafc', backgroundColor: 'rgba(248,250,252,0.1)',
+    borderWidth: 3, pointRadius: 5, fill: false
+}];
+tsKeys.forEach((k, i) => {
+    tsDS.push({
+        label: k, data: D.ts_data[k],
+        borderColor: COLORS[i % COLORS.length], borderWidth: 2,
+        borderDash: [5,3], pointRadius: 3, fill: false
+    });
+});
+new Chart(document.getElementById('tsChart'), {
+    type: 'line', data: { labels: months, datasets: tsDS },
+    options: {
+        responsive: true,
+        plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10 } } },
+            tooltip: { callbacks: { label: c => c.dataset.label + ': $' + c.parsed.y.toLocaleString() } }
+        },
+        scales: {
+            x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+            y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8', callback: v => '$' + (v/1000).toFixed(1) + 'k' },
+                 min: 11000, max: 16000 }
+        }
+    }
+});
+
+// Chart 2: MAE bar (top 10)
+const top10 = D.model_comp.slice(0, 10);
+new Chart(document.getElementById('maeChart'), {
+    type: 'bar',
+    data: {
+        labels: top10.map(m => m.name.replace(/\(T\d: /, '(').substring(0, 30)),
+        datasets: [{ data: top10.map(m => m.mae_12),
+            backgroundColor: top10.map((m,i) => COLORS[i % COLORS.length]), borderRadius: 5 }]
+    },
+    options: {
+        indexAxis: 'y', responsive: true,
+        plugins: { legend: { display: false },
+            tooltip: { callbacks: { label: c => '$' + c.parsed.x.toLocaleString() } }
+        },
+        scales: {
+            x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8', callback: v => '$' + v } },
+            y: { grid: { display: false }, ticks: { color: '#e2e8f0', font: { size: 10 } } }
+        }
+    }
+});
+
+// Chart 3: Error bars
+const errs = D.best_detail.map(d => d.error);
+new Chart(document.getElementById('errChart'), {
+    type: 'bar',
+    data: {
+        labels: months,
+        datasets: [{ data: errs,
+            backgroundColor: errs.map(e => e > 0 ? 'rgba(248,113,113,0.7)' : 'rgba(52,211,153,0.7)'),
+            borderRadius: 4 }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false },
+            tooltip: { callbacks: { label: c => '$' + c.parsed.y.toLocaleString() } }
+        },
+        scales: {
+            x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
+            y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8', callback: v => '$' + v.toLocaleString() } }
+        }
+    }
+});
+
+// Chart 4: Tier comparison
+const tierNames = D.tier_summary.map(t => t.tier);
+const tierColors = ['#22d3ee','#34d399','#fbbf24','#a78bfa'];
+new Chart(document.getElementById('tierChart'), {
+    type: 'bar',
+    data: {
+        labels: tierNames,
+        datasets: [
+            { label: 'MAE-12', data: D.tier_summary.map(t => t.mae_12), backgroundColor: tierColors.map(c => c + 'cc'), borderRadius: 5 },
+            { label: 'MAE-6', data: D.tier_summary.map(t => t.mae_6), backgroundColor: tierColors.map(c => c + '66'), borderRadius: 5 }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { labels: { color: '#94a3b8' } },
+            tooltip: { callbacks: { label: c => c.dataset.label + ': $' + c.parsed.y } }
+        },
+        scales: {
+            x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } },
+            y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8', callback: v => '$' + v } }
+        }
+    }
+});
+
+// Chart 5: Cumulative MAE
+new Chart(document.getElementById('cumChart'), {
+    type: 'line',
+    data: {
+        labels: months,
+        datasets: [{
+            label: 'Cumulative MAE', data: D.best_detail.map(d => d.cum_mae),
+            borderColor: '#22d3ee', backgroundColor: 'rgba(34,211,238,0.1)',
+            borderWidth: 2, fill: true, pointRadius: 4, tension: 0.3
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false },
+            tooltip: { callbacks: { label: c => 'Cum MAE: $' + c.parsed.y.toLocaleString() } }
+        },
+        scales: {
+            x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+            y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8', callback: v => '$' + v }, min: 0 }
+        }
+    }
+});
+
+</script></body></html>

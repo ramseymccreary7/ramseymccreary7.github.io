@@ -1,0 +1,2296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../../assets/gas-mock.js"></script>
+<script src="../../assets/fake.js"></script>
+<script src="mock.js"></script>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paid Ads Marketing Dashboard — Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700;900&display=swap" rel="stylesheet">
+<script src="../../assets/vendor/chart.umd.min.js"></script>
+<style>
+  :root{
+    --gold:#BD9F40; --gold-soft:#E7DCB3; --charcoal:#2E2E2B; --ink:#2E2E2B;
+    --teal:#1F5662; --sage:#82C4B0; --copper:#995533; --grey:#60605E;
+    --neutral:#DCDCD7; --offwhite:#EFF0EB; --surface:#FFFFFF;
+    --line:#E3E3DE; --pos:#1F5662; --neg:#8C2A1B;
+    --shadow-1:0 1px 3px rgba(46,46,43,.15),0 1px 2px rgba(46,46,43,.20);
+    --shadow-2:0 2px 6px rgba(46,46,43,.15),0 1px 2px rgba(46,46,43,.20);
+    --r-md:8px; --r-lg:12px;
+    font-family:'Source Sans 3','Segoe UI',Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--offwhite);color:var(--ink);font-size:14px;line-height:1.45;}
+  a{color:var(--teal)}
+
+  /* header band */
+  .band{background:var(--charcoal);color:#fff;padding:18px 28px 0;position:relative;}
+  .band .rule{height:3px;background:var(--gold);width:100%;position:absolute;left:0;bottom:0}
+  .band-row{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-bottom:16px;}
+  .logo{display:flex;align-items:center;gap:12px}
+  .logo .mark{width:34px;height:34px;border:2px solid var(--gold);border-radius:3px;display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--gold);font-size:18px;letter-spacing:-1px}
+  .logo .name{font-weight:900;letter-spacing:.5px;font-size:15px;text-transform:uppercase}
+  .logo .name small{display:block;font-weight:600;color:var(--neutral);font-size:10px;letter-spacing:2px}
+  h1{font-size:22px;margin:0;font-weight:700}
+  .sub{color:var(--neutral);font-size:12.5px;margin-top:2px}
+  .meta{text-align:right;font-size:12px;color:var(--neutral)}
+  .meta b{color:#fff;font-weight:600}
+  .btn{border:0;border-radius:var(--r-md);padding:8px 14px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;transition:.15s}
+  .btn-gold{background:var(--gold);color:var(--charcoal)}
+  .btn-gold:hover{filter:brightness(1.06)}
+  .btn-ghost{background:transparent;color:#fff;border:1px solid var(--grey)}
+  .btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
+
+  /* tabs */
+  .tabs{display:flex;gap:2px;padding:0 28px;background:var(--charcoal);overflow-x:auto}
+  .tab{background:transparent;border:0;color:var(--neutral);padding:12px 18px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;border-bottom:3px solid transparent;transition:.15s;white-space:nowrap}
+  .tab:hover{color:#fff}
+  .tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+  /* filter bar */
+  .filters{background:var(--surface);border-bottom:1px solid var(--line);padding:12px 28px;display:flex;flex-wrap:wrap;gap:14px 20px;align-items:flex-end;position:sticky;top:0;z-index:30;box-shadow:var(--shadow-1)}
+  .fgroup{display:flex;flex-direction:column;gap:5px}
+  .fgroup label{font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--grey)}
+  select{font-family:inherit;font-size:13px;padding:7px 9px;border:1px solid var(--line);border-radius:var(--r-md);background:#fff;color:var(--ink);min-width:140px;cursor:pointer}
+  select:focus{outline:2px solid var(--gold-soft);border-color:var(--gold)}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden}
+  .seg button{border:0;background:#fff;padding:7px 13px;font-family:inherit;font-size:12.5px;font-weight:600;color:var(--grey);cursor:pointer;border-right:1px solid var(--line)}
+  .seg button:last-child{border-right:0}
+  .seg button.on{background:var(--charcoal);color:#fff}
+  .reset{margin-left:auto;align-self:flex-end;display:flex;gap:8px}
+  .reset button{background:transparent;border:1px solid var(--line);border-radius:var(--r-md);padding:7px 12px;font-family:inherit;font-weight:600;font-size:12.5px;color:var(--grey);cursor:pointer}
+  .reset button:hover{border-color:var(--copper);color:var(--copper)}
+
+  /* multiselect */
+  .ms{position:relative}
+  .ms-btn{font-family:inherit;font-size:13px;padding:7px 9px;border:1px solid var(--line);border-radius:var(--r-md);background:#fff;color:var(--ink);min-width:190px;text-align:left;cursor:pointer;display:flex;justify-content:space-between;gap:8px;align-items:center}
+  .ms-btn:hover{border-color:var(--gold)}
+  .ms-btn .caret{color:var(--grey);font-size:10px}
+  .ms-panel{display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:60;background:#fff;border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--shadow-2);min-width:260px;max-height:340px;overflow:auto;padding:8px}
+  .ms.open .ms-panel{display:block}
+  .ms-tools{display:flex;gap:6px;padding:2px 4px 8px;border-bottom:1px solid var(--line);margin-bottom:6px}
+  .ms-tools button{flex:1;background:var(--offwhite);border:1px solid var(--line);border-radius:6px;padding:4px 6px;font-family:inherit;font-size:11.5px;font-weight:700;color:var(--grey);cursor:pointer}
+  .ms-tools button:hover{border-color:var(--gold);color:var(--charcoal)}
+  .ms-opt{display:flex;align-items:center;gap:8px;padding:4px 6px;border-radius:6px;cursor:pointer;font-size:13px}
+  .ms-opt:hover{background:var(--offwhite)}
+  .ms-opt input{margin:0;accent-color:var(--gold)}
+  .ms-opt .cnt{margin-left:auto;color:var(--grey);font-size:11.5px;font-variant-numeric:tabular-nums}
+
+  /* content */
+  main{padding:22px 28px 60px;max-width:1560px;margin:0 auto}
+  .page{display:none}
+  .page.active{display:block}
+  .scope-note{font-size:12.5px;color:var(--grey);margin:0 0 16px}
+  .scope-note b{color:var(--charcoal)}
+  h2.sec{font-size:15px;font-weight:800;margin:26px 0 12px;padding-bottom:6px;border-bottom:2px solid var(--neutral);letter-spacing:.2px}
+  h2.sec:first-child{margin-top:0}
+
+  /* KPI cards */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:12px;margin-bottom:20px}
+  @media(min-width:1420px){ .kpis{grid-template-columns:repeat(8,minmax(0,1fr))} }
+  .kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px 16px;box-shadow:var(--shadow-1);position:relative;overflow:hidden}
+  .kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--gold)}
+  .kpi.k-teal::before{background:var(--teal)} .kpi.k-charcoal::before{background:var(--charcoal)}
+  .kpi.k-sage::before{background:var(--sage)} .kpi.k-copper::before{background:var(--copper)}
+  .kpi.k-grey::before{background:var(--grey)}
+  .kpi .klabel{font-size:10.5px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:var(--grey)}
+  .kpi .kval{font-size:24px;font-weight:800;margin-top:5px;color:var(--charcoal);line-height:1.05;font-variant-numeric:tabular-nums}
+  .kpi .ksub{font-size:11.5px;color:var(--grey);margin-top:5px;display:flex;gap:10px;flex-wrap:wrap}
+  .chip{font-weight:700;font-variant-numeric:tabular-nums}
+  .chip.up{color:var(--pos)} .chip.dn{color:var(--neg)} .chip.flat{color:var(--grey)}
+  .chip .cl{font-weight:600;color:var(--grey)}
+
+  /* chart grid */
+  .grid{display:grid;gap:14px;margin-bottom:20px}
+  .g-2{grid-template-columns:1.45fr 1fr}
+  .g-2e{grid-template-columns:1fr 1fr}
+  .g-3{grid-template-columns:repeat(3,1fr)}
+  .g-4{grid-template-columns:repeat(4,1fr)}
+  .g-full{grid-template-columns:1fr}
+  @media(max-width:1180px){.g-3,.g-4{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:960px){.g-2,.g-2e,.g-3,.g-4{grid-template-columns:1fr}}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:15px 17px;box-shadow:var(--shadow-1)}
+  .card h3{margin:0 0 2px;font-size:14.5px;font-weight:700}
+  .card .hint{font-size:11.5px;color:var(--grey);margin:0 0 11px}
+  .chart-wrap{position:relative;height:290px}
+  .chart-wrap.tall{height:350px}
+  .chart-wrap.mini{height:132px}
+
+  /* tables */
+  .tbl-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+  .search{font-family:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--line);border-radius:var(--r-md);min-width:200px}
+  .search:focus{outline:2px solid var(--gold-soft);border-color:var(--gold)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead th{text-align:left;font-size:10.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--grey);font-weight:700;padding:8px 9px;border-bottom:2px solid var(--line);cursor:pointer;white-space:nowrap;user-select:none;background:#fff;position:sticky;top:0;z-index:2}
+  thead th.num{text-align:right}
+  thead th .arr{color:var(--gold)}
+  tbody td{padding:7px 9px;border-bottom:1px solid var(--offwhite);white-space:nowrap}
+  tbody td.num{text-align:right;font-variant-numeric:tabular-nums}
+  tbody tr:hover{background:var(--offwhite)}
+  tbody tr.total{background:var(--offwhite);font-weight:700}
+  tbody tr.total td{border-top:2px solid var(--neutral);position:sticky;bottom:0;background:var(--offwhite)}
+  .scroll-x{overflow-x:auto}
+  .scroll-y{max-height:620px;overflow:auto}
+  .muted{color:var(--grey)}
+  .clickable{cursor:pointer}
+  .clickable:hover{color:var(--teal);text-decoration:underline}
+  .tablecap{font-size:11.5px;color:var(--grey);margin-top:8px}
+  .pill{display:inline-block;padding:2px 8px;border-radius:1000px;font-size:11px;font-weight:700}
+  .pill-gold{background:var(--gold-soft);color:#4A3D12}
+  .pill-teal{background:#cfe6df;color:#06312B}
+  .pill-grey{background:var(--neutral);color:#4A4A47}
+  .pill-copper{background:#F0DCD1;color:#5A2F16}
+  .heat{position:relative}
+  .rank{display:inline-block;width:22px;text-align:right;color:var(--grey);font-size:11.5px;margin-right:6px;font-variant-numeric:tabular-nums}
+  .bar-cell{display:flex;align-items:center;gap:7px;justify-content:flex-end}
+  .bar-cell .bg{height:7px;border-radius:4px;background:var(--gold-soft);min-width:2px}
+  .bar-cell .bg.teal{background:#cfe6df}
+
+  /* alerts */
+  .alist{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(360px,1fr))}
+  .alert{background:#fff;border:1px solid var(--line);border-left:4px solid var(--grey);border-radius:var(--r-md);padding:12px 14px;box-shadow:var(--shadow-1)}
+  .alert.bad{border-left-color:var(--neg)} .alert.good{border-left-color:var(--pos)}
+  .alert.warn{border-left-color:var(--gold)}
+  .alert .at{font-weight:800;font-size:13.5px;display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+  .alert .ad{font-size:12.5px;color:var(--grey);margin-top:4px}
+  .alert .av{font-variant-numeric:tabular-nums;font-weight:800;font-size:13px;white-space:nowrap}
+  .alert.bad .av{color:var(--neg)} .alert.good .av{color:var(--pos)} .alert.warn .av{color:#7A6520}
+  .empty{background:#fff;border:1px dashed var(--neutral);border-radius:var(--r-lg);padding:28px;text-align:center;color:var(--grey)}
+
+  /* definitions */
+  .defs td:first-child{font-weight:700}
+  .defs code{background:var(--offwhite);border:1px solid var(--line);border-radius:4px;padding:1px 6px;font-size:12.5px;font-family:ui-monospace,Consolas,monospace}
+  .note{background:var(--gold-soft);border:1px solid #E7DCB3;border-radius:var(--r-md);padding:11px 14px;margin:12px 0;font-size:13px;color:#4A3D12}
+  .note.info{background:#E4EEF0;border-color:#BFD6DA;color:#153B44}
+
+  /* modal */
+  .modal-back{position:fixed;inset:0;background:rgba(28,28,26,.55);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px}
+  .modal{background:#fff;border-radius:var(--r-lg);max-width:1120px;width:100%;max-height:88vh;overflow:auto;box-shadow:var(--shadow-2)}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff;z-index:3}
+  .modal-head h3{margin:0;font-size:16px}
+  .modal-x{border:0;background:transparent;font-size:24px;line-height:1;cursor:pointer;color:var(--grey)}
+  .modal-x:hover{color:var(--charcoal)}
+  .modal-body{padding:14px 20px 22px}
+
+  /* loading / error / gate */
+  #loader{position:fixed;inset:0;background:var(--offwhite);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:100}
+  .spin{width:38px;height:38px;border:4px solid var(--neutral);border-top-color:var(--gold);border-radius:50%;animation:sp 1s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  #err{display:none;background:#F4D6CF;color:#3B0E07;border:1px solid #8C2A1B;border-radius:var(--r-md);padding:14px 18px;margin:16px 28px}
+  #warn{display:none;background:var(--gold-soft);color:#4A3D12;border:1px solid #C9B26A;border-radius:var(--r-md);padding:11px 16px;margin:14px 28px 0;font-size:13px}
+  #auth-gate{position:fixed;inset:0;background:var(--offwhite);display:flex;align-items:center;justify-content:center;z-index:160;padding:20px}
+  .ag-card{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-2);padding:30px;max-width:380px;width:100%;text-align:center}
+  .ag-mark{width:44px;height:44px;border:2px solid var(--gold);border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-weight:900;color:var(--gold);font-size:20px;margin-bottom:12px}
+  #auth-gate input{width:100%;font-family:inherit;font-size:15px;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-md);text-align:center;box-sizing:border-box}
+  #auth-gate input:focus{outline:2px solid var(--gold-soft);border-color:var(--gold)}
+  .ag-link{background:none;border:0;color:var(--teal);font-family:inherit;font-size:12.5px;cursor:pointer;margin-top:10px}
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="spin"></div>
+  <div class="muted" id="loadmsg">Loading live data from the sheet…</div>
+</div>
+
+<div id="auth-gate" style="display:none">
+  <div class="ag-card">
+    <div class="ag-mark">Atlas</div>
+    <h3 style="margin:0 0 4px">Paid Ads &amp; Lead Performance</h3>
+    <p class="muted" style="font-size:13px;margin:0 0 16px">Enter your email to continue.</p>
+    <div id="ag-step1">
+      <input id="ag-email" type="email" placeholder="you@example.com" onkeydown="if(event.key==='Enter')requestCode()">
+      <button class="btn btn-gold" style="width:100%;margin-top:10px" onclick="requestCode()">Send me a code</button>
+    </div>
+    <div id="ag-step2" style="display:none">
+      <p style="font-size:13px;margin:0 0 8px">Enter the 6-digit code sent to <b id="ag-emaillbl"></b>.</p>
+      <input id="ag-code" inputmode="numeric" placeholder="6-digit code" onkeydown="if(event.key==='Enter')verifyCode()">
+      <button class="btn btn-gold" style="width:100%;margin-top:10px" onclick="verifyCode()">Verify &amp; enter</button>
+      <button class="ag-link" onclick="agBack()">Use a different email</button>
+    </div>
+    <div id="ag-msg" style="font-size:12.5px;margin-top:12px;min-height:16px"></div>
+  </div>
+</div>
+
+<div class="band">
+  <div class="band-row">
+    <div class="logo">
+      <div class="mark">Atlas</div>
+      <div class="name">Atlas<small>FP&amp;A</small></div>
+    </div>
+    <div style="flex:1;min-width:280px">
+      <h1>Paid Ads &amp; Lead Performance Dashboard</h1>
+      <div class="sub">Google Ads spend &amp; funnel · field-office headcount · all-channel lead quality &nbsp;·&nbsp; <b style="color:#BD9F40">every rate metric recalculated at the selected scope</b></div>
+    </div>
+    <div class="meta">
+      <div>Data refreshed<br><b id="genAt">—</b></div>
+      <div style="margin-top:2px" id="asOf"></div>
+      <button class="btn btn-ghost" style="margin-top:8px" onclick="reload(true)">↻ Refresh</button>
+    </div>
+  </div>
+  <div class="rule"></div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" data-tab="overview" onclick="switchTab('overview')">Company Overview</button>
+  <button class="tab" data-tab="markets" onclick="switchTab('markets')">Market Scorecard</button>
+  <button class="tab" data-tab="trends" onclick="switchTab('trends')">Trends</button>
+  <button class="tab" data-tab="health" onclick="switchTab('health')">Office Health</button>
+  <button class="tab" data-tab="leads" onclick="switchTab('leads')">Lead Types</button>
+  <button class="tab" data-tab="mix" onclick="switchTab('mix')">Paid vs Organic</button>
+  <button class="tab" data-tab="alerts" onclick="switchTab('alerts')">Alerts <span id="alertBadge" class="pill pill-copper" style="display:none">0</span></button>
+  <button class="tab" data-tab="defs" onclick="switchTab('defs')">Definitions</button>
+</div>
+
+<div class="filters" id="filters">
+  <div class="fgroup">
+    <label>Market / Office</label>
+    <div class="ms" id="msMarket">
+      <button class="ms-btn" onclick="msToggle('msMarket')"><span id="msMarketLbl">All markets</span><span class="caret">▼</span></button>
+      <div class="ms-panel">
+        <div class="ms-tools"><button onclick="msAll('market',true)">Select all</button><button onclick="msAll('market',false)">Clear</button></div>
+        <div id="msMarketOpts"></div>
+      </div>
+    </div>
+  </div>
+  <div class="fgroup">
+    <label>State</label>
+    <select id="fState" onchange="onFilter()"><option value="__ALL__">All states</option></select>
+  </div>
+  <div class="fgroup">
+    <label>Market Tier</label>
+    <select id="fTier" onchange="onFilter()"><option value="__ALL__">All tiers</option></select>
+  </div>
+  <div class="fgroup">
+    <label>Lead Type (channel)</label>
+    <div class="ms" id="msChan">
+      <button class="ms-btn" onclick="msToggle('msChan')"><span id="msChanLbl">All lead types</span><span class="caret">▼</span></button>
+      <div class="ms-panel">
+        <div class="ms-tools"><button onclick="msAll('chan',true)">Select all</button><button onclick="msAll('chan',false)">Clear</button></div>
+        <div id="msChanOpts"></div>
+      </div>
+    </div>
+  </div>
+  <div class="fgroup">
+    <label>View By</label>
+    <div class="seg" id="granSeg">
+      <button data-gran="month" class="on" onclick="setGran('month')">Month</button>
+      <button data-gran="quarter" onclick="setGran('quarter')">Quarter</button>
+    </div>
+  </div>
+  <div class="fgroup">
+    <label>Period preset</label>
+    <select id="fPreset" onchange="applyPreset()">
+      <option value="latest">Latest complete month</option>
+      <option value="t3">Trailing 3 months</option>
+      <option value="t6">Trailing 6 months</option>
+      <option value="t12">Trailing 12 months</option>
+      <option value="ytd">Year to date</option>
+      <option value="all">All history</option>
+      <option value="custom">Custom…</option>
+    </select>
+  </div>
+  <div class="fgroup">
+    <label>From</label>
+    <select id="fFrom" onchange="onRange()"></select>
+  </div>
+  <div class="fgroup">
+    <label>To</label>
+    <select id="fTo" onchange="onRange()"></select>
+  </div>
+  <div class="fgroup" id="wrapQtr" style="display:none">
+    <label>Quarter</label>
+    <select id="fQuarter" onchange="onFilter()"><option value="ALL">All quarters in range</option></select>
+  </div>
+  <div class="reset">
+    <button onclick="resetFilters()">Reset filters</button>
+    <button onclick="exportCsv()">⤓ Export view</button>
+  </div>
+</div>
+
+<div id="warn"></div>
+<div id="err"></div>
+
+<main>
+
+<!-- ============================ COMPANY OVERVIEW ============================ -->
+<section class="page active" id="page-overview">
+  <p class="scope-note" id="ov-scope"></p>
+
+  <h2 class="sec">Paid Ads Funnel — consolidated</h2>
+  <div class="kpis" id="ov-kpis"></div>
+
+  <div class="grid g-2">
+    <div class="card">
+      <h3>Spend vs efficiency by month</h3>
+      <p class="hint" id="ov-trend-hint">Bars = spend. Line = the metric you pick, recomputed each period from the summed bases of every market in scope.</p>
+      <div style="margin:-4px 0 8px"><select id="ovMetric" onchange="renderOverview()" style="min-width:210px"></select></div>
+      <div class="chart-wrap tall"><canvas id="ov-trend"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Paid funnel — where leads land</h3>
+      <p class="hint">Clicks → Leads → Disclosed Investors → Buyers for the selected scope, with the conversion rate between each step.</p>
+      <div class="chart-wrap tall"><canvas id="ov-funnel"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid g-2">
+    <div class="card">
+      <h3>Efficiency map — CPL vs DI%</h3>
+      <p class="hint">Each bubble is a market; size = spend. Bottom-right is the good corner (cheap leads that disclose). Dashed lines are the company-wide recomputed values.</p>
+      <div class="chart-wrap tall"><canvas id="ov-scatter"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Where the money goes</h3>
+      <p class="hint">Top 12 markets by spend in scope, with each market's share of total leads for comparison.</p>
+      <div class="chart-wrap tall"><canvas id="ov-contrib"></canvas></div>
+    </div>
+  </div>
+
+  <h2 class="sec">Best &amp; worst in scope</h2>
+  <div class="grid g-4" id="ov-extremes"></div>
+</section>
+
+<!-- ============================ MARKET SCORECARD ============================ -->
+<section class="page" id="page-markets">
+  <p class="scope-note" id="mk-scope"></p>
+  <div class="card">
+    <div class="tbl-head">
+      <div>
+        <h3>All 16 KPIs by market / office</h3>
+        <p class="hint">Every rate is recomputed from that market's summed bases over the scope — never an average of monthly rates. Click any market name for its monthly detail. Click a column header to sort.</p>
+      </div>
+      <input class="search" id="mkSearch" placeholder="Filter markets…" oninput="renderMarkets()">
+    </div>
+    <div class="scroll-x scroll-y"><table id="mkTable"></table></div>
+    <p class="tablecap" id="mkCap"></p>
+  </div>
+
+  <h2 class="sec">Composite efficiency ranking</h2>
+  <div class="card">
+    <h3>Ranked scorecard</h3>
+    <p class="hint">Each market is scored 0–100 on five drivers, then averaged. Scores are relative to the markets currently in scope, so the ranking always answers "who is best right now", not "who beats a fixed target".</p>
+    <div class="scroll-x scroll-y"><table id="scoreTable"></table></div>
+  </div>
+</section>
+
+<!-- ============================ TRENDS ============================ -->
+<section class="page" id="page-trends">
+  <p class="scope-note" id="tr-scope"></p>
+  <div class="card" style="margin-bottom:14px">
+    <h3>All KPIs over time — consolidated</h3>
+    <p class="hint" id="tr-hint">One panel per KPI for the markets in scope. Rates are recomputed per period from summed bases.</p>
+  </div>
+  <div class="grid g-4" id="tr-mini"></div>
+
+  <h2 class="sec">Market comparison over time</h2>
+  <div class="card">
+    <h3>Compare markets on one metric</h3>
+    <p class="hint">Up to 8 markets are drawn; if more are in scope the 8 largest by spend are shown plus a company-wide line.</p>
+    <div style="margin:-4px 0 10px;display:flex;gap:10px;flex-wrap:wrap">
+      <select id="trMetric" onchange="renderTrends()" style="min-width:210px"></select>
+    </div>
+    <div class="chart-wrap tall"><canvas id="tr-compare"></canvas></div>
+  </div>
+</section>
+
+<!-- ============================ OFFICE HEALTH ============================ -->
+<section class="page" id="page-health">
+  <p class="scope-note" id="hl-scope"></p>
+  <div class="note info" id="hl-note"></div>
+
+  <h2 class="sec">Headcount-normalized company view</h2>
+  <div class="kpis" id="hl-kpis"></div>
+
+  <div class="grid g-2">
+    <div class="card">
+      <h3>Headcount vs paid leads</h3>
+      <p class="hint">Each point is a market. The dashed line is the company-wide leads-per-head rate — points below it are getting fewer leads per agent than the company average, points above are getting more.</p>
+      <div class="chart-wrap tall"><canvas id="hl-scatter"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Leads per head per month</h3>
+      <p class="hint">Paid leads divided by head-months in scope, so the figure is comparable across markets and across period lengths.</p>
+      <div class="chart-wrap tall"><canvas id="hl-bars"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid g-full">
+    <div class="card">
+      <h3>Headcount vs output per head</h3>
+      <p class="hint">Bars = average headcount for the markets in scope (left axis). Solid line = closed volume per head per month (right axis). Dashed line = paid leads per head per month. Growing headcount with a falling line means the new heads are not yet productive.</p>
+      <div class="chart-wrap tall"><canvas id="hl-trend"></canvas></div>
+    </div>
+  </div>
+
+  <h2 class="sec">Office health table</h2>
+  <div class="card">
+    <div class="tbl-head">
+      <div><h3>Capacity &amp; productivity by market</h3>
+      <p class="hint">Volume comes from the field-office tab; leads, DI, buyers and spend come from the paid-ads tab. Per-head figures are monthly rates (total ÷ head-months).</p></div>
+      <input class="search" id="hlSearch" placeholder="Filter markets…" oninput="renderHealth()">
+    </div>
+    <div class="scroll-x scroll-y"><table id="hlTable"></table></div>
+  </div>
+</section>
+
+<!-- ============================ LEAD TYPES ============================ -->
+<section class="page" id="page-leads">
+  <p class="scope-note" id="ld-scope"></p>
+  <div class="note info" id="ld-note"></div>
+
+  <h2 class="sec">All-channel lead volume &amp; quality</h2>
+  <div class="kpis" id="ld-kpis"></div>
+
+  <div class="grid g-2">
+    <div class="card">
+      <h3>Lead mix by type</h3>
+      <p class="hint">Lead count by <b>Channel (mapped)</b> — column O of the lead tab — for the offices and months in scope.</p>
+      <div class="chart-wrap tall"><canvas id="ld-chan"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Quality by lead type</h3>
+      <p class="hint">Share of each lead type's leads that currently sit in a qualified stage (Disclosed Investor or Buyer) vs unqualified. Bubble labels show lead volume.</p>
+      <div class="chart-wrap tall"><canvas id="ld-qual"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid g-full">
+    <div class="card">
+      <h3>Lead type volume over time</h3>
+      <p class="hint">Stacked monthly lead counts by type for the offices in scope.</p>
+      <div class="chart-wrap tall"><canvas id="ld-trend"></canvas></div>
+    </div>
+  </div>
+
+  <h2 class="sec">Office × lead type matrix</h2>
+  <div class="card">
+    <div class="tbl-head">
+      <div><h3>Lead counts by office and lead type</h3>
+      <p class="hint">Column R (Market standardized) down the side, column O (Channel mapped) across the top. Shaded by share of that office's leads. Click an office for its full stage breakdown.</p></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="ldMatrixMode" onchange="renderLeads()">
+          <option value="count">Lead counts</option>
+          <option value="share">% of office leads</option>
+          <option value="qual">Qualified rate</option>
+        </select>
+        <input class="search" id="ldSearch" placeholder="Filter offices…" oninput="renderLeads()">
+      </div>
+    </div>
+    <div class="scroll-x scroll-y"><table id="ldMatrix"></table></div>
+  </div>
+
+  <h2 class="sec">Stage mix — office detail</h2>
+  <div class="card">
+    <div class="tbl-head">
+      <div><h3>Current stage of every lead, by office</h3>
+      <p class="hint">These are <b>current</b> stages, not a time-ordered funnel — a lead sits in exactly one column. Qualified = Disclosed Investor + Buyer.</p></div>
+    </div>
+    <div class="scroll-x scroll-y"><table id="ldStage"></table></div>
+  </div>
+</section>
+
+<!-- ============================ PAID VS ORGANIC ============================ -->
+<section class="page" id="page-mix">
+  <p class="scope-note" id="mx-scope"></p>
+  <div class="note info">Two independent sources are joined here: <b>paid leads and spend</b> from the paid-ads tab, and <b>all leads regardless of channel</b> from the lead-score tab. Blended CPL spreads paid spend across every lead the office received, which is the number to use when asking "what did a lead actually cost us".</div>
+
+  <h2 class="sec">Blended acquisition economics</h2>
+  <div class="kpis" id="mx-kpis"></div>
+
+  <div class="grid g-2">
+    <div class="card">
+      <h3>Paid share of total leads by month</h3>
+      <p class="hint">Stacked bars split total leads into paid (from the ads tab) and non-paid (the remainder from the lead tab). The line is paid share.</p>
+      <div class="chart-wrap tall"><canvas id="mx-trend"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Paid CPL vs blended CPL</h3>
+      <p class="hint">The gap between the two lines is the leverage organic, GMB and referral traffic gives each paid dollar.</p>
+      <div class="chart-wrap tall"><canvas id="mx-cpl"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="tbl-head">
+      <div><h3>Paid dependence by office</h3>
+      <p class="hint">Offices sorted by paid share. A high paid share with a high CPL is the expensive corner; a low paid share with strong lead volume means organic is carrying the office.</p></div>
+      <input class="search" id="mxSearch" placeholder="Filter offices…" oninput="renderMix()">
+    </div>
+    <div class="scroll-x scroll-y"><table id="mxTable"></table></div>
+    <p class="tablecap">Ads-tab paid leads and lead-tab "Google Ads" counts are both shown — a large gap between them usually means a channel-mapping or attribution difference worth chasing down rather than a data error.</p>
+  </div>
+</section>
+
+<!-- ============================ ALERTS ============================ -->
+<section class="page" id="page-alerts">
+  <p class="scope-note" id="al-scope"></p>
+  <div class="card" style="margin-bottom:16px">
+    <div class="tbl-head">
+      <div><h3>What changed</h3>
+      <p class="hint">Each market's latest month in scope is compared to its own trailing average over the prior 3 months — so a market is measured against itself, not against a company target. Only moves past the sensitivity threshold and above the minimum volume floor are shown.</p></div>
+      <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+        <div class="fgroup"><label>Sensitivity</label>
+          <select id="alSens" onchange="renderAlerts()">
+            <option value="0.35">Low — moves over 35%</option>
+            <option value="0.20" selected>Medium — moves over 20%</option>
+            <option value="0.10">High — moves over 10%</option>
+          </select>
+        </div>
+        <div class="fgroup"><label>Min leads in month</label>
+          <select id="alFloor" onchange="renderAlerts()">
+            <option value="5">5</option><option value="10" selected>10</option><option value="25">25</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="al-body"></div>
+</section>
+
+<!-- ============================ DEFINITIONS ============================ -->
+<section class="page" id="page-defs">
+  <div class="note"><b>The one thing to know about this dashboard:</b> no rate or cost metric is ever averaged. Whenever you change a filter, the seven additive bases (spend, impressions, clicks, leads, disclosed investors, 10-day disclosures, buyers) are summed across everything in scope and each rate is divided fresh from those sums. That is why the company-wide row is not the average of the market rows — it is the correct consolidated figure.</div>
+
+  <div class="card">
+    <h3>Metric formulas</h3>
+    <p class="hint">Left column is what the sheet calls it; right column is exactly how this dashboard computes it at any scope.</p>
+    <div class="scroll-x"><table class="defs" id="defTable"></table></div>
+  </div>
+
+  <h2 class="sec">Where each number comes from</h2>
+  <div class="card">
+    <div class="scroll-x"><table class="defs" id="srcTable"></table></div>
+  </div>
+
+  <h2 class="sec">Caveats worth remembering</h2>
+  <div class="card">
+    <ul style="margin:4px 0 0;padding-left:20px;font-size:13.5px">
+      <li style="margin:8px 0"><b>Stages are current, not sequential.</b> The lead tab records each lead's stage today. A lead counted as "Buyer" is not also counted in "New", so the stage columns are a mix, not a funnel with drop-off. Treat "qualified rate" as a snapshot of stock, not a conversion rate over time.</li>
+      <li style="margin:8px 0"><b>Two lead definitions coexist.</b> The ads tab's Leads row counts paid-ads leads as the ads platform reports them. The lead tab counts CRM lead records across all channels. They will not tie exactly, and the Paid vs Organic tab shows both so the gap stays visible instead of being silently reconciled.</li>
+      <li style="margin:8px 0"><b>Headcount is a stock.</b> Per-head metrics divide a period total by head-<i>months</i> (the sum of monthly headcount), which gives a monthly rate that is comparable whether you look at one month or twelve. Averaging headcount and dividing would distort any period where offices grew or shrank.</li>
+      <li style="margin:8px 0"><b>The sheet's "Yearly Snapshot" column is ignored.</b> For rate metrics it averages the monthly rates, which does not equal the recomputed period rate. All roll-ups here come from the monthly columns.</li>
+      <li style="margin:8px 0"><b>Cost-per-buyer is volatile.</b> Most markets close 0–2 buyers a month from paid, so a single deal swings the figure enormously. Read it over a quarter or longer, and lean on CPDI for month-to-month signal.</li>
+      <li style="margin:8px 0"><b>Empty months are hidden, not zero.</b> Months with no data anywhere are dropped from the filters entirely, so a partial latest month will look low rather than absent — check the scope line for how many months are actually included.</li>
+    </ul>
+  </div>
+</section>
+
+</main>
+
+<div id="modal-host"></div>
+<script>
+/* =====================================================================
+   Atlas — PAID ADS & LEAD PERFORMANCE DASHBOARD (client)
+
+   THE CENTRAL RULE: rate and cost metrics are NEVER averaged. The seven
+   additive bases are summed across whatever is in scope, then every rate
+   is divided fresh from those sums. That is what makes the company-wide
+   roll-up correct rather than "the average of 26 market rates".
+   ===================================================================== */
+
+/* ------------------------------- theme ------------------------------- */
+var C = { gold:'#BD9F40', goldSoft:'#E7DCB3', charcoal:'#2E2E2B', teal:'#1F5662',
+          sage:'#82C4B0', copper:'#995533', grey:'#60605E', neutral:'#DCDCD7',
+          offwhite:'#EFF0EB', line:'#E3E3DE', neg:'#8C2A1B' };
+var SERIES = [C.teal, C.gold, C.sage, C.copper, C.grey, '#4E8794', '#C9B26A', '#B98A6A', C.charcoal, '#8E8E8B'];
+
+if (window.Chart) {
+  Chart.defaults.font.family = "'Source Sans 3','Segoe UI',Arial,sans-serif";
+  Chart.defaults.font.size = 12;
+  Chart.defaults.color = C.grey;
+  Chart.defaults.borderColor = C.line;
+  Chart.defaults.plugins.legend.labels.boxWidth = 12;
+  Chart.defaults.plugins.legend.labels.boxHeight = 12;
+  Chart.defaults.plugins.legend.labels.usePointStyle = true;
+  Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(46,46,43,.94)';
+  Chart.defaults.plugins.tooltip.padding = 10;
+  Chart.defaults.plugins.tooltip.cornerRadius = 6;
+  Chart.defaults.maintainAspectRatio = false;
+}
+
+/* --------------------------- metric registry --------------------------- */
+/* good: 1 = higher is better, -1 = lower is better, 0 = neutral (volume). */
+var METRICS = [
+  { k:'spend',  label:'Spend',              short:'Spend',       fmt:'m0',  good:0,  base:1 },
+  { k:'impr',   label:'Impressions',        short:'Impr.',       fmt:'i',   good:1,  base:1 },
+  { k:'ctr',    label:'CTR',                short:'CTR',         fmt:'p1',  good:1,  num:'clicks', den:'impr' },
+  { k:'clicks', label:'Clicks',             short:'Clicks',      fmt:'i',   good:1,  base:1 },
+  { k:'cpc',    label:'CPC',                short:'CPC',         fmt:'m2',  good:-1, num:'spend',  den:'clicks' },
+  { k:'lpcv',   label:'LP Conversion Rate', short:'LP Conv',     fmt:'p1',  good:1,  num:'leads',  den:'clicks' },
+  { k:'leads',  label:'Leads',              short:'Leads',       fmt:'i',   good:1,  base:1 },
+  { k:'cpl',    label:'CPL',                short:'CPL',         fmt:'m2',  good:-1, num:'spend',  den:'leads' },
+  { k:'dipct',  label:'DI%',                short:'DI%',         fmt:'p1',  good:1,  num:'di',     den:'leads' },
+  { k:'di',     label:'Disclosed Investors',short:'DI',          fmt:'i',   good:1,  base:1 },
+  { k:'d10',    label:'10-Day Disclosures', short:'10d Count',   fmt:'i',   good:1,  base:1 },
+  { k:'d10r',   label:'10-Day Disclosure Rate', short:'10d Rate',fmt:'p1',  good:1,  num:'d10',    den:'leads' },
+  { k:'cpdi',   label:'CPDI',               short:'CPDI',        fmt:'m0',  good:-1, num:'spend',  den:'di' },
+  { k:'buyers', label:'Buyers',             short:'Buyers',      fmt:'i',   good:1,  base:1 },
+  { k:'bpct',   label:'Buyer%',             short:'Buyer%',      fmt:'p2',  good:1,  num:'buyers', den:'leads' },
+  { k:'cpb',    label:'Cost Per Buyer',     short:'Cost/Buyer',  fmt:'m0',  good:-1, num:'spend',  den:'buyers' }
+];
+var MET = {}; METRICS.forEach(function (m) { MET[m.k] = m; });
+var BASES = ['spend','impr','clicks','leads','di','d10','buyers'];
+
+/* ------------------------------ formatting ------------------------------ */
+function nn(v) { return (v === null || v === undefined || (typeof v === 'number' && !isFinite(v))); }
+function fmt(v, kind) {
+  if (nn(v)) return '—';
+  switch (kind) {
+    case 'm0': return '$' + Math.round(v).toLocaleString();
+    case 'm2': return '$' + v.toLocaleString(undefined, { minimumFractionDigits:2, maximumFractionDigits:2 });
+    case 'mk': return '$' + (Math.abs(v) >= 1000000 ? (v/1000000).toFixed(2) + 'M'
+                        : Math.abs(v) >= 1000 ? Math.round(v/1000) + 'K' : Math.round(v));
+    case 'i':  return Math.round(v).toLocaleString();
+    case 'n1': return v.toLocaleString(undefined, { minimumFractionDigits:1, maximumFractionDigits:1 });
+    case 'n2': return v.toLocaleString(undefined, { minimumFractionDigits:2, maximumFractionDigits:2 });
+    case 'p1': return (v * 100).toFixed(1) + '%';
+    case 'p2': return (v * 100).toFixed(2) + '%';
+    case 'p0': return Math.round(v * 100) + '%';
+  }
+  return String(v);
+}
+function fmtMetric(v, k) { return fmt(v, MET[k] ? MET[k].fmt : 'i'); }
+function monthLabel(key) {
+  if (!key) return '';
+  var p = key.split('-'), mo = parseInt(p[1], 10);
+  return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][mo-1] + " '" + p[0].substring(2);
+}
+function quarterKey(key) { var p = key.split('-'); return p[0] + '-Q' + Math.ceil(parseInt(p[1],10)/3); }
+function quarterLabel(qk) { var p = qk.split('-'); return p[1] + " '" + p[0].substring(2); }
+function monthShift(key, n) {
+  var p = key.split('-'), y = parseInt(p[0],10), m = parseInt(p[1],10) - 1 + n;
+  y += Math.floor(m / 12); m = ((m % 12) + 12) % 12;
+  return y + '-' + (m + 1 < 10 ? '0' : '') + (m + 1);
+}
+function esc(s) { return String(s === null || s === undefined ? '' : s)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* ============================ boot + auth ============================ */
+var TOKEN_KEY = 'nwPaidAdsToken';     // unique per web app (shared localStorage origin)
+var AUTH_TOKEN = '';
+function savedToken(){ try{ return localStorage.getItem(TOKEN_KEY)||''; }catch(e){ return ''; } }
+function storeToken(t){ try{ localStorage.setItem(TOKEN_KEY, t); }catch(e){} }
+
+function reload(force){
+  document.getElementById('loader').style.display='flex';
+  document.getElementById('loadmsg').textContent = force
+    ? 'Re-reading all three tabs from the sheet…' : 'Loading live data from the sheet…';
+  google.script.run.withSuccessHandler(onData).withFailureHandler(onErr)
+    .getDashboardData(AUTH_TOKEN, !!force);
+}
+
+window.addEventListener('load', function(){
+  AUTH_TOKEN = savedToken();
+  google.script.run
+    .withSuccessHandler(function(s){ if(s && s.ok){ hideGate(); reload(false); } else { showGate(); } })
+    .withFailureHandler(function(){ showGate(); })
+    .getAuthState(AUTH_TOKEN);
+});
+
+function showGate(){ document.getElementById('loader').style.display='none';
+  document.getElementById('auth-gate').style.display='flex'; }
+function hideGate(){ document.getElementById('auth-gate').style.display='none'; }
+function agMsg(color,text){ var m=document.getElementById('ag-msg'); m.style.color=color; m.textContent=text; }
+function requestCode(){
+  var email=(document.getElementById('ag-email').value||'').trim();
+  if(!email || email.indexOf('@')<1){ agMsg('#8C2A1B','Enter a valid email.'); return; }
+  agMsg('var(--grey)','Sending…');
+  google.script.run.withSuccessHandler(function(r){
+    if(r && r.ok){
+      document.getElementById('ag-step1').style.display='none';
+      document.getElementById('ag-step2').style.display='block';
+      document.getElementById('ag-emaillbl').textContent=email;
+      agMsg('var(--grey)','If that email is on the access list, a 6-digit code is on its way. Enter it below.');
+      var c=document.getElementById('ag-code'); if(c) c.focus();
+    } else { agMsg('#8C2A1B', r && r.error ? r.error : 'Something went wrong.'); }
+  }).withFailureHandler(function(e){ agMsg('#8C2A1B','Error: '+(e&&e.message?e.message:e)); })
+    .requestAccessCode(email);
+}
+function verifyCode(){
+  var email=(document.getElementById('ag-email').value||'').trim();
+  var code=(document.getElementById('ag-code').value||'').trim();
+  if(!code){ agMsg('#8C2A1B','Enter the code from your email.'); return; }
+  agMsg('var(--grey)','Verifying…');
+  google.script.run.withSuccessHandler(function(r){
+    if(r && r.ok){ AUTH_TOKEN=r.token; storeToken(r.token); hideGate(); reload(false); }
+    else { agMsg('#8C2A1B', r && r.error ? r.error : 'Verification failed.'); }
+  }).withFailureHandler(function(e){ agMsg('#8C2A1B','Error: '+(e&&e.message?e.message:e)); })
+    .verifyAccessCode(email, code);
+}
+function agBack(){
+  document.getElementById('ag-step2').style.display='none';
+  document.getElementById('ag-step1').style.display='block';
+  document.getElementById('ag-code').value=''; agMsg('var(--grey)','');
+}
+function onErr(e){
+  document.getElementById('loader').style.display='none';
+  var el=document.getElementById('err'); el.style.display='block';
+  el.textContent='Could not load data: '+(e&&e.message?e.message:e);
+}
+
+/* ============================== data model ============================== */
+var D = null;                 // raw payload
+var NM = 0, NMO = 0, NCH = 0, NST = 0;
+var ADS = null, HC = null, VOL = null;      // [marketIdx][monthIdx]
+var MKT_HAS_ADS = null, MKT_HAS_LEADS = null, MKT_HAS_HC = null;
+var STAGE_QUAL = null;                      // 1 if a "won/qualified" stage
+var state = {
+  markets: null,              // null = all; otherwise Set of idx
+  chans: null,
+  stateF: '__ALL__', tier: '__ALL__',
+  gran: 'month', from: 0, to: 0, quarter: 'ALL',
+  preset: 'latest',
+  sortMk: { k:'spend', dir:-1 }, sortHl: { k:'leadsPerHead', dir:-1 },
+  ovMetric: 'cpl', trMetric: 'cpl', page: 'overview'
+};
+var CH = {};                  // chart instances
+
+function onData(res){
+  D = res || {};
+  NM  = (D.markets||[]).length;
+  NMO = (D.months||[]).length;
+  NCH = (D.channels||[]).length;
+  NST = (D.stages||[]).length;
+
+  ADS = []; HC = []; VOL = [];
+  for (var i=0;i<NM;i++){ ADS.push(new Array(NMO)); HC.push(new Array(NMO)); VOL.push(new Array(NMO)); }
+  MKT_HAS_ADS = new Uint8Array(NM); MKT_HAS_LEADS = new Uint8Array(NM); MKT_HAS_HC = new Uint8Array(NM);
+
+  (D.ads||[]).forEach(function(r){
+    var o = {};
+    for (var b=0;b<BASES.length;b++){ var v = r[b+2]; o[BASES[b]] = (v===null||v===undefined)?null:v; }
+    ADS[r[0]][r[1]] = o; MKT_HAS_ADS[r[0]] = 1;
+  });
+  (D.hc||[]).forEach(function(r){ HC[r[0]][r[1]] = r[2]; MKT_HAS_HC[r[0]] = 1; });
+  (D.vol||[]).forEach(function(r){ VOL[r[0]][r[1]] = r[2]; });
+  (D.leads||[]).forEach(function(r){ MKT_HAS_LEADS[r[0]] = 1; });
+
+  STAGE_QUAL = new Uint8Array(NST);
+  var win = D.winStages || ['Disclosed Investor','Buyer'];
+  (D.stages||[]).forEach(function(s,i){ if (win.indexOf(s) > -1) STAGE_QUAL[i] = 1; });
+
+  document.getElementById('genAt').textContent = D.generatedAt || '—';
+  document.getElementById('asOf').textContent = D.asOf ? ('Sheet as of ' + D.asOf) : '';
+
+  var w = document.getElementById('warn');
+  if ((D.warnings||[]).length){ w.style.display='block';
+    w.innerHTML = '<b>Heads up —</b> ' + D.warnings.map(esc).join(' &nbsp;·&nbsp; '); }
+  else { w.style.display='none'; }
+
+  buildFilterUI();
+  document.getElementById('loader').style.display='none';
+  renderAll();
+}
+
+/* ============================== filter UI ============================== */
+function buildFilterUI(){
+  // markets multiselect
+  var host = document.getElementById('msMarketOpts'), h = '';
+  (D.markets||[]).forEach(function(m,i){
+    var tags = [];
+    if (MKT_HAS_ADS[i]) tags.push('ads');
+    if (MKT_HAS_LEADS[i]) tags.push('leads');
+    if (MKT_HAS_HC[i]) tags.push('hc');
+    h += '<label class="ms-opt"><input type="checkbox" data-i="'+i+'" checked onchange="msChange(\'market\')">'
+       + '<span>'+esc(m)+'</span><span class="cnt">'+tags.join(' · ')+'</span></label>';
+  });
+  host.innerHTML = h;
+
+  var ch = document.getElementById('msChanOpts'), h2 = '';
+  (D.channels||[]).forEach(function(c,i){
+    h2 += '<label class="ms-opt"><input type="checkbox" data-i="'+i+'" checked onchange="msChange(\'chan\')">'
+        + '<span>'+esc(c)+'</span></label>';
+  });
+  ch.innerHTML = h2 || '<div class="muted" style="padding:6px">No lead-type data</div>';
+
+  // states / tiers
+  var sSet = {}, tSet = {};
+  (D.states||[]).forEach(function(s){ if(s) sSet[s]=1; });
+  (D.tiers||[]).forEach(function(t){ if(t) tSet[t]=1; });
+  fillSelect('fState', Object.keys(sSet).sort(), '__ALL__', 'All states');
+  fillSelect('fTier',  Object.keys(tSet).sort(), '__ALL__', 'All tiers');
+
+  // month range
+  var from = document.getElementById('fFrom'), to = document.getElementById('fTo');
+  from.innerHTML=''; to.innerHTML='';
+  (D.months||[]).forEach(function(m,i){
+    from.insertAdjacentHTML('beforeend','<option value="'+i+'">'+monthLabel(m)+'</option>');
+    to.insertAdjacentHTML('beforeend','<option value="'+i+'">'+monthLabel(m)+'</option>');
+  });
+
+  // quarters present
+  var qs = {}; (D.months||[]).forEach(function(m){ qs[quarterKey(m)]=1; });
+  var qsel = document.getElementById('fQuarter');
+  qsel.innerHTML = '<option value="ALL">All quarters in range</option>';
+  Object.keys(qs).sort().forEach(function(q){
+    qsel.insertAdjacentHTML('beforeend','<option value="'+q+'">'+quarterLabel(q)+'</option>');
+  });
+
+  // metric pickers
+  ['ovMetric','trMetric'].forEach(function(id){
+    var s = document.getElementById(id); s.innerHTML='';
+    METRICS.forEach(function(m){
+      s.insertAdjacentHTML('beforeend','<option value="'+m.k+'">'+esc(m.label)+'</option>');
+    });
+    s.value = id==='ovMetric' ? state.ovMetric : state.trMetric;
+  });
+
+  state.markets = null; state.chans = null;
+  applyPreset(true);
+  msLabel('market'); msLabel('chan');
+}
+function fillSelect(id, arr, allVal, allLbl){
+  var s = document.getElementById(id);
+  s.innerHTML = '<option value="'+allVal+'">'+allLbl+'</option>';
+  arr.forEach(function(v){ s.insertAdjacentHTML('beforeend','<option value="'+esc(v)+'">'+esc(v)+'</option>'); });
+}
+
+function msToggle(id){
+  var el = document.getElementById(id), wasOpen = el.classList.contains('open');
+  document.querySelectorAll('.ms').forEach(function(m){ m.classList.remove('open'); });
+  if (!wasOpen) el.classList.add('open');
+}
+document.addEventListener('click', function(e){
+  if (!e.target.closest('.ms')) document.querySelectorAll('.ms').forEach(function(m){ m.classList.remove('open'); });
+});
+function msBoxes(kind){
+  return document.querySelectorAll('#' + (kind==='market'?'msMarketOpts':'msChanOpts') + ' input');
+}
+function msAll(kind, on){
+  msBoxes(kind).forEach(function(b){ b.checked = on; });
+  msChange(kind);
+}
+function msChange(kind){
+  var sel = new Set(), total = 0;
+  msBoxes(kind).forEach(function(b){ total++; if (b.checked) sel.add(parseInt(b.dataset.i,10)); });
+  var all = sel.size === total;
+  if (kind==='market') state.markets = all ? null : sel; else state.chans = all ? null : sel;
+  msLabel(kind); renderAll();
+}
+function msLabel(kind){
+  var sel = kind==='market' ? state.markets : state.chans;
+  var names = kind==='market' ? (D.markets||[]) : (D.channels||[]);
+  var lbl = document.getElementById(kind==='market'?'msMarketLbl':'msChanLbl');
+  var noun = kind==='market' ? 'markets' : 'lead types';
+  if (!sel) { lbl.textContent = 'All ' + noun + ' (' + names.length + ')'; return; }
+  if (sel.size === 0) { lbl.textContent = 'None selected'; return; }
+  if (sel.size === 1) { lbl.textContent = names[Array.from(sel)[0]]; return; }
+  lbl.textContent = sel.size + ' of ' + names.length + ' ' + noun;
+}
+
+function setGran(g){
+  state.gran = g;
+  document.querySelectorAll('#granSeg button').forEach(function(b){ b.classList.toggle('on', b.dataset.gran===g); });
+  document.getElementById('wrapQtr').style.display = g==='quarter' ? 'flex' : 'none';
+  if (g==='month') document.getElementById('fQuarter').value='ALL';
+  renderAll();
+}
+function onRange(){
+  state.from = parseInt(document.getElementById('fFrom').value,10);
+  state.to   = parseInt(document.getElementById('fTo').value,10);
+  if (state.from > state.to) { var t = state.from; state.from = state.to; state.to = t;
+    document.getElementById('fFrom').value = state.from; document.getElementById('fTo').value = state.to; }
+  document.getElementById('fPreset').value = 'custom';
+  renderAll();
+}
+function onFilter(){
+  state.stateF = document.getElementById('fState').value;
+  state.tier   = document.getElementById('fTier').value;
+  state.quarter= document.getElementById('fQuarter').value;
+  state.ovMetric = document.getElementById('ovMetric').value;
+  state.trMetric = document.getElementById('trMetric').value;
+  renderAll();
+}
+function applyPreset(silent){
+  var p = document.getElementById('fPreset').value;
+  var last = NMO - 1;
+  // "latest complete month": if the newest month looks partial (spend present in
+  // fewer markets than the month before), step back one.
+  if (p !== 'custom' && last > 0 && monthMarketCount(last) < monthMarketCount(last-1) * 0.6) last = last - 1;
+  var from = last;
+  if (p === 't3')  from = Math.max(0, last-2);
+  if (p === 't6')  from = Math.max(0, last-5);
+  if (p === 't12') from = Math.max(0, last-11);
+  if (p === 'all') { from = 0; last = NMO-1; }
+  if (p === 'ytd') {
+    var yr = (D.months[last]||'').split('-')[0];
+    from = last; while (from > 0 && (D.months[from-1]||'').split('-')[0] === yr) from--;
+  }
+  if (p !== 'custom') { state.from = from; state.to = last; }
+  document.getElementById('fFrom').value = state.from;
+  document.getElementById('fTo').value = state.to;
+  if (!silent) renderAll();
+}
+function monthMarketCount(moi){
+  var n = 0; for (var i=0;i<NM;i++){ var a = ADS[i][moi]; if (a && a.spend) n++; } return n;
+}
+function resetFilters(){
+  msAll('market', true); msAll('chan', true);
+  document.getElementById('fState').value='__ALL__';
+  document.getElementById('fTier').value='__ALL__';
+  document.getElementById('fQuarter').value='ALL';
+  document.getElementById('fPreset').value='latest';
+  setGran('month');
+  state.stateF='__ALL__'; state.tier='__ALL__'; state.quarter='ALL';
+  applyPreset(true);
+  renderAll();
+}
+
+/* ============================ scope resolution ============================ */
+function scopeMarkets(){
+  var out = [];
+  for (var i=0;i<NM;i++){
+    if (state.markets && !state.markets.has(i)) continue;
+    if (state.stateF !== '__ALL__' && (D.states[i]||'') !== state.stateF) continue;
+    if (state.tier   !== '__ALL__' && (D.tiers[i]||'')  !== state.tier)   continue;
+    out.push(i);
+  }
+  return out;
+}
+function scopeMonths(){
+  var out = [];
+  for (var i=state.from;i<=state.to;i++){
+    if (state.gran==='quarter' && state.quarter!=='ALL' && quarterKey(D.months[i])!==state.quarter) continue;
+    out.push(i);
+  }
+  return out;
+}
+function scopeChans(){
+  var out = [];
+  for (var i=0;i<NCH;i++) if (!state.chans || state.chans.has(i)) out.push(i);
+  return out;
+}
+/* Time-series charts need context: when the scope is only a month or two, a
+   single bar tells you nothing. So charts plot a trailing 13-month window
+   ending at the scope end, and shade the in-scope periods. KPI cards and
+   tables still use the scope exactly as filtered. */
+function chartMonths(mos){
+  if (mos.length >= 6) return { mos:mos, extended:false, inScope:null };
+  var end = mos.length ? mos[mos.length-1] : NMO-1;
+  var start = Math.max(0, end - 12);
+  var out = [], inScope = {};
+  mos.forEach(function(i){ inScope[i] = 1; });
+  for (var i=start;i<=end;i++) out.push(i);
+  return { mos:out, extended: out.length > mos.length, inScope:inScope };
+}
+function ctxNote(cw){
+  if (!cw.extended) return '';
+  return ' Charted over the trailing ' + cw.mos.length
+       + ' months for context — the selected period is the darker/highlighted bars.';
+}
+function bucketColors(cw, bk, inColor, outColor){
+  if (!cw.extended) return inColor;
+  var flag = new Array(bk.n).fill(false);
+  cw.mos.forEach(function(moi){ if (cw.inScope[moi]) flag[bk.of[moi]] = true; });
+  return flag.map(function(f){ return f ? inColor : outColor; });
+}
+
+/* period buckets for time series */
+function buckets(mos){
+  var labels = [], keys = [], of = {}, seen = {};
+  mos.forEach(function(moi){
+    var key = state.gran==='quarter' ? quarterKey(D.months[moi]) : D.months[moi];
+    if (seen[key]===undefined){ seen[key]=keys.length; keys.push(key);
+      labels.push(state.gran==='quarter' ? quarterLabel(key) : monthLabel(D.months[moi])); }
+    of[moi] = seen[key];
+  });
+  return { labels:labels, keys:keys, of:of, n:keys.length };
+}
+
+/* ============================ aggregation ============================ */
+function zero(){ return { spend:0, impr:0, clicks:0, leads:0, di:0, d10:0, buyers:0, _n:0 }; }
+function addAds(acc, o){
+  if (!o) return;
+  for (var b=0;b<BASES.length;b++){ var v=o[BASES[b]]; if (typeof v==='number'){ acc[BASES[b]] += v; acc._n=1; } }
+}
+function derive(a){
+  var o = {};
+  BASES.forEach(function(b){ o[b] = a._n ? a[b] : null; });
+  METRICS.forEach(function(m){
+    if (m.base) return;
+    var den = a[m.den], num = a[m.num];
+    o[m.k] = (a._n && den) ? num/den : null;
+  });
+  o._n = a._n;
+  return o;
+}
+function sumAds(mks, mos){ var a = zero();
+  for (var i=0;i<mks.length;i++) for (var j=0;j<mos.length;j++) addAds(a, ADS[mks[i]][mos[j]]);
+  return a; }
+function sumAdsByMarket(mks, mos){ var out = {};
+  mks.forEach(function(mi){ var a=zero(); mos.forEach(function(moi){ addAds(a, ADS[mi][moi]); }); out[mi]=a; });
+  return out; }
+function sumAdsByBucket(mks, mos, bk){
+  var out = []; for (var b=0;b<bk.n;b++) out.push(zero());
+  mks.forEach(function(mi){ mos.forEach(function(moi){ addAds(out[bk.of[moi]], ADS[mi][moi]); }); });
+  return out; }
+
+/* headcount is a stock: we sum head-MONTHS so per-head figures are monthly
+   rates that stay comparable across period lengths. */
+function headMonthsFor(mks, mos){
+  var t = 0; mks.forEach(function(mi){ mos.forEach(function(moi){
+    var h = HC[mi][moi]; if (typeof h==='number') t += h; }); });
+  return t;
+}
+function volumeFor(mks, mos){
+  var t = 0, any = false; mks.forEach(function(mi){ mos.forEach(function(moi){
+    var v = VOL[mi][moi]; if (typeof v==='number'){ t += v; any = true; } }); });
+  return any ? t : null;
+}
+
+/* leads: one pass over the aggregated payload rows with masks */
+function leadScan(mks, mos, chs, opts){
+  opts = opts || {};
+  var mkOn = new Uint8Array(NM), moOn = new Uint8Array(NMO), chOn = new Uint8Array(NCH);
+  mks.forEach(function(i){ mkOn[i]=1; }); mos.forEach(function(i){ moOn[i]=1; }); chs.forEach(function(i){ chOn[i]=1; });
+  var R = { total:0, qual:0, byChan:new Float64Array(NCH), byStage:new Float64Array(NST),
+            qualByChan:new Float64Array(NCH), byMkt:{}, byBucket:null, mktChan:{}, mktStage:{},
+            chanBucket:null };
+  var bk = opts.buckets;
+  if (bk){ R.byBucket = new Float64Array(bk.n);
+    R.chanBucket = []; for (var c=0;c<NCH;c++) R.chanBucket.push(new Float64Array(bk.n)); }
+  mks.forEach(function(mi){ R.byMkt[mi] = { total:0, qual:0 }; });
+
+  var rows = D.leads||[];
+  for (var r=0;r<rows.length;r++){
+    var row = rows[r], mi=row[0], ci=row[1], si=row[2], moi=row[3], n=row[4];
+    if (!mkOn[mi] || !moOn[moi] || !chOn[ci]) continue;
+    R.total += n; R.byChan[ci] += n; R.byStage[si] += n;
+    var q = STAGE_QUAL[si] ? n : 0;
+    R.qual += q; R.qualByChan[ci] += q;
+    var bm = R.byMkt[mi]; if (bm){ bm.total += n; bm.qual += q; }
+    if (opts.mktChan){ var k1 = mi+'|'+ci; R.mktChan[k1] = (R.mktChan[k1]||0)+n; }
+    if (opts.mktStage){ var k2 = mi+'|'+si; R.mktStage[k2] = (R.mktStage[k2]||0)+n; }
+    if (bk){ var b = bk.of[moi]; R.byBucket[b] += n; R.chanBucket[ci][b] += n; }
+  }
+  return R;
+}
+
+/* ============================ comparison windows ============================ */
+function moIdxOf(key){ var i = (D.months||[]).indexOf(key); return i; }
+function shiftWindow(mos, n){
+  var out = [];
+  for (var i=0;i<mos.length;i++){
+    var k = monthShift(D.months[mos[i]], n), ix = moIdxOf(k);
+    if (ix > -1) out.push(ix);
+  }
+  return out;
+}
+function prevWindow(mos){
+  if (!mos.length) return [];
+  return shiftWindow(mos, -mos.length);
+}
+
+/* ============================== chart helper ============================== */
+function mkChart(id, cfg){
+  var el = document.getElementById(id); if (!el) return;
+  if (CH[id]) { CH[id].destroy(); delete CH[id]; }
+  CH[id] = new Chart(el.getContext('2d'), cfg);
+}
+function moneyTick(v){
+  var a = Math.abs(v);
+  if (a >= 1000000) return '$' + (v/1000000).toFixed(1) + 'M';
+  if (a >= 10000)   return '$' + Math.round(v/1000) + 'K';
+  if (a >= 100)     return '$' + Math.round(v).toLocaleString();
+  if (a >= 10)      return '$' + v.toFixed(1);
+  return '$' + v.toFixed(2);
+}
+function axisMoney(){ return { ticks:{ callback:moneyTick },
+  grid:{ color:C.line, drawBorder:false } }; }
+function axisPct(){ return { ticks:{ callback:function(v){ return (v*100).toFixed(0)+'%'; } },
+  grid:{ color:C.line } }; }
+function axisFor(k, side){
+  var m = MET[k], ax = { position: side||'left', grid:{ color:C.line } };
+  if (m.fmt==='p1'||m.fmt==='p2') ax.ticks = { callback:function(v){ return (v*100).toFixed(1)+'%'; } };
+  else if (m.fmt[0]==='m') ax.ticks = { callback:moneyTick };
+  else ax.ticks = { callback:function(v){ return fmt(v,'i'); } };
+  if (side==='right') ax.grid = { drawOnChartArea:false };
+  return ax;
+}
+
+/* ============================== render root ============================== */
+function switchTab(t){
+  state.page = t;
+  document.querySelectorAll('.tab').forEach(function(b){ b.classList.toggle('active', b.dataset.tab===t); });
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.toggle('active', p.id==='page-'+t); });
+  renderAll();
+}
+function scopeText(){
+  var mks = scopeMarkets(), mos = scopeMonths();
+  var mtxt = !state.markets && state.stateF==='__ALL__' && state.tier==='__ALL__'
+    ? 'all ' + mks.length + ' markets'
+    : mks.length + (mks.length===1 ? ' market' : ' markets');
+  if (mks.length===1) mtxt = D.markets[mks[0]];
+  var ptxt = mos.length
+    ? (mos.length===1 ? monthLabel(D.months[mos[0]])
+       : monthLabel(D.months[mos[0]]) + ' – ' + monthLabel(D.months[mos[mos.length-1]]) + ' (' + mos.length + ' months)')
+    : 'no months';
+  return { mks:mks, mos:mos, text:'Scope: <b>'+esc(mtxt)+'</b> · <b>'+esc(ptxt)+'</b>'
+    + (state.gran==='quarter' ? ' · viewed by quarter' : '') };
+}
+function renderAll(){
+  if (!D) return;
+  var s = scopeText();
+  ['ov-scope','mk-scope','tr-scope','hl-scope','ld-scope','mx-scope','al-scope'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.innerHTML = s.text;
+  });
+  computeAlerts();
+  if (state.page==='overview') renderOverview();
+  if (state.page==='markets')  renderMarkets();
+  if (state.page==='trends')   renderTrends();
+  if (state.page==='health')   renderHealth();
+  if (state.page==='leads')    renderLeads();
+  if (state.page==='mix')      renderMix();
+  if (state.page==='alerts')   renderAlerts();
+  if (state.page==='defs')     renderDefs();
+}
+
+/* ============================== KPI cards ============================== */
+function kpiCard(label, val, kind, extras, tone){
+  var h = '<div class="kpi'+(tone?' k-'+tone:'')+'"><div class="klabel">'+esc(label)+'</div>'
+        + '<div class="kval">'+fmt(val,kind)+'</div><div class="ksub">';
+  (extras||[]).forEach(function(e){ h += e; });
+  return h + '</div></div>';
+}
+function deltaChip(label, cur, prev, good){
+  if (nn(cur) || nn(prev) || prev===0) return '<span class="chip flat"><span class="cl">'+esc(label)+'</span> —</span>';
+  var d = (cur - prev) / Math.abs(prev);
+  var cls = good===0 ? 'flat' : ((d>0) === (good>0) ? 'up' : 'dn');
+  if (Math.abs(d) < 0.001) cls = 'flat';
+  var arrow = d>0 ? '▲' : (d<0 ? '▼' : '·');
+  return '<span class="chip '+cls+'"><span class="cl">'+esc(label)+'</span> '+arrow+' '
+       + (Math.abs(d)*100).toFixed(Math.abs(d)<0.1?1:0)+'%</span>';
+}
+
+/* ========================== PAGE: COMPANY OVERVIEW ========================== */
+function renderOverview(){
+  state.ovMetric = document.getElementById('ovMetric').value;
+  var s = scopeText(), mks = s.mks, mos = s.mos;
+  if (!mks.length || !mos.length){ document.getElementById('ov-kpis').innerHTML = emptyMsg(); return; }
+
+  var cur  = derive(sumAds(mks, mos));
+  var prev = derive(sumAds(mks, prevWindow(mos)));
+  var yoy  = derive(sumAds(mks, shiftWindow(mos, -12)));
+
+  var h = '';
+  METRICS.forEach(function(m){
+    var tone = m.base ? (m.k==='spend' ? 'charcoal' : 'grey')
+             : (m.good===1 ? 'teal' : (m.good===-1 ? 'copper' : 'gold'));
+    if (m.k==='leads'||m.k==='di'||m.k==='buyers') tone = 'sage';
+    h += kpiCard(m.label, cur[m.k], m.fmt,
+      [ deltaChip('vs prior', cur[m.k], prev[m.k], m.good),
+        deltaChip('vs LY',    cur[m.k], yoy[m.k],  m.good) ], tone);
+  });
+  document.getElementById('ov-kpis').innerHTML = h;
+
+  /* --- trend: spend bars + selected metric line --- */
+  var cw = chartMonths(mos);
+  var bk = buckets(cw.mos), byB = sumAdsByBucket(mks, cw.mos, bk);
+  var mk = MET[state.ovMetric];
+  var spendSeries = byB.map(function(a){ return a._n ? a.spend : null; });
+  var metSeries   = byB.map(function(a){ var d = derive(a); return d[state.ovMetric]; });
+  var secondary   = state.ovMetric === 'spend';
+  document.getElementById('ov-trend-hint').textContent =
+    'Bars = spend. Line = the metric you pick, recomputed each period from the summed bases of every market in scope.'
+    + ctxNote(cw);
+
+  mkChart('ov-trend', {
+    data: { labels: bk.labels, datasets: [
+      { type:'bar', label:'Spend', data:spendSeries,
+        backgroundColor: bucketColors(cw, bk, C.goldSoft, '#F2F1EA'),
+        borderColor: bucketColors(cw, bk, C.gold, C.neutral),
+        borderWidth:1, yAxisID:'y', order:2 },
+      { type:'line', label:mk.label, data:secondary?[]:metSeries, borderColor:C.teal,
+        backgroundColor:C.teal, borderWidth:2.5, pointRadius:3, pointHoverRadius:5,
+        tension:.25, yAxisID:'y1', order:1 }
+    ]},
+    options: { interaction:{ mode:'index', intersect:false },
+      scales: { y: Object.assign(axisMoney(), { position:'left', title:{display:true,text:'Spend'} }),
+                y1: Object.assign(axisFor(state.ovMetric,'right'), { display:!secondary, title:{display:true,text:mk.label} }),
+                x: { grid:{ display:false } } },
+      plugins: { legend:{ position:'bottom' }, tooltip:{ callbacks:{ label:function(ctx){
+        var v = ctx.parsed.y;
+        return ctx.dataset.label + ': ' + (ctx.dataset.type==='bar' ? fmt(v,'m0') : fmt(v, mk.fmt));
+      }}}}}
+  });
+
+  /* --- funnel --- */
+  var steps = [
+    { lbl:'Clicks',  v:cur.clicks, rate:null },
+    { lbl:'Leads',   v:cur.leads,  rate:cur.lpcv,  rl:'of clicks' },
+    { lbl:'Disclosed Investors', v:cur.di, rate:cur.dipct, rl:'of leads' },
+    { lbl:'Buyers',  v:cur.buyers, rate:cur.bpct, rl:'of leads' }
+  ];
+  var useLog = steps.every(function(s){ return (s.v||0) > 0; });
+  mkChart('ov-funnel', {
+    type:'bar',
+    data:{ labels: steps.map(function(s){ return s.rate!==null&&!nn(s.rate)
+             ? s.lbl + '  ·  ' + fmt(s.rate, s.lbl==='Buyers'?'p2':'p1') + ' ' + s.rl : s.lbl; }),
+      datasets:[{ label:'Count', data:steps.map(function(s){ return s.v||0; }),
+        backgroundColor:[C.neutral, C.sage, C.teal, C.gold],
+        borderColor:[C.grey, '#5FA791', '#154049', '#967C2C'], borderWidth:1, borderRadius:4 }]},
+    options:{ indexAxis:'y',
+      scales:{ x:{ type: useLog?'logarithmic':'linear', grid:{color:C.line}, beginAtZero:!useLog,
+                   ticks:{ callback:function(v){ if(!useLog) return fmt(v,'i');
+                     var l=Math.log10(v); return l===Math.floor(l)?fmt(v,'i'):''; } },
+                   title:{display:true,text: useLog
+                     ? 'count (log scale — stages differ by orders of magnitude)'
+                     : 'count (linear — a stage is zero in this scope)'} },
+               y:{ grid:{display:false} } },
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:function(ctx){ return fmt(ctx.parsed.x,'i'); } } } } }
+  });
+
+  /* --- efficiency scatter --- */
+  var perMkt = sumAdsByMarket(mks, mos);
+  var maxSpend = 0; mks.forEach(function(mi){ if (perMkt[mi].spend > maxSpend) maxSpend = perMkt[mi].spend; });
+  var pts = [];
+  mks.forEach(function(mi){
+    var d = derive(perMkt[mi]);
+    if (nn(d.cpl) || nn(d.dipct)) return;
+    pts.push({ x:d.cpl, y:d.dipct, r: maxSpend? 5 + 20*Math.sqrt(perMkt[mi].spend/maxSpend) : 8,
+               m:D.markets[mi], spend:perMkt[mi].spend, leads:perMkt[mi].leads });
+  });
+  mkChart('ov-scatter', {
+    type:'bubble',
+    data:{ datasets:[{ label:'Market', data:pts, backgroundColor:'rgba(31,86,98,.35)',
+      borderColor:C.teal, borderWidth:1.5 }]},
+    options:{
+      scales:{ x:{ title:{display:true,text:'CPL — cheaper is better →'}, reverse:true,
+                   ticks:{ callback:function(v){ return fmt(v,'m0'); } }, grid:{color:C.line} },
+               y:{ title:{display:true,text:'DI% — higher is better ↑'},
+                   ticks:{ callback:function(v){ return (v*100).toFixed(0)+'%'; } }, grid:{color:C.line} } },
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:function(ctx){ var p=ctx.raw;
+        return [p.m, 'CPL '+fmt(p.x,'m2')+'  ·  DI% '+fmt(p.y,'p1'),
+                'Spend '+fmt(p.spend,'m0')+'  ·  Leads '+fmt(p.leads,'i')]; } } } } }
+  });
+
+  /* --- contribution --- */
+  var ranked = mks.slice().sort(function(a,b){ return perMkt[b].spend - perMkt[a].spend; }).slice(0,12);
+  var totSpend = cur.spend||1, totLeads = cur.leads||1;
+  mkChart('ov-contrib', {
+    type:'bar',
+    data:{ labels: ranked.map(function(mi){ return D.markets[mi]; }),
+      datasets:[
+        { label:'% of spend', data:ranked.map(function(mi){ return perMkt[mi].spend/totSpend; }),
+          backgroundColor:C.gold, borderRadius:3 },
+        { label:'% of leads', data:ranked.map(function(mi){ return perMkt[mi].leads/totLeads; }),
+          backgroundColor:C.sage, borderRadius:3 }
+      ]},
+    options:{ indexAxis:'y',
+      scales:{ x:{ ticks:{ callback:function(v){ return (v*100).toFixed(0)+'%'; } }, grid:{color:C.line} },
+               y:{ grid:{display:false} } },
+      plugins:{ legend:{position:'bottom'}, tooltip:{ callbacks:{ label:function(ctx){
+        return ctx.dataset.label + ': ' + fmt(ctx.parsed.x,'p1'); } } } } }
+  });
+
+  /* --- extremes --- */
+  renderExtremes(mks, perMkt);
+}
+function emptyMsg(){ return '<div class="empty">Nothing in scope — widen the market or period filters.</div>'; }
+
+function renderExtremes(mks, perMkt){
+  var cards = [
+    { k:'cpl',   dir:1,  title:'Cheapest leads',      floor:'leads', min:20 },
+    { k:'cpl',   dir:-1, title:'Most expensive leads',floor:'leads', min:20 },
+    { k:'dipct', dir:-1, title:'Best disclosure rate',floor:'leads', min:20 },
+    { k:'cpdi',  dir:1,  title:'Cheapest disclosed investor', floor:'di', min:3 }
+  ];
+  var h = '';
+  cards.forEach(function(cd){
+    var rows = [];
+    mks.forEach(function(mi){
+      var a = perMkt[mi], d = derive(a);
+      if (nn(d[cd.k])) return;
+      if (a[cd.floor] < cd.min) return;
+      rows.push({ m:D.markets[mi], v:d[cd.k], leads:a.leads, spend:a.spend });
+    });
+    rows.sort(function(x,y){ return cd.dir>0 ? x.v-y.v : y.v-x.v; });
+    var top = rows.slice(0,5);
+    h += '<div class="card"><h3>'+esc(cd.title)+'</h3>'
+       + '<p class="hint">'+esc(MET[cd.k].label)+' · markets with at least '+cd.min+' '
+       + (cd.floor==='leads'?'leads':'disclosed investors')+' in scope</p>'
+       + '<table><tbody>';
+    if (!top.length) h += '<tr><td class="muted">No market clears the volume floor.</td></tr>';
+    top.forEach(function(r,i){
+      h += '<tr><td><span class="rank">'+(i+1)+'</span>'+esc(r.m)+'</td>'
+         + '<td class="num"><b>'+fmt(r.v, MET[cd.k].fmt)+'</b></td>'
+         + '<td class="num muted">'+fmt(r.leads,'i')+' leads</td></tr>';
+    });
+    h += '</tbody></table></div>';
+  });
+  document.getElementById('ov-extremes').innerHTML = h;
+}
+
+/* ========================== PAGE: MARKET SCORECARD ========================== */
+function sortTable(kind, k){
+  var st = kind==='mk' ? state.sortMk : state.sortHl;
+  if (st.k===k) st.dir = -st.dir; else { st.k=k; st.dir = -1; }
+  if (kind==='mk') renderMarkets(); else renderHealth();
+}
+function thSort(kind, k, label, numeric){
+  var st = kind==='mk' ? state.sortMk : state.sortHl;
+  var arr = st.k===k ? ' <span class="arr">'+(st.dir>0?'▲':'▼')+'</span>' : '';
+  return '<th'+(numeric?' class="num"':'')+' onclick="sortTable(\''+kind+'\',\''+k+'\')">'+esc(label)+arr+'</th>';
+}
+function renderMarkets(){
+  var s = scopeText(), mks = s.mks, mos = s.mos;
+  if (!mks.length || !mos.length){
+    document.getElementById('mkTable').innerHTML = '<tbody><tr><td>'+emptyMsg()+'</td></tr></tbody>';
+    document.getElementById('scoreTable').innerHTML = '';
+    document.getElementById('mkCap').textContent = '';
+    return;
+  }
+  var q = (document.getElementById('mkSearch').value||'').toLowerCase();
+  var perMkt = sumAdsByMarket(mks, mos);
+
+  var rows = mks.filter(function(mi){ return !q || D.markets[mi].toLowerCase().indexOf(q)>-1; })
+    .map(function(mi){ var d = derive(perMkt[mi]); d.__m = D.markets[mi]; d.__i = mi;
+      d.__state = D.states[mi]||''; d.__tier = D.tiers[mi]||''; return d; })
+    .filter(function(d){ return d._n; });
+
+  var st = state.sortMk;
+  rows.sort(function(a,b){
+    if (st.k==='market') return st.dir * a.__m.localeCompare(b.__m);
+    var av=a[st.k], bv=b[st.k];
+    if (nn(av) && nn(bv)) return 0; if (nn(av)) return 1; if (nn(bv)) return -1;
+    return st.dir>0 ? av-bv : bv-av;
+  });
+
+  var h = '<thead><tr>' + thSort('mk','market','Market / Office') + '<th>State</th><th>Tier</th>';
+  METRICS.forEach(function(m){ h += thSort('mk', m.k, m.short, true); });
+  h += '</tr></thead><tbody>';
+  rows.forEach(function(d){
+    h += '<tr><td><b class="clickable" onclick="drillMarket('+d.__i+')">'+esc(d.__m)+'</b></td>'
+       + '<td class="muted">'+esc(d.__state)+'</td>'
+       + '<td>'+(d.__tier?'<span class="pill pill-grey">'+esc(d.__tier)+'</span>':'')+'</td>';
+    METRICS.forEach(function(m){ h += '<td class="num">'+fmt(d[m.k], m.fmt)+'</td>'; });
+    h += '</tr>';
+  });
+  // consolidated total row — recomputed, not summed rates
+  var tot = derive(sumAds(mks, mos));
+  h += '<tr class="total"><td>All markets in scope</td><td></td><td></td>';
+  METRICS.forEach(function(m){ h += '<td class="num">'+fmt(tot[m.k], m.fmt)+'</td>'; });
+  h += '</tr></tbody>';
+  document.getElementById('mkTable').innerHTML = h;
+  document.getElementById('mkCap').innerHTML = rows.length + ' markets shown. '
+    + 'The bottom row is <b>recalculated from the summed bases</b> — it is deliberately not the average of the rows above it.';
+
+  renderScoreTable(mks, perMkt);
+}
+
+function renderScoreTable(mks, perMkt){
+  /* five drivers, min-max scaled across the markets in scope */
+  var drivers = [
+    { k:'cpl',        label:'CPL',            good:-1 },
+    { k:'dipct',      label:'DI%',            good:1  },
+    { k:'d10r',       label:'10-Day Rate',    good:1  },
+    { k:'cpdi',       label:'CPDI',           good:-1 },
+    { k:'leadsPerHead',label:'Leads / head',  good:1  }
+  ];
+  var mos = scopeMonths();
+  var recs = mks.map(function(mi){
+    var a = perMkt[mi], d = derive(a);
+    var hm = headMonthsFor([mi], mos);
+    d.leadsPerHead = hm ? (a.leads||0)/hm : null;
+    d.__m = D.markets[mi]; d.__i = mi; d.__spend = a.spend; d.__leads = a.leads;
+    return d;
+  }).filter(function(d){ return d._n && d.__leads >= 10; });
+
+  var ranges = {};
+  drivers.forEach(function(dr){
+    var vals = recs.map(function(r){ return r[dr.k]; }).filter(function(v){ return !nn(v); });
+    ranges[dr.k] = vals.length ? { lo:Math.min.apply(null,vals), hi:Math.max.apply(null,vals) } : null;
+  });
+  recs.forEach(function(r){
+    var sum = 0, n = 0;
+    drivers.forEach(function(dr){
+      var rg = ranges[dr.k], v = r[dr.k];
+      if (!rg || nn(v) || rg.hi===rg.lo){ r['s_'+dr.k] = rg && !nn(v) ? 50 : null; if (rg && !nn(v)){ sum+=50; n++; } return; }
+      var norm = (v - rg.lo)/(rg.hi - rg.lo);
+      var sc = Math.round(100 * (dr.good>0 ? norm : 1-norm));
+      r['s_'+dr.k] = sc; sum += sc; n++;
+    });
+    r.score = n ? Math.round(sum/n) : null;
+  });
+  recs.sort(function(a,b){ return (b.score||0) - (a.score||0); });
+
+  var h = '<thead><tr><th>Rank</th><th>Market / Office</th><th class="num">Composite</th>';
+  drivers.forEach(function(dr){ h += '<th class="num">'+esc(dr.label)+'</th>'; });
+  h += '<th class="num">Spend</th><th class="num">Leads</th></tr></thead><tbody>';
+  if (!recs.length) h += '<tr><td colspan="9" class="muted">No market in scope clears the 10-lead floor.</td></tr>';
+  recs.forEach(function(r,i){
+    var pill = r.score>=70 ? 'pill-teal' : (r.score>=45 ? 'pill-gold' : 'pill-copper');
+    h += '<tr><td class="muted">'+(i+1)+'</td><td><b class="clickable" onclick="drillMarket('+r.__i+')">'+esc(r.__m)+'</b></td>'
+       + '<td class="num"><span class="pill '+pill+'">'+(r.score===null?'—':r.score)+'</span></td>';
+    drivers.forEach(function(dr){
+      var sc = r['s_'+dr.k];
+      h += '<td class="num" title="score '+(sc===null?'—':sc)+'">'
+         + (dr.k==='leadsPerHead' ? fmt(r[dr.k],'n1') : fmt(r[dr.k], MET[dr.k].fmt))
+         + ' <span class="muted" style="font-size:11px">('+(sc===null?'—':sc)+')</span></td>';
+    });
+    h += '<td class="num">'+fmt(r.__spend,'m0')+'</td><td class="num">'+fmt(r.__leads,'i')+'</td></tr>';
+  });
+  h += '</tbody>';
+  document.getElementById('scoreTable').innerHTML = h;
+}
+
+/* ------------------------------ drill modal ------------------------------ */
+function drillMarket(mi){
+  var mos = scopeMonths();
+  var allMos = []; for (var i=0;i<NMO;i++) allMos.push(i);
+  var h = '<div class="modal-back" onclick="if(event.target===this)closeModal()"><div class="modal">'
+    + '<div class="modal-head"><h3>'+esc(D.markets[mi])+(D.states[mi]?' · '+esc(D.states[mi]):'')
+    + (D.tiers[mi]?' · <span class="pill pill-grey">'+esc(D.tiers[mi])+'</span>':'')+'</h3>'
+    + '<button class="modal-x" onclick="closeModal()">&times;</button></div><div class="modal-body">';
+
+  var cur = derive(sumAds([mi], mos));
+  h += '<div class="kpis">';
+  ['spend','leads','cpl','dipct','di','cpdi','buyers','cpb'].forEach(function(k){
+    h += kpiCard(MET[k].label, cur[k], MET[k].fmt, [], MET[k].good===1?'teal':(MET[k].good===-1?'copper':'charcoal'));
+  });
+  h += '</div>';
+
+  h += '<div class="card" style="margin-bottom:14px"><h3>Monthly detail — full history</h3>'
+     + '<p class="hint">Every month in the workbook, not just the filtered range, so you can see where the trend turned. Rates are recomputed per month.</p>'
+     + '<div class="chart-wrap tall"><canvas id="dm-chart"></canvas></div></div>';
+
+  h += '<div class="card"><div class="scroll-x"><table><thead><tr><th>Month</th>';
+  METRICS.forEach(function(m){ h += '<th class="num">'+esc(m.short)+'</th>'; });
+  h += '<th class="num">Headcount</th><th class="num">Volume</th><th class="num">Leads/head</th></tr></thead><tbody>';
+  allMos.forEach(function(moi){
+    var a = ADS[mi][moi]; var hcv = HC[mi][moi], vv = VOL[mi][moi];
+    if (!a && !hcv && !vv) return;
+    var d = derive((function(){ var z=zero(); addAds(z,a); return z; })());
+    var inScope = mos.indexOf(moi) > -1;
+    h += '<tr'+(inScope?' style="background:'+C.goldSoft+'33"':'')+'><td><b>'+monthLabel(D.months[moi])+'</b></td>';
+    METRICS.forEach(function(m){ h += '<td class="num">'+fmt(d[m.k], m.fmt)+'</td>'; });
+    h += '<td class="num">'+fmt(hcv,'i')+'</td><td class="num">'+fmt(vv,'mk')+'</td>'
+       + '<td class="num">'+(hcv && d.leads!==null ? fmt(d.leads/hcv,'n1') : '—')+'</td></tr>';
+  });
+  h += '<tr class="total"><td>Scope total</td>';
+  METRICS.forEach(function(m){ h += '<td class="num">'+fmt(cur[m.k], m.fmt)+'</td>'; });
+  var hm = headMonthsFor([mi], mos);
+  h += '<td class="num">'+(hm && mos.length ? fmt(hm/mos.length,'n1')+' avg' : '—')+'</td>'
+     + '<td class="num">'+fmt(volumeFor([mi],mos),'mk')+'</td>'
+     + '<td class="num">'+(hm ? fmt((cur.leads||0)/hm,'n1') : '—')+'</td></tr>';
+  h += '</tbody></table></div></div>';
+
+  h += '</div></div></div>';
+  document.getElementById('modal-host').innerHTML = h;
+
+  var labels = [], spend = [], leads = [], cpl = [], dipct = [];
+  allMos.forEach(function(moi){
+    var a = ADS[mi][moi]; if (!a) return;
+    var z = zero(); addAds(z,a); var d = derive(z);
+    labels.push(monthLabel(D.months[moi])); spend.push(d.spend); leads.push(d.leads);
+    cpl.push(d.cpl); dipct.push(d.dipct);
+  });
+  mkChart('dm-chart', {
+    data:{ labels:labels, datasets:[
+      { type:'bar', label:'Spend', data:spend, backgroundColor:C.goldSoft, borderColor:C.gold, borderWidth:1, yAxisID:'y' },
+      { type:'line', label:'Leads', data:leads, borderColor:C.sage, backgroundColor:C.sage, borderWidth:2, tension:.25, pointRadius:2, yAxisID:'y2' },
+      { type:'line', label:'CPL', data:cpl, borderColor:C.teal, backgroundColor:C.teal, borderWidth:2.5, tension:.25, pointRadius:2, yAxisID:'y1' },
+      { type:'line', label:'DI%', data:dipct, borderColor:C.copper, backgroundColor:C.copper, borderWidth:2, borderDash:[5,3], tension:.25, pointRadius:2, yAxisID:'y3' }
+    ]},
+    options:{ interaction:{mode:'index',intersect:false},
+      scales:{ y:Object.assign(axisMoney(),{position:'left',title:{display:true,text:'Spend'}}),
+               y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:moneyTick},title:{display:true,text:'CPL'}},
+               y2:{display:false}, y3:{display:false},
+               x:{grid:{display:false}} },
+      plugins:{ legend:{position:'bottom'}, tooltip:{ callbacks:{ label:function(ctx){
+        var l=ctx.dataset.label, v=ctx.parsed.y;
+        return l+': '+(l==='Spend'?fmt(v,'m0'):l==='CPL'?fmt(v,'m2'):l==='DI%'?fmt(v,'p1'):fmt(v,'i'));
+      }}}}}
+  });
+}
+function closeModal(){ if (CH['dm-chart']) { CH['dm-chart'].destroy(); delete CH['dm-chart']; }
+  document.getElementById('modal-host').innerHTML=''; }
+
+/* ============================== PAGE: TRENDS ============================== */
+function renderTrends(){
+  state.trMetric = document.getElementById('trMetric').value;
+  var s = scopeText(), mks = s.mks, mos = s.mos;
+  var host = document.getElementById('tr-mini');
+  if (!mks.length || !mos.length){ host.innerHTML = emptyMsg(); return; }
+
+  var cw = chartMonths(mos);
+  var bk = buckets(cw.mos), byB = sumAdsByBucket(mks, cw.mos, bk);
+  var tot = derive(sumAds(mks, mos));
+  document.getElementById('tr-hint').textContent =
+    'One panel per KPI for the markets in scope. Rates are recomputed per period from summed bases. '
+    + 'The dashed line on each panel is the scope-wide value, so you can see which periods sat above or below it.'
+    + ctxNote(cw);
+
+  var h = '';
+  METRICS.forEach(function(m){
+    h += '<div class="card"><h3 style="font-size:13px">'+esc(m.label)+'</h3>'
+       + '<p class="hint">Scope: <b>'+fmt(tot[m.k], m.fmt)+'</b></p>'
+       + '<div class="chart-wrap mini"><canvas id="mini-'+m.k+'"></canvas></div></div>';
+  });
+  host.innerHTML = h;
+
+  METRICS.forEach(function(m){
+    var data = byB.map(function(a){ return derive(a)[m.k]; });
+    var isRate = !m.base;
+    mkChart('mini-'+m.k, {
+      data:{ labels:bk.labels, datasets:[
+        { type: isRate?'line':'bar', label:m.label, data:data,
+          borderColor: isRate ? C.teal : bucketColors(cw, bk, C.gold, C.neutral),
+          backgroundColor: isRate ? 'rgba(31,86,98,.10)' : bucketColors(cw, bk, C.goldSoft, '#F2F1EA'),
+          borderWidth: isRate?2.2:1, fill:isRate, tension:.25, pointRadius:1.5, borderRadius:2 },
+        { type:'line', label:'Scope value', data:bk.labels.map(function(){ return tot[m.k]; }),
+          borderColor:C.grey, borderWidth:1, borderDash:[4,3], pointRadius:0, fill:false }
+      ]},
+      options:{ scales:{ y:Object.assign(axisFor(m.k), { ticks:{ maxTicksLimit:4,
+          callback: axisFor(m.k).ticks.callback } }),
+        x:{ grid:{display:false}, ticks:{ maxRotation:0, autoSkip:true, maxTicksLimit:6, font:{size:10} } } },
+        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:function(ctx){
+          return ctx.dataset.label + ': ' + fmt(ctx.parsed.y, m.fmt); } } } } }
+    });
+  });
+
+  /* market comparison */
+  var perMkt = sumAdsByMarket(mks, mos);
+  var top = mks.slice().sort(function(a,b){ return perMkt[b].spend - perMkt[a].spend; }).slice(0,8);
+  var mk = MET[state.trMetric];
+  var ds = top.map(function(mi,i){
+    var acc = []; for (var q=0;q<bk.n;q++) acc.push(zero());
+    cw.mos.forEach(function(moi){ addAds(acc[bk.of[moi]], ADS[mi][moi]); });
+    var series = acc.map(function(a){ return derive(a)[state.trMetric]; });
+    return { label:D.markets[mi], data:series, borderColor:SERIES[i%SERIES.length],
+             backgroundColor:SERIES[i%SERIES.length], borderWidth:2, tension:.25,
+             pointRadius:2, pointHoverRadius:4, fill:false, spanGaps:true };
+  });
+  ds.push({ label:'All markets in scope', data: byB.map(function(a){ return derive(a)[state.trMetric]; }),
+    borderColor:C.charcoal, backgroundColor:C.charcoal, borderWidth:3, borderDash:[6,3],
+    tension:.25, pointRadius:0, fill:false });
+
+  mkChart('tr-compare', {
+    type:'line', data:{ labels:bk.labels, datasets:ds },
+    options:{ interaction:{mode:'nearest',intersect:false},
+      scales:{ y:axisFor(state.trMetric), x:{grid:{display:false}} },
+      plugins:{ legend:{position:'bottom'}, tooltip:{ callbacks:{ label:function(ctx){
+        return ctx.dataset.label+': '+fmt(ctx.parsed.y, mk.fmt); } } } } }
+  });
+}
+
+/* ========================== PAGE: OFFICE HEALTH ========================== */
+function renderHealth(){
+  var s = scopeText(), mks = s.mks, mos = s.mos;
+  var hcMks = mks.filter(function(mi){ return MKT_HAS_HC[mi]; });
+  var note = document.getElementById('hl-note');
+  note.innerHTML = hcMks.length
+    ? 'Headcount and closed volume come from the <b>' + esc(D.tabs.office||'field office') + '</b> tab; '
+      + hcMks.length + ' of ' + mks.length + ' markets in scope have headcount rows. '
+      + 'Per-head figures are <b>monthly rates</b> — the period total divided by head-months — so a 6-month view is directly comparable to a 1-month view.'
+    : 'No headcount data is available for the markets in scope, so per-head metrics are blank.';
+
+  if (!mks.length || !mos.length){
+    document.getElementById('hl-kpis').innerHTML = emptyMsg();
+    document.getElementById('hlTable').innerHTML = '';
+    return;
+  }
+
+  var tot = derive(sumAds(mks, mos));
+  var hm  = headMonthsFor(hcMks, mos);
+  var vol = volumeFor(hcMks, mos);
+  var avgHead = (hcMks.length && mos.length) ? hm/mos.length : null;
+
+  var prevMos = prevWindow(mos);
+  var pTot = derive(sumAds(mks, prevMos));
+  var pHm  = headMonthsFor(hcMks, prevMos);
+  var pVol = volumeFor(hcMks, prevMos);
+
+  function per(v, heads){ return (heads && !nn(v)) ? v/heads : null; }
+  var cards = [
+    { lbl:'Avg headcount',        v:avgHead,                    p:(pHm && prevMos.length)?pHm/prevMos.length:null, fmt:'n1', good:0,  tone:'charcoal' },
+    { lbl:'Leads / head / mo',    v:per(tot.leads, hm),         p:per(pTot.leads, pHm),  fmt:'n1', good:1,  tone:'teal' },
+    { lbl:'DI / head / mo',       v:per(tot.di, hm),            p:per(pTot.di, pHm),     fmt:'n2', good:1,  tone:'teal' },
+    { lbl:'Buyers / head / mo',   v:per(tot.buyers, hm),        p:per(pTot.buyers, pHm), fmt:'n2', good:1,  tone:'sage' },
+    { lbl:'Ad spend / head / mo', v:per(tot.spend, hm),         p:per(pTot.spend, pHm),  fmt:'m0', good:0,  tone:'gold' },
+    { lbl:'Volume / head / mo',   v:per(vol, hm),               p:per(pVol, pHm),        fmt:'m0', good:1,  tone:'sage' },
+    { lbl:'Volume / lead',        v:(tot.leads && !nn(vol))?vol/tot.leads:null,
+                                  p:(pTot.leads && !nn(pVol))?pVol/pTot.leads:null,      fmt:'m0', good:1,  tone:'copper' },
+    { lbl:'Closed volume',        v:vol,                        p:pVol,                  fmt:'mk', good:1,  tone:'grey' }
+  ];
+  var h = '';
+  cards.forEach(function(cd){
+    h += kpiCard(cd.lbl, cd.v, cd.fmt, [ deltaChip('vs prior', cd.v, cd.p, cd.good) ], cd.tone);
+  });
+  document.getElementById('hl-kpis').innerHTML = h;
+
+  /* per-market records */
+  var perMkt = sumAdsByMarket(mks, mos);
+  var recs = mks.map(function(mi){
+    var a = perMkt[mi], d = derive(a);
+    var mhm = headMonthsFor([mi], mos), mvol = volumeFor([mi], mos);
+    return { i:mi, m:D.markets[mi], tier:D.tiers[mi]||'', headMonths:mhm,
+      avgHead: mos.length ? mhm/mos.length : null,
+      spend:a.spend, leads:a.leads, di:a.di, buyers:a.buyers, cpl:d.cpl, dipct:d.dipct,
+      volume:mvol,
+      leadsPerHead: mhm ? (a.leads||0)/mhm : null,
+      diPerHead:    mhm ? (a.di||0)/mhm : null,
+      buyersPerHead:mhm ? (a.buyers||0)/mhm : null,
+      spendPerHead: mhm ? (a.spend||0)/mhm : null,
+      volPerHead:   (mhm && !nn(mvol)) ? mvol/mhm : null,
+      volPerLead:   (a.leads && !nn(mvol)) ? mvol/a.leads : null
+    };
+  });
+
+  var coRate = hm ? (tot.leads||0)/hm : null;
+  var pts = recs.filter(function(r){ return r.avgHead && r.leads; }).map(function(r){
+    return { x:r.avgHead, y:r.leads/(r.headMonths||1), r:8, m:r.m, spend:r.spend };
+  });
+  mkChart('hl-scatter', {
+    type:'bubble',
+    data:{ datasets:[
+      { label:'Market', data:pts, backgroundColor:'rgba(130,196,176,.45)', borderColor:'#4F9A82', borderWidth:1.5 },
+      { type:'line', label:'Company leads / head',
+        data: pts.length ? [{x:0,y:coRate},{x:Math.max.apply(null,pts.map(function(p){return p.x;}))*1.1,y:coRate}] : [],
+        borderColor:C.grey, borderWidth:1.5, borderDash:[5,3], pointRadius:0, fill:false }
+    ]},
+    options:{ scales:{
+        x:{ title:{display:true,text:'Average headcount in scope'}, grid:{color:C.line}, beginAtZero:true },
+        y:{ title:{display:true,text:'Paid leads per head per month'}, grid:{color:C.line}, beginAtZero:true } },
+      plugins:{ legend:{position:'bottom'}, tooltip:{ callbacks:{ label:function(ctx){
+        if (ctx.dataset.type==='line') return 'Company: '+fmt(coRate,'n1')+' leads/head/mo';
+        var p=ctx.raw; return [p.m, fmt(p.x,'n1')+' heads · '+fmt(p.y,'n1')+' leads/head/mo',
+          'Spend '+fmt(p.spend,'m0')]; } } } } }
+  });
+
+  var bars = recs.filter(function(r){ return !nn(r.leadsPerHead); })
+    .sort(function(a,b){ return b.leadsPerHead - a.leadsPerHead; }).slice(0,20);
+  mkChart('hl-bars', {
+    type:'bar',
+    data:{ labels:bars.map(function(r){ return r.m; }),
+      datasets:[{ label:'Leads / head / mo', data:bars.map(function(r){ return r.leadsPerHead; }),
+        backgroundColor:bars.map(function(r){ return coRate && r.leadsPerHead < coRate ? C.copper : C.teal; }),
+        borderRadius:3 },
+      { type:'line', label:'Company average', data:bars.map(function(){ return coRate; }),
+        borderColor:C.grey, borderWidth:1.5, borderDash:[5,3], pointRadius:0 }]},
+    options:{ scales:{ y:{grid:{color:C.line},beginAtZero:true}, x:{grid:{display:false},ticks:{maxRotation:60,minRotation:45,font:{size:10}}} },
+      plugins:{ legend:{position:'bottom'}, tooltip:{ callbacks:{ label:function(ctx){
+        return ctx.dataset.label+': '+fmt(ctx.parsed.y,'n1'); } } } } }
+  });
+
+  /* headcount vs volume-per-head trend */
+  var cw = chartMonths(mos), bk = buckets(cw.mos);
+  var hcB = new Float64Array(bk.n), hcObs = new Float64Array(bk.n),
+      volB = new Float64Array(bk.n), leadB = new Float64Array(bk.n);
+  var monthsPerBucket = new Float64Array(bk.n);
+  cw.mos.forEach(function(moi){ monthsPerBucket[bk.of[moi]]++; });
+  hcMks.forEach(function(mi){ cw.mos.forEach(function(moi){
+    var b = bk.of[moi];
+    var hv = HC[mi][moi]; if (typeof hv==='number'){ hcB[b] += hv; hcObs[b]++; }
+    var vv = VOL[mi][moi]; if (typeof vv==='number') volB[b] += vv;
+  }); });
+  mks.forEach(function(mi){ cw.mos.forEach(function(moi){
+    var a = ADS[mi][moi]; if (a && typeof a.leads==='number') leadB[bk.of[moi]] += a.leads; }); });
+
+  var avgHeadB = [], volPerHeadB = [], leadsPerHeadB = [];
+  for (var b=0;b<bk.n;b++){
+    var mpb = monthsPerBucket[b] || 1;
+    avgHeadB.push(hcObs[b] ? hcB[b]/mpb : null);
+    volPerHeadB.push(hcB[b] ? volB[b]/hcB[b] : null);
+    leadsPerHeadB.push(hcB[b] ? leadB[b]/hcB[b] : null);
+  }
+  mkChart('hl-trend', {
+    data:{ labels:bk.labels, datasets:[
+      { type:'bar', label:'Avg headcount', data:avgHeadB,
+        backgroundColor: bucketColors(cw, bk, C.neutral, '#F2F1EA'),
+        borderColor: bucketColors(cw, bk, C.grey, C.neutral), borderWidth:1, yAxisID:'y' },
+      { type:'line', label:'Volume / head / mo', data:volPerHeadB, borderColor:C.sage, backgroundColor:C.sage, borderWidth:2.5, tension:.25, pointRadius:2, yAxisID:'y1' },
+      { type:'line', label:'Leads / head / mo', data:leadsPerHeadB, borderColor:C.teal, backgroundColor:C.teal, borderWidth:2, borderDash:[5,3], tension:.25, pointRadius:2, yAxisID:'y2' }
+    ]},
+    options:{ interaction:{mode:'index',intersect:false},
+      scales:{ y:{position:'left',grid:{color:C.line},title:{display:true,text:'Headcount'},beginAtZero:true},
+               y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:moneyTick},title:{display:true,text:'Volume / head'}},
+               y2:{display:false}, x:{grid:{display:false}} },
+      plugins:{ legend:{position:'bottom'}, tooltip:{ callbacks:{ label:function(ctx){
+        var l=ctx.dataset.label, v=ctx.parsed.y;
+        return l+': '+(l.indexOf('Volume')===0?fmt(v,'m0'):fmt(v,'n1')); } } } } }
+  });
+
+  /* table */
+  var q = (document.getElementById('hlSearch').value||'').toLowerCase();
+  var st = state.sortHl;
+  var trs = recs.filter(function(r){ return !q || r.m.toLowerCase().indexOf(q)>-1; });
+  trs.sort(function(a,b){
+    if (st.k==='market') return st.dir * a.m.localeCompare(b.m);
+    var av=a[st.k], bv=b[st.k];
+    if (nn(av)&&nn(bv)) return 0; if (nn(av)) return 1; if (nn(bv)) return -1;
+    return st.dir>0 ? av-bv : bv-av;
+  });
+  var cols = [
+    ['avgHead','Avg HC','n1'], ['leads','Paid leads','i'], ['leadsPerHead','Leads/head/mo','n1'],
+    ['di','DI','i'], ['diPerHead','DI/head/mo','n2'], ['buyers','Buyers','i'],
+    ['buyersPerHead','Buyers/head/mo','n2'], ['spend','Spend','m0'], ['spendPerHead','Spend/head/mo','m0'],
+    ['cpl','CPL','m2'], ['dipct','DI%','p1'], ['volume','Volume','mk'],
+    ['volPerHead','Volume/head/mo','m0'], ['volPerLead','Volume/lead','m0']
+  ];
+  var th = '<thead><tr>'+thSort('hl','market','Market / Office')+'<th>Tier</th>';
+  cols.forEach(function(c){ th += thSort('hl', c[0], c[1], true); });
+  th += '</tr></thead><tbody>';
+  trs.forEach(function(r){
+    th += '<tr><td><b class="clickable" onclick="drillMarket('+r.i+')">'+esc(r.m)+'</b></td>'
+        + '<td>'+(r.tier?'<span class="pill pill-grey">'+esc(r.tier)+'</span>':'')+'</td>';
+    cols.forEach(function(c){
+      var v = r[c[0]], flag = '';
+      if (c[0]==='leadsPerHead' && !nn(v) && coRate) flag = v < coRate*0.7 ? ' style="color:'+C.neg+';font-weight:700"'
+        : (v > coRate*1.3 ? ' style="color:'+C.teal+';font-weight:700"' : '');
+      th += '<td class="num"'+flag+'>'+fmt(v,c[2])+'</td>';
+    });
+    th += '</tr>';
+  });
+  th += '<tr class="total"><td>All markets in scope</td><td></td>'
+      + '<td class="num">'+fmt(avgHead,'n1')+'</td><td class="num">'+fmt(tot.leads,'i')+'</td>'
+      + '<td class="num">'+fmt(coRate,'n1')+'</td><td class="num">'+fmt(tot.di,'i')+'</td>'
+      + '<td class="num">'+fmt(hm?(tot.di||0)/hm:null,'n2')+'</td><td class="num">'+fmt(tot.buyers,'i')+'</td>'
+      + '<td class="num">'+fmt(hm?(tot.buyers||0)/hm:null,'n2')+'</td><td class="num">'+fmt(tot.spend,'m0')+'</td>'
+      + '<td class="num">'+fmt(hm?(tot.spend||0)/hm:null,'m0')+'</td><td class="num">'+fmt(tot.cpl,'m2')+'</td>'
+      + '<td class="num">'+fmt(tot.dipct,'p1')+'</td><td class="num">'+fmt(vol,'mk')+'</td>'
+      + '<td class="num">'+fmt(hm&&!nn(vol)?vol/hm:null,'m0')+'</td>'
+      + '<td class="num">'+fmt(tot.leads&&!nn(vol)?vol/tot.leads:null,'m0')+'</td></tr></tbody>';
+  document.getElementById('hlTable').innerHTML = th;
+}
+
+/* ============================ PAGE: LEAD TYPES ============================ */
+function renderLeads(){
+  var s = scopeText(), mks = s.mks, mos = s.mos, chs = scopeChans();
+  var note = document.getElementById('ld-note');
+  note.innerHTML = 'Source: <b>'+esc(D.tabs.leads||'lead score')+'</b> tab, '
+    + fmt(D.leadRowCount||0,'i') + ' lead records aggregated server-side. '
+    + 'Office = column R <i>Market (standardized)</i>; lead type = column O <i>Channel (mapped)</i>; '
+    + 'stage = column A <i>Contact Stage</i>. These are <b>current</b> stages — every lead sits in exactly one.';
+
+  if (!NCH){ document.getElementById('ld-kpis').innerHTML =
+    '<div class="empty">No lead-score data was found in the workbook.</div>'; return; }
+  if (!mks.length || !mos.length || !chs.length){
+    document.getElementById('ld-kpis').innerHTML = emptyMsg();
+    document.getElementById('ldMatrix').innerHTML = '';
+    document.getElementById('ldStage').innerHTML = '';
+    return;
+  }
+
+  var cw = chartMonths(mos), bk = buckets(cw.mos);
+  var R  = leadScan(mks, mos, chs, { mktChan:true, mktStage:true });
+  var RC = leadScan(mks, cw.mos, chs, { buckets:bk });   // wider window, charts only
+  var Rp = leadScan(mks, prevWindow(mos), chs, {});
+  var ads = derive(sumAds(mks, mos));
+
+  var stageIdx = {}; (D.stages||[]).forEach(function(st,i){ stageIdx[st]=i; });
+  function stageCount(name){ var i = stageIdx[name]; return i===undefined ? 0 : R.byStage[i]; }
+
+  var qualRate = R.total ? R.qual/R.total : null;
+  var pQualRate = Rp.total ? Rp.qual/Rp.total : null;
+  var unq = stageCount('Unqualified');
+
+  var h = '';
+  h += kpiCard('Total leads (all channels)', R.total, 'i', [ deltaChip('vs prior', R.total, Rp.total, 1) ], 'charcoal');
+  h += kpiCard('Qualified leads', R.qual, 'i', [ deltaChip('vs prior', R.qual, Rp.qual, 1) ], 'teal');
+  h += kpiCard('Qualified rate', qualRate, 'p1', [ deltaChip('vs prior', qualRate, pQualRate, 1) ], 'teal');
+  h += kpiCard('Unqualified rate', R.total?unq/R.total:null, 'p1', [], 'copper');
+  h += kpiCard('Buyers', stageCount('Buyer'), 'i', [], 'sage');
+  h += kpiCard('Lead types active', chs.filter(function(ci){ return R.byChan[ci]>0; }).length, 'i', [], 'grey');
+  h += kpiCard('Paid leads (ads tab)', ads.leads, 'i', [], 'gold');
+  h += kpiCard('Blended CPL', R.total && !nn(ads.spend) ? ads.spend/R.total : null, 'm2', [], 'gold');
+  document.getElementById('ld-kpis').innerHTML = h;
+
+  /* channel mix bar */
+  var chOrder = chs.slice().sort(function(a,b){ return R.byChan[b]-R.byChan[a]; });
+  mkChart('ld-chan', {
+    type:'bar',
+    data:{ labels:chOrder.map(function(ci){ return D.channels[ci]; }),
+      datasets:[
+        { label:'Qualified', data:chOrder.map(function(ci){ return R.qualByChan[ci]; }),
+          backgroundColor:C.teal, borderRadius:3, stack:'s' },
+        { label:'Not yet qualified', data:chOrder.map(function(ci){ return R.byChan[ci]-R.qualByChan[ci]; }),
+          backgroundColor:C.neutral, borderRadius:3, stack:'s' }
+      ]},
+    options:{ indexAxis:'y',
+      scales:{ x:{stacked:true,grid:{color:C.line},ticks:{callback:function(v){return fmt(v,'i');}}},
+               y:{stacked:true,grid:{display:false}} },
+      plugins:{ legend:{position:'bottom'}, tooltip:{ callbacks:{
+        label:function(ctx){ return ctx.dataset.label+': '+fmt(ctx.parsed.x,'i'); },
+        footer:function(items){ var ci = chOrder[items[0].dataIndex];
+          var t=R.byChan[ci]; return 'Total '+fmt(t,'i')+' · qualified '+fmt(t?R.qualByChan[ci]/t:null,'p1'); } } } } }
+  });
+
+  /* quality bubble: volume vs qualified rate */
+  var qpts = chOrder.filter(function(ci){ return R.byChan[ci]>0; }).map(function(ci){
+    return { x:R.byChan[ci], y:R.byChan[ci]?R.qualByChan[ci]/R.byChan[ci]:0,
+             r: 6 + 16*Math.sqrt(R.byChan[ci]/(R.total||1)), m:D.channels[ci] };
+  });
+  mkChart('ld-qual', {
+    type:'bubble',
+    data:{ datasets:[
+      { label:'Lead type', data:qpts, backgroundColor:'rgba(189,159,64,.35)', borderColor:C.gold, borderWidth:1.5 },
+      { type:'line', label:'All-channel qualified rate',
+        data: qpts.length ? [{x:0,y:qualRate},{x:Math.max.apply(null,qpts.map(function(p){return p.x;}))*1.1,y:qualRate}] : [],
+        borderColor:C.grey, borderWidth:1.5, borderDash:[5,3], pointRadius:0, fill:false }
+    ]},
+    options:{ scales:{
+        x:{ type:'logarithmic', title:{display:true,text:'Lead volume (log scale)'}, grid:{color:C.line},
+            ticks:{ callback:function(v){ return fmt(v,'i'); } } },
+        y:{ title:{display:true,text:'Qualified rate'}, grid:{color:C.line},
+            ticks:{ callback:function(v){ return (v*100).toFixed(0)+'%'; } } } },
+      plugins:{ legend:{position:'bottom'}, tooltip:{ callbacks:{ label:function(ctx){
+        if (ctx.dataset.type==='line') return 'All channels: '+fmt(qualRate,'p1');
+        var p=ctx.raw; return [p.m, fmt(p.x,'i')+' leads · '+fmt(p.y,'p1')+' qualified']; } } } } }
+  });
+
+  /* trend stacked by channel */
+  var topCh = chOrder.slice(0,7);
+  var otherCh = chOrder.slice(7);
+  var ds = topCh.map(function(ci,i){
+    return { label:D.channels[ci], data:Array.prototype.slice.call(RC.chanBucket[ci]),
+             backgroundColor:SERIES[i%SERIES.length], borderRadius:2, stack:'s' };
+  });
+  if (otherCh.length){
+    var oth = new Float64Array(bk.n);
+    otherCh.forEach(function(ci){ for (var b=0;b<bk.n;b++) oth[b]+=RC.chanBucket[ci][b]; });
+    ds.push({ label:'Other ('+otherCh.length+')', data:Array.prototype.slice.call(oth),
+      backgroundColor:C.neutral, borderRadius:2, stack:'s' });
+  }
+  mkChart('ld-trend', {
+    type:'bar', data:{ labels:bk.labels, datasets:ds },
+    options:{ scales:{ x:{stacked:true,grid:{display:false}}, y:{stacked:true,grid:{color:C.line},
+        ticks:{callback:function(v){return fmt(v,'i');}}} },
+      plugins:{ legend:{position:'bottom'}, tooltip:{mode:'index',callbacks:{
+        label:function(ctx){ return ctx.dataset.label+': '+fmt(ctx.parsed.y,'i'); },
+        footer:function(items){ var t=0; items.forEach(function(i){ t+=i.parsed.y; }); return 'Total '+fmt(t,'i'); } } } } }
+  });
+
+  /* matrix */
+  var mode = document.getElementById('ldMatrixMode').value;
+  var q = (document.getElementById('ldSearch').value||'').toLowerCase();
+  var rowMks = mks.filter(function(mi){ return R.byMkt[mi] && R.byMkt[mi].total>0
+    && (!q || D.markets[mi].toLowerCase().indexOf(q)>-1); })
+    .sort(function(a,b){ return R.byMkt[b].total - R.byMkt[a].total; });
+
+  var mh = '<thead><tr><th>Office (col R)</th>';
+  chOrder.forEach(function(ci){ mh += '<th class="num">'+esc(D.channels[ci])+'</th>'; });
+  mh += '<th class="num">Total</th><th class="num">Qualified</th><th class="num">Qual. rate</th></tr></thead><tbody>';
+  rowMks.forEach(function(mi){
+    var tot2 = R.byMkt[mi].total;
+    mh += '<tr><td><b class="clickable" onclick="drillLeads('+mi+')">'+esc(D.markets[mi])+'</b></td>';
+    chOrder.forEach(function(ci){
+      var v = R.mktChan[mi+'|'+ci]||0;
+      var share = tot2 ? v/tot2 : 0;
+      var bg = v ? 'background:rgba(31,86,98,'+(0.05+0.45*Math.min(1,share*2.2)).toFixed(3)+')' : '';
+      var txt = mode==='count' ? (v?fmt(v,'i'):'·')
+              : mode==='share' ? (v?fmt(share,'p1'):'·') : (v?fmt(share,'p1'):'·');
+      mh += '<td class="num" style="'+bg+'" title="'+esc(D.channels[ci])+': '+fmt(v,'i')+' leads ('+fmt(share,'p1')+' of office)">'+txt+'</td>';
+    });
+    mh += '<td class="num"><b>'+fmt(tot2,'i')+'</b></td><td class="num">'+fmt(R.byMkt[mi].qual,'i')+'</td>'
+        + '<td class="num">'+fmt(tot2?R.byMkt[mi].qual/tot2:null,'p1')+'</td></tr>';
+  });
+  mh += '<tr class="total"><td>All offices in scope</td>';
+  chOrder.forEach(function(ci){ mh += '<td class="num">'+fmt(R.byChan[ci],'i')+'</td>'; });
+  mh += '<td class="num">'+fmt(R.total,'i')+'</td><td class="num">'+fmt(R.qual,'i')+'</td>'
+      + '<td class="num">'+fmt(qualRate,'p1')+'</td></tr></tbody>';
+  document.getElementById('ldMatrix').innerHTML = mh;
+
+  /* stage table */
+  var sh = '<thead><tr><th>Office (col R)</th>';
+  (D.stages||[]).forEach(function(st){ sh += '<th class="num">'+esc(st)+'</th>'; });
+  sh += '<th class="num">Total</th><th class="num">Qualified</th><th class="num">Qual. rate</th>'
+      + '<th class="num">Paid leads</th><th class="num">Blended CPL</th></tr></thead><tbody>';
+  var perMktAds = sumAdsByMarket(mks, mos);
+  rowMks.forEach(function(mi){
+    var tot3 = R.byMkt[mi].total, a = perMktAds[mi];
+    sh += '<tr><td><b class="clickable" onclick="drillLeads('+mi+')">'+esc(D.markets[mi])+'</b></td>';
+    (D.stages||[]).forEach(function(st,si){
+      var v = R.mktStage[mi+'|'+si]||0;
+      sh += '<td class="num"'+(STAGE_QUAL[si]?' style="font-weight:700;color:'+C.teal+'"':'')+'>'+(v?fmt(v,'i'):'·')+'</td>';
+    });
+    sh += '<td class="num"><b>'+fmt(tot3,'i')+'</b></td><td class="num">'+fmt(R.byMkt[mi].qual,'i')+'</td>'
+        + '<td class="num">'+fmt(tot3?R.byMkt[mi].qual/tot3:null,'p1')+'</td>'
+        + '<td class="num muted">'+fmt(a?a.leads:null,'i')+'</td>'
+        + '<td class="num">'+fmt(tot3 && a && a.spend ? a.spend/tot3 : null,'m2')+'</td></tr>';
+  });
+  sh += '<tr class="total"><td>All offices in scope</td>';
+  (D.stages||[]).forEach(function(st,si){ sh += '<td class="num">'+fmt(R.byStage[si],'i')+'</td>'; });
+  sh += '<td class="num">'+fmt(R.total,'i')+'</td><td class="num">'+fmt(R.qual,'i')+'</td>'
+      + '<td class="num">'+fmt(qualRate,'p1')+'</td><td class="num">'+fmt(ads.leads,'i')+'</td>'
+      + '<td class="num">'+fmt(R.total&&ads.spend?ads.spend/R.total:null,'m2')+'</td></tr></tbody>';
+  document.getElementById('ldStage').innerHTML = sh;
+}
+
+function drillLeads(mi){
+  var mos = scopeMonths(), chs = scopeChans();
+  var R = leadScan([mi], mos, chs, { mktChan:true, mktStage:true });
+  var a = derive(sumAds([mi], mos));
+  var h = '<div class="modal-back" onclick="if(event.target===this)closeModal()"><div class="modal">'
+    + '<div class="modal-head"><h3>'+esc(D.markets[mi])+' — lead detail</h3>'
+    + '<button class="modal-x" onclick="closeModal()">&times;</button></div><div class="modal-body">';
+  h += '<div class="kpis">'
+    + kpiCard('Total leads', R.total,'i',[],'charcoal')
+    + kpiCard('Qualified', R.qual,'i',[],'teal')
+    + kpiCard('Qualified rate', R.total?R.qual/R.total:null,'p1',[],'teal')
+    + kpiCard('Paid leads (ads)', a.leads,'i',[],'gold')
+    + kpiCard('Paid share', R.total&&!nn(a.leads)?a.leads/R.total:null,'p1',[],'gold')
+    + kpiCard('Blended CPL', R.total&&a.spend?a.spend/R.total:null,'m2',[],'copper')
+    + '</div>';
+  h += '<div class="grid g-2e"><div class="card"><h3>By lead type</h3><div class="scroll-x"><table>'
+    + '<thead><tr><th>Lead type (col O)</th><th class="num">Leads</th><th class="num">Share</th>'
+    + '<th class="num">Qualified</th><th class="num">Qual. rate</th></tr></thead><tbody>';
+  chs.slice().sort(function(x,y){ return (R.mktChan[mi+'|'+y]||0)-(R.mktChan[mi+'|'+x]||0); })
+    .forEach(function(ci){
+      var v = R.mktChan[mi+'|'+ci]||0; if (!v) return;
+      h += '<tr><td>'+esc(D.channels[ci])+'</td><td class="num">'+fmt(v,'i')+'</td>'
+         + '<td class="num">'+fmt(R.total?v/R.total:null,'p1')+'</td>'
+         + '<td class="num">'+fmt(R.qualByChan[ci],'i')+'</td>'
+         + '<td class="num">'+fmt(v?R.qualByChan[ci]/v:null,'p1')+'</td></tr>';
+    });
+  h += '</tbody></table></div></div>';
+  h += '<div class="card"><h3>By current stage</h3><div class="scroll-x"><table>'
+    + '<thead><tr><th>Stage (col A)</th><th class="num">Leads</th><th class="num">Share</th></tr></thead><tbody>';
+  (D.stages||[]).forEach(function(st,si){
+    var v = R.mktStage[mi+'|'+si]||0; if (!v) return;
+    h += '<tr><td'+(STAGE_QUAL[si]?' style="font-weight:700;color:'+C.teal+'"':'')+'>'+esc(st)+'</td>'
+       + '<td class="num">'+fmt(v,'i')+'</td><td class="num">'+fmt(R.total?v/R.total:null,'p1')+'</td></tr>';
+  });
+  h += '</tbody></table></div></div></div>';
+  h += '</div></div></div>';
+  document.getElementById('modal-host').innerHTML = h;
+}
+
+/* ========================== PAGE: PAID VS ORGANIC ========================== */
+function renderMix(){
+  var s = scopeText(), mks = s.mks, mos = s.mos;
+  if (!NCH){ document.getElementById('mx-kpis').innerHTML =
+    '<div class="empty">No lead-score data, so paid vs organic cannot be blended.</div>'; return; }
+  if (!mks.length || !mos.length){
+    document.getElementById('mx-kpis').innerHTML = emptyMsg();
+    document.getElementById('mxTable').innerHTML = '';
+    return;
+  }
+
+  var allCh = []; for (var i=0;i<NCH;i++) allCh.push(i);
+  var cw = chartMonths(mos), bk = buckets(cw.mos);
+  var R  = leadScan(mks, mos, allCh, { mktChan:true });
+  var RC = leadScan(mks, cw.mos, allCh, { buckets:bk });   // wider window, charts only
+  var ads = derive(sumAds(mks, mos));
+  var Rp  = leadScan(mks, prevWindow(mos), allCh, {});
+  var adsP = derive(sumAds(mks, prevWindow(mos)));
+
+  // which lead-tab channels count as paid, by name
+  var paidChIdx = [];
+  (D.channels||[]).forEach(function(c,ci){
+    if (/google ads|paid|cpc|ppc|facebook ads|meta ads/i.test(c)) paidChIdx.push(ci);
+  });
+  var leadTabPaid = 0; paidChIdx.forEach(function(ci){ leadTabPaid += R.byChan[ci]; });
+
+  var paidShare = R.total && !nn(ads.leads) ? ads.leads/R.total : null;
+  var pPaidShare = Rp.total && !nn(adsP.leads) ? adsP.leads/Rp.total : null;
+  var blendCpl = R.total && !nn(ads.spend) ? ads.spend/R.total : null;
+  var pBlendCpl = Rp.total && !nn(adsP.spend) ? adsP.spend/Rp.total : null;
+
+  var h = '';
+  h += kpiCard('Total leads (all channels)', R.total,'i',[ deltaChip('vs prior', R.total, Rp.total, 1) ],'charcoal');
+  h += kpiCard('Paid leads (ads tab)', ads.leads,'i',[ deltaChip('vs prior', ads.leads, adsP.leads, 1) ],'gold');
+  h += kpiCard('Non-paid leads', !nn(ads.leads)?Math.max(0,R.total-ads.leads):null,'i',[],'sage');
+  h += kpiCard('Paid share of leads', paidShare,'p1',[ deltaChip('vs prior', paidShare, pPaidShare, 0) ],'gold');
+  h += kpiCard('Paid CPL', ads.cpl,'m2',[ deltaChip('vs prior', ads.cpl, adsP.cpl, -1) ],'copper');
+  h += kpiCard('Blended CPL', blendCpl,'m2',[ deltaChip('vs prior', blendCpl, pBlendCpl, -1) ],'teal');
+  h += kpiCard('Organic leverage', (blendCpl && ads.cpl) ? ads.cpl/blendCpl : null,'n2',
+       ['<span class="muted">paid CPL ÷ blended CPL</span>'],'sage');
+  h += kpiCard('Lead-tab "paid" channels', leadTabPaid,'i',
+       ['<span class="muted">vs '+fmt(ads.leads,'i')+' on the ads tab</span>'],'grey');
+  document.getElementById('mx-kpis').innerHTML = h;
+
+  /* trend */
+  var adsB = sumAdsByBucket(mks, cw.mos, bk);
+  var paidB = adsB.map(function(a){ return a._n ? a.leads : 0; });
+  var totB  = Array.prototype.slice.call(RC.byBucket);
+  var nonB  = totB.map(function(t,i){ return Math.max(0, t - (paidB[i]||0)); });
+  var shareB= totB.map(function(t,i){ return t ? (paidB[i]||0)/t : null; });
+
+  mkChart('mx-trend', {
+    data:{ labels:bk.labels, datasets:[
+      { type:'bar', label:'Paid leads', data:paidB, backgroundColor:C.gold, stack:'s', borderRadius:2, yAxisID:'y' },
+      { type:'bar', label:'Non-paid leads', data:nonB, backgroundColor:C.sage, stack:'s', borderRadius:2, yAxisID:'y' },
+      { type:'line', label:'Paid share', data:shareB, borderColor:C.charcoal, backgroundColor:C.charcoal,
+        borderWidth:2.5, tension:.25, pointRadius:2.5, yAxisID:'y1' }
+    ]},
+    options:{ interaction:{mode:'index',intersect:false},
+      scales:{ y:{stacked:true,grid:{color:C.line},ticks:{callback:function(v){return fmt(v,'i');}},title:{display:true,text:'Leads'}},
+               y1:Object.assign(axisPct(),{position:'right',grid:{drawOnChartArea:false},title:{display:true,text:'Paid share'},min:0}),
+               x:{stacked:true,grid:{display:false}} },
+      plugins:{ legend:{position:'bottom'}, tooltip:{ callbacks:{ label:function(ctx){
+        return ctx.dataset.label+': '+(ctx.dataset.type==='line'?fmt(ctx.parsed.y,'p1'):fmt(ctx.parsed.y,'i')); } } } } }
+  });
+
+  var paidCplB  = adsB.map(function(a){ return derive(a).cpl; });
+  var blendCplB = adsB.map(function(a,i){ return totB[i] && a._n && a.spend ? a.spend/totB[i] : null; });
+  mkChart('mx-cpl', {
+    type:'line',
+    data:{ labels:bk.labels, datasets:[
+      { label:'Paid CPL', data:paidCplB, borderColor:C.copper, backgroundColor:'rgba(153,85,51,.12)',
+        borderWidth:2.5, tension:.25, pointRadius:2.5, fill:false },
+      { label:'Blended CPL (all leads)', data:blendCplB, borderColor:C.teal, backgroundColor:'rgba(31,86,98,.12)',
+        borderWidth:2.5, tension:.25, pointRadius:2.5, fill:'-1' }
+    ]},
+    options:{ interaction:{mode:'index',intersect:false},
+      scales:{ y:Object.assign(axisMoney(),{beginAtZero:true}), x:{grid:{display:false}} },
+      plugins:{ legend:{position:'bottom'}, tooltip:{ callbacks:{ label:function(ctx){
+        return ctx.dataset.label+': '+fmt(ctx.parsed.y,'m2'); } } } } }
+  });
+
+  /* table */
+  var q = (document.getElementById('mxSearch').value||'').toLowerCase();
+  var perMkt = sumAdsByMarket(mks, mos);
+  var rows = mks.map(function(mi){
+    var a = perMkt[mi], d = derive(a), lt = R.byMkt[mi] ? R.byMkt[mi].total : 0;
+    var ltPaid = 0; paidChIdx.forEach(function(ci){ ltPaid += R.mktChan[mi+'|'+ci]||0; });
+    return { i:mi, m:D.markets[mi], total:lt, paid:a.leads, spend:a.spend, cpl:d.cpl,
+      nonpaid: nn(a.leads)?null:Math.max(0,lt-a.leads),
+      share: lt && !nn(a.leads) ? a.leads/lt : null,
+      blend: lt && a.spend ? a.spend/lt : null,
+      ltPaid: ltPaid, qual: R.byMkt[mi]?R.byMkt[mi].qual:0 };
+  }).filter(function(r){ return (r.total || r.paid) && (!q || r.m.toLowerCase().indexOf(q)>-1); });
+  rows.sort(function(a,b){ return (b.share||0)-(a.share||0); });
+
+  var th = '<thead><tr><th>Office</th><th class="num">Total leads</th><th class="num">Paid (ads tab)</th>'
+    + '<th class="num">Non-paid</th><th class="num">Paid share</th><th class="num">Spend</th>'
+    + '<th class="num">Paid CPL</th><th class="num">Blended CPL</th><th class="num">Leverage</th>'
+    + '<th class="num">Qual. rate</th><th class="num">Lead-tab paid ch.</th></tr></thead><tbody>';
+  rows.forEach(function(r){
+    var gap = (!nn(r.paid) && r.ltPaid) ? Math.abs(r.paid-r.ltPaid)/Math.max(r.paid,r.ltPaid) : 0;
+    th += '<tr><td><b class="clickable" onclick="drillLeads('+r.i+')">'+esc(r.m)+'</b></td>'
+      + '<td class="num">'+fmt(r.total,'i')+'</td><td class="num">'+fmt(r.paid,'i')+'</td>'
+      + '<td class="num">'+fmt(r.nonpaid,'i')+'</td>'
+      + '<td class="num"><b>'+fmt(r.share,'p1')+'</b></td>'
+      + '<td class="num">'+fmt(r.spend,'m0')+'</td><td class="num">'+fmt(r.cpl,'m2')+'</td>'
+      + '<td class="num">'+fmt(r.blend,'m2')+'</td>'
+      + '<td class="num">'+fmt(r.blend&&r.cpl?r.cpl/r.blend:null,'n2')+'</td>'
+      + '<td class="num">'+fmt(r.total?r.qual/r.total:null,'p1')+'</td>'
+      + '<td class="num"'+(gap>0.5?' style="color:'+C.copper+';font-weight:700" title="large gap vs the ads tab"':'')+'>'
+      + fmt(r.ltPaid,'i')+'</td></tr>';
+  });
+  th += '<tr class="total"><td>All offices in scope</td><td class="num">'+fmt(R.total,'i')+'</td>'
+    + '<td class="num">'+fmt(ads.leads,'i')+'</td>'
+    + '<td class="num">'+fmt(!nn(ads.leads)?Math.max(0,R.total-ads.leads):null,'i')+'</td>'
+    + '<td class="num">'+fmt(paidShare,'p1')+'</td><td class="num">'+fmt(ads.spend,'m0')+'</td>'
+    + '<td class="num">'+fmt(ads.cpl,'m2')+'</td><td class="num">'+fmt(blendCpl,'m2')+'</td>'
+    + '<td class="num">'+fmt(blendCpl&&ads.cpl?ads.cpl/blendCpl:null,'n2')+'</td>'
+    + '<td class="num">'+fmt(R.total?R.qual/R.total:null,'p1')+'</td>'
+    + '<td class="num">'+fmt(leadTabPaid,'i')+'</td></tr></tbody>';
+  document.getElementById('mxTable').innerHTML = th;
+}
+
+/* ============================== PAGE: ALERTS ============================== */
+var ALERTS = [];
+function computeAlerts(){
+  ALERTS = [];
+  var sens  = parseFloat((document.getElementById('alSens')||{}).value || '0.20');
+  var floor = parseInt((document.getElementById('alFloor')||{}).value || '10', 10);
+  var mks = scopeMarkets(), mos = scopeMonths();
+  if (!mos.length) { setBadge(); return; }
+  var latest = mos[mos.length-1];
+  var base = [];
+  for (var b=1;b<=3;b++){ var ix = latest-b; if (ix>=0) base.push(ix); }
+  if (!base.length) { setBadge(); return; }
+
+  var watch = ['cpl','dipct','cpdi','cpc','lpcv','d10r','leads'];
+  mks.forEach(function(mi){
+    var curA = zero(); addAds(curA, ADS[mi][latest]);
+    if (!curA._n) return;
+    var cur = derive(curA);
+    if ((curA.leads||0) < floor) return;
+    var baseA = zero(); base.forEach(function(ix){ addAds(baseA, ADS[mi][ix]); });
+    if (!baseA._n) return;
+    var prior = derive(baseA);
+    watch.forEach(function(k){
+      var m = MET[k], c = cur[k], p = prior[k];
+      if (nn(c) || nn(p) || p===0) return;
+      var d = (c-p)/Math.abs(p);
+      if (Math.abs(d) < sens) return;
+      var better = m.good===0 ? null : ((d>0) === (m.good>0));
+      ALERTS.push({ market:D.markets[mi], mi:mi, metric:m.label, k:k, cur:c, prior:p, d:d,
+        better:better, leads:curA.leads, spend:curA.spend,
+        month:monthLabel(D.months[latest]), fmtk:m.fmt });
+    });
+    // structural oddities
+    if ((curA.spend||0) > 0 && (curA.leads||0) === 0)
+      ALERTS.push({ market:D.markets[mi], mi:mi, metric:'Spend with zero leads', k:'zero',
+        cur:curA.spend, prior:null, d:null, better:false, leads:0, spend:curA.spend,
+        month:monthLabel(D.months[latest]), fmtk:'m0', structural:true });
+  });
+  ALERTS.sort(function(a,b){
+    if (a.better !== b.better) return a.better ? 1 : -1;
+    return Math.abs(b.d||9) - Math.abs(a.d||9);
+  });
+  setBadge();
+}
+function setBadge(){
+  var bad = ALERTS.filter(function(a){ return a.better===false; }).length;
+  var el = document.getElementById('alertBadge');
+  if (!el) return;
+  if (bad){ el.style.display='inline-block'; el.textContent = bad; }
+  else el.style.display='none';
+}
+function renderAlerts(){
+  computeAlerts();
+  var host = document.getElementById('al-body');
+  if (!ALERTS.length){
+    host.innerHTML = '<div class="empty">No market moved past the threshold in its latest month. '
+      + 'Loosen the sensitivity or lower the volume floor to see smaller moves.</div>';
+    return;
+  }
+  var bad = ALERTS.filter(function(a){ return a.better===false; });
+  var good = ALERTS.filter(function(a){ return a.better===true; });
+  var neutral = ALERTS.filter(function(a){ return a.better===null; });
+
+  var CAP = 30;
+  function block(title, arr, cls, hint){
+    if (!arr.length) return '';
+    var shown = arr.slice(0, CAP), hidden = arr.length - shown.length;
+    var h = '<h2 class="sec">'+esc(title)+' <span class="muted" style="font-weight:600;font-size:12.5px">'
+          + arr.length + ' flag' + (arr.length===1?'':'s')
+          + (hidden ? ' · showing the '+CAP+' largest moves' : '') + '</span></h2>'
+          + (hint ? '<p class="hint" style="margin:-6px 0 12px">'+esc(hint)+'</p>' : '')
+          + '<div class="alist">';
+    shown.forEach(function(a){
+      h += '<div class="alert '+cls+'">'
+        + '<div class="at"><span class="clickable" onclick="drillMarket('+a.mi+')">'+esc(a.market)+'</span>'
+        + '<span class="av">'+(a.d===null?'':(a.d>0?'▲ ':'▼ ')+(Math.abs(a.d)*100).toFixed(0)+'%')+'</span></div>'
+        + '<div class="ad"><b>'+esc(a.metric)+'</b>'
+        + (a.structural ? ' — spent '+fmt(a.cur,'m0')+' in '+esc(a.month)+' and recorded no leads'
+           : ' moved from '+fmt(a.prior,a.fmtk)+' (3-mo avg) to <b>'+fmt(a.cur,a.fmtk)+'</b> in '+esc(a.month))
+        + '<br><span class="muted">'+fmt(a.leads,'i')+' leads · '+fmt(a.spend,'m0')+' spend that month</span></div>'
+        + '</div>';
+    });
+    h += '</div>';
+    if (hidden) h += '<p class="hint" style="margin:8px 0 0">'+hidden
+      + ' smaller move'+(hidden===1?'':'s')+' not shown — tighten the sensitivity or narrow the market filter to see them.</p>';
+    return h;
+  }
+  host.innerHTML =
+      block('Getting worse', bad, 'bad', 'Efficiency moved the wrong way, or the market spent with nothing to show for it.')
+    + block('Volume shifts', neutral, 'warn', 'Direction is not inherently good or bad — worth knowing about.')
+    + block('Getting better', good, 'good', 'Efficiency improved against the market’s own trailing average.');
+}
+
+/* ============================ PAGE: DEFINITIONS ============================ */
+function renderDefs(){
+  var formulas = {
+    spend:'Sum of the Spend row across every market and month in scope.',
+    impr:'Sum of the Impressions row.',
+    ctr:'Clicks ÷ Impressions',
+    clicks:'Sum of the Clicks row.',
+    cpc:'Spend ÷ Clicks',
+    lpcv:'Leads ÷ Clicks',
+    leads:'Sum of the Leads row (paid-ads leads as the ads platform reports them).',
+    cpl:'Spend ÷ Leads',
+    dipct:'Disclosed Investors ÷ Leads',
+    di:'Sum of the Disclosed Investors row.',
+    d10:'Sum of the 10 Days Disclosure Count row.',
+    d10r:'10-Day Disclosure Count ÷ Leads',
+    cpdi:'Spend ÷ Disclosed Investors',
+    buyers:'Sum of the Buyers row.',
+    bpct:'Buyers ÷ Leads',
+    cpb:'Spend ÷ Buyers'
+  };
+  var h = '<thead><tr><th>KPI</th><th>Type</th><th>How this dashboard computes it</th><th>Good direction</th></tr></thead><tbody>';
+  METRICS.forEach(function(m){
+    h += '<tr><td>'+esc(m.label)+'</td>'
+      + '<td>'+(m.base?'<span class="pill pill-grey">additive base</span>':'<span class="pill pill-gold">recomputed</span>')+'</td>'
+      + '<td><code>'+esc(formulas[m.k]||'')+'</code></td>'
+      + '<td>'+(m.good===1?'higher':(m.good===-1?'lower':'context'))+'</td></tr>';
+  });
+  h += '<tr><td>Leads / head / mo</td><td><span class="pill pill-gold">recomputed</span></td>'
+    + '<td><code>Leads ÷ head-months</code> — head-months is the sum of monthly headcount across the markets and months in scope</td><td>higher</td></tr>'
+    + '<tr><td>Qualified rate</td><td><span class="pill pill-gold">recomputed</span></td>'
+    + '<td><code>(Disclosed Investor + Buyer) ÷ all leads</code>, using each lead’s current stage</td><td>higher</td></tr>'
+    + '<tr><td>Blended CPL</td><td><span class="pill pill-gold">recomputed</span></td>'
+    + '<td><code>Paid spend ÷ all leads from every channel</code></td><td>lower</td></tr>'
+    + '<tr><td>Organic leverage</td><td><span class="pill pill-gold">recomputed</span></td>'
+    + '<td><code>Paid CPL ÷ Blended CPL</code> — 2.0x means non-paid channels doubled the leads each paid dollar bought</td><td>higher</td></tr>'
+    + '<tr><td>Composite score</td><td><span class="pill pill-gold">recomputed</span></td>'
+    + '<td>CPL, DI%, 10-day rate, CPDI and leads-per-head each min-max scaled 0–100 across the markets in scope, then averaged. Relative, not absolute.</td><td>higher</td></tr>'
+    + '</tbody>';
+  document.getElementById('defTable').innerHTML = h;
+
+  var src = '<thead><tr><th>Field</th><th>Tab</th><th>Column / row</th><th>Notes</th></tr></thead><tbody>'
+    + row2('Spend, Impressions, Clicks, Leads, DI, 10-day count, Buyers', D.tabs.ads,
+        'One KPI row per market block; monthly columns to the right of "Yearly Snapshot"',
+        'The nine rate rows in the sheet are read but not used — they are recomputed here so any scope rolls up correctly.')
+    + row2('Market / office', D.tabs.ads, 'Column A', 'Joined to the other two tabs on this name.')
+    + row2('State', D.tabs.ads, 'Column B', 'Powers the state filter.')
+    + row2('Headcount', D.tabs.office, 'HEADCOUNT section, one row per market', 'The "Avg" column and the "Total" row are ignored and recomputed.')
+    + row2('Closed volume', D.tabs.office, 'VOLUME section, one row per market', 'Treated as a flow and summed.')
+    + row2('Office / market', D.tabs.leads, 'Column R — Market (standardized)', 'The office dimension for all lead metrics, per your instruction.')
+    + row2('Lead type', D.tabs.leads, 'Column O — Channel (mapped)', 'Drives the lead-type filter, matrix and mix charts.')
+    + row2('Stage', D.tabs.leads, 'Column A — Contact Stage', 'Current stage only. Disclosed Investor and Buyer count as qualified.')
+    + row2('Month', D.tabs.leads, 'Column Q — Month Key', 'Falls back to Created Date (column B) when Month Key is blank.')
+    + row2('Market tier', D.tabs.leads, 'Column S — Tier (helper)', 'First non-blank tier seen for each market powers the tier filter.')
+    + row2('Access list', 'Access', 'Any cell containing an "@"', 'Add or remove a row to grant or revoke access — no code change needed.')
+    + '</tbody>';
+  document.getElementById('srcTable').innerHTML = src;
+}
+function row2(a,b,c,d){ return '<tr><td>'+esc(a)+'</td><td><b>'+esc(b||'—')+'</b></td><td>'+esc(c)+'</td>'
+  + '<td class="muted" style="white-space:normal">'+esc(d)+'</td></tr>'; }
+
+/* ============================== CSV export ============================== */
+function exportCsv(){
+  var page = document.querySelector('.page.active');
+  var tables = page ? page.querySelectorAll('table') : [];
+  if (!tables.length){ alert('Nothing tabular to export on this tab.'); return; }
+  var out = [];
+  var s = scopeText();
+  out.push(['Atlas — Paid Ads & Lead Performance']);
+  out.push([s.text.replace(/<[^>]+>/g,'')]);
+  out.push(['Generated', D.generatedAt||'']);
+  out.push([]);
+  tables.forEach(function(t, ti){
+    if (tables.length > 1) out.push(['Table ' + (ti+1)]);
+    t.querySelectorAll('tr').forEach(function(tr){
+      var cells = [];
+      tr.querySelectorAll('th,td').forEach(function(c){
+        cells.push(c.textContent.replace(/\s+/g,' ').trim());
+      });
+      out.push(cells);
+    });
+    out.push([]);
+  });
+  var csv = out.map(function(r){ return r.map(function(v){
+    v = String(v===undefined?'':v);
+    return /[",\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v;
+  }).join(','); }).join('\n');
+
+  var name = 'paid_ads_' + (state.page) + '_' + (D.months[state.to]||'') + '.csv';
+  try {
+    var blob = new Blob(['\ufeff'+csv], { type:'text/csv;charset=utf-8;' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+    toast('Downloaded ' + name);
+  } catch (e) {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(csv).then(function(){
+        toast('Download was blocked, so the view is on your clipboard — paste into Sheets or Excel.');
+      }, function(){ alert('Could not export. Select the table and copy it manually.'); });
+    } else alert('Could not export in this browser.');
+  }
+}
+function toast(msg){
+  var t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:'
+    + C.charcoal + ';color:#fff;padding:11px 18px;border-radius:8px;z-index:400;font-size:13px;'
+    + 'box-shadow:0 4px 14px rgba(0,0,0,.25);max-width:80vw;text-align:center';
+  document.body.appendChild(t);
+  setTimeout(function(){ t.style.transition='opacity .4s'; t.style.opacity='0';
+    setTimeout(function(){ t.remove(); }, 450); }, 3400);
+}
+</script>
+</body>
+</html>
