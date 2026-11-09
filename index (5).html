@@ -1,0 +1,3155 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../assets/gas-mock.js"></script>
+<script src="../../assets/fake.js"></script>
+<script src="mock.js"></script>
+
+<base target="_top">
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#BD9F40; --gold-soft:#E7DCB3; --charcoal:#2E2E2B; --ink:#2E2E2B;
+  --teal:#1F5662; --sage:#82C4B0; --copper:#995533; --grey:#60605E;
+  --neutral:#DCDCD7; --offwhite:#EFF0EB; --surface:#FFFFFF;
+  --line:#E3E3DE; --pos:#1F5662;
+  --shadow-1:0 1px 3px rgba(46,46,43,.15),0 1px 2px rgba(46,46,43,.20);
+  --shadow-2:0 2px 6px rgba(46,46,43,.15),0 1px 2px rgba(46,46,43,.20);
+  --r-md:8px; --r-lg:12px;
+  font-family:'Source Sans 3','Segoe UI',Arial,sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}   /* a class with display:flex would otherwise win */
+body{margin:0;background:var(--offwhite);color:var(--ink);font-size:14px;line-height:1.45;}
+a{color:var(--teal)}
+button{font-family:inherit}
+
+/* ---------------- header band ---------------- */
+.band{background:var(--charcoal);color:#fff;padding:18px 28px 0;position:relative;}
+.band .rule{height:3px;background:var(--gold);width:100%;position:absolute;left:0;bottom:0}
+.band-row{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-bottom:16px;}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-img{max-height:34px;max-width:250px;height:auto;width:auto;display:block;object-fit:contain}
+.logo-fb{display:flex;align-items:center;gap:12px}
+.logo-cap{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;
+  color:var(--neutral);border-left:1px solid var(--grey);padding-left:12px;margin-left:2px}
+.gatecard .logo-img{max-height:30px;max-width:230px;height:auto;width:auto;display:block;margin-bottom:16px;object-fit:contain}
+.logo .mark{width:34px;height:34px;border:2px solid var(--gold);border-radius:3px;display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--gold);font-size:15px;letter-spacing:-1px}
+.logo .name{font-weight:900;letter-spacing:.5px;font-size:15px;text-transform:uppercase}
+.logo .name small{display:block;font-weight:600;color:var(--neutral);font-size:10px;letter-spacing:2px}
+h1{font-size:22px;margin:0;font-weight:700}
+.sub{color:var(--neutral);font-size:12.5px;margin-top:2px}
+.meta{text-align:right;font-size:12px;color:var(--neutral)}
+.meta b{color:#fff;font-weight:600}
+.meta .link{color:var(--gold);cursor:pointer;font-weight:600;background:none;border:0;padding:0;font-size:12px}
+.meta .link:hover{text-decoration:underline}
+
+/* ---------------- tabs ---------------- */
+.tabs{display:flex;gap:2px;padding:0 28px;background:var(--charcoal)}
+.tab{background:transparent;border:0;color:var(--neutral);padding:12px 20px;font-size:14px;font-weight:600;cursor:pointer;border-bottom:3px solid transparent;transition:.15s;display:flex;align-items:center;gap:8px}
+.tab:hover{color:#fff}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.tab .pill{background:rgba(255,255,255,.12);border-radius:20px;padding:1px 8px;font-size:11.5px;font-weight:700}
+.tab.active .pill{background:var(--gold);color:var(--charcoal)}
+
+/* ---------------- toolbar ---------------- */
+.toolbar{background:var(--surface);border-bottom:1px solid var(--line);padding:12px 28px 14px;position:sticky;top:0;z-index:20;box-shadow:var(--shadow-1)}
+.tb-row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.tb-row.filters{margin-top:11px;padding-top:11px;border-top:1px solid var(--line);gap:10px 12px;align-items:flex-end}
+.fld{display:flex;flex-direction:column;gap:3px}
+.fld label{font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:var(--grey);font-weight:700}
+
+/* ---- multi-select checkbox dropdown ---- */
+.ms{position:relative;display:flex;flex-direction:column;gap:3px}
+.ms>label{font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:var(--grey);font-weight:700}
+.ms-btn{border:1px solid var(--line);border-radius:var(--r-md);padding:7px 26px 7px 9px;background:#fff;
+  color:var(--ink);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;text-align:left;
+  min-width:116px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;position:relative}
+.ms.wide .ms-btn{min-width:158px}
+.ms-btn::after{content:'';position:absolute;right:9px;top:50%;margin-top:-2px;border:4px solid transparent;
+  border-top-color:var(--grey)}
+.ms-btn:hover{border-color:var(--grey)}
+.ms-btn:focus{outline:2px solid var(--gold-soft);border-color:var(--gold)}
+.ms-btn.set{border-color:var(--gold);background:#FCFAF3;font-weight:600}
+.ms-btn.set::after{border-top-color:var(--gold)}
+.ms-panel{position:absolute;top:100%;left:0;margin-top:4px;z-index:40;background:#fff;
+  border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--shadow-2);
+  min-width:210px;max-width:290px;padding:6px}
+.ms-tools{display:flex;gap:6px;padding:2px 4px 6px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.ms-tools button{flex:1;border:1px solid var(--line);background:#fff;border-radius:6px;padding:4px 6px;
+  font-family:inherit;font-size:11.5px;font-weight:700;color:var(--grey);cursor:pointer;
+  text-transform:uppercase;letter-spacing:.6px}
+.ms-tools button:hover{border-color:var(--gold);color:var(--gold)}
+.ms-opts{max-height:248px;overflow-y:auto}
+.ms-opt{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:5px;cursor:pointer;
+  font-size:13.5px;user-select:none}
+.ms-opt:hover{background:var(--offwhite)}
+.ms-opt input{margin:0;width:14px;height:14px;accent-color:var(--teal);cursor:pointer;flex:0 0 14px}
+.ms-opt span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ms-opt em{font-style:normal;color:var(--grey);font-size:12px}
+.ms-empty{padding:8px 6px;color:var(--grey);font-size:12.5px}
+
+#btnExpand{white-space:nowrap}
+
+/* ---- admin ---- */
+.tab.admin{margin-left:auto;color:var(--sage)}
+.tab.admin.active{color:var(--gold)}
+#viewAsWrap{display:none;align-items:center;gap:6px;font-size:12.5px;color:var(--grey)}
+#viewAsWrap.show{display:flex}
+#viewAsWrap select{border:1px solid var(--line);border-radius:var(--r-md);padding:6px 8px;
+  font-family:inherit;font-size:13px;background:#fff;color:var(--ink)}
+#viewAsWrap.on select{border-color:var(--gold);background:#FCFAF3;font-weight:600}
+.previewbar{background:#F6F1DF;border:1px solid var(--gold-soft);border-radius:var(--r-md);
+  padding:9px 13px;margin-bottom:12px;font-size:13.5px;display:flex;align-items:center;gap:10px}
+.previewbar b{font-weight:700}
+.previewbar button{margin-left:auto}
+
+.adm{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  box-shadow:var(--shadow-1);padding:18px;margin-bottom:12px}
+.adm h3{margin:0 0 3px;font-size:17px;font-weight:700}
+.adm .sub2{color:var(--grey);font-size:13px;margin-bottom:14px}
+.adm-head{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;padding-bottom:14px;
+  border-bottom:1px solid var(--line);margin-bottom:14px}
+.adm-head select{border:1px solid var(--line);border-radius:var(--r-md);padding:8px 10px;
+  font-family:inherit;font-size:14px;font-weight:600;background:#fff;color:var(--ink);min-width:190px}
+.adm-boxhead{display:flex;align-items:baseline;gap:9px;margin:16px 0 5px;padding-bottom:4px;
+  border-bottom:2px solid var(--gold)}
+.adm-boxhead b{font-size:14px;color:var(--charcoal)}
+.adm-boxhead span{font-size:12px;color:var(--grey)}
+.adm-rule .r-group{max-width:190px;color:var(--teal);font-weight:600}
+.adm-count{margin-left:auto;text-align:right;font-size:12.5px;color:var(--grey)}
+.adm-count b{display:block;font-size:22px;font-weight:800;color:var(--teal);line-height:1.1}
+.adm-count.zero b{color:var(--copper)}
+
+.adm-rule{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:9px;border:1px solid var(--line);
+  border-radius:var(--r-md);margin-bottom:8px;background:#FCFCFA}
+.adm-rule select,.adm-rule input[type=text]{border:1px solid var(--line);border-radius:6px;padding:6px 8px;
+  font-family:inherit;font-size:13px;background:#fff;color:var(--ink)}
+.adm-rule .r-field{min-width:150px}
+.adm-rule .r-op{min-width:132px}
+.adm-rule .r-val{min-width:150px;flex:1 1 150px}
+.adm-rule .r-val:disabled{background:var(--offwhite);color:var(--grey)}
+.adm-rule label.chk{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--grey);
+  white-space:nowrap;cursor:pointer;user-select:none}
+.adm-rule label.chk input{margin:0;accent-color:var(--teal)}
+.adm-rule .r-del{border:1px solid var(--line);background:#fff;color:var(--grey);border-radius:6px;
+  width:28px;height:28px;cursor:pointer;font-size:15px;line-height:1;padding:0}
+.adm-rule .r-del:hover{border-color:var(--copper);color:var(--copper)}
+.adm-rule.off{opacity:.55}
+.adm-rule .r-hint{font-size:11.5px;color:var(--grey);flex-basis:100%;margin-top:-2px}
+.adm-actions{display:flex;gap:8px;align-items:center;margin-top:12px;padding-top:12px;
+  border-top:1px solid var(--line);flex-wrap:wrap}
+.adm-msg{font-size:13px;font-weight:600}
+.adm-msg.ok{color:var(--teal)} .adm-msg.bad{color:#9B2C2C}
+/* ---- archive (admin only) ---- */
+.tab.admin+.tab.admin{margin-left:0}
+.arc-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:11px 12px;
+  border:1px solid var(--line);border-radius:var(--r-md);background:#fff;margin-bottom:8px}
+.arc-main{flex:1 1 260px;min-width:0}
+.arc-addr{font-weight:700;font-size:14px;color:var(--ink);white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.arc-meta{font-size:12px;color:var(--grey);margin-top:2px}
+.arc-facts{font-size:12.5px;color:var(--ink);flex:0 0 auto;white-space:nowrap}
+.arc-facts span{color:var(--grey)}
+.arc-when{font-size:12px;color:var(--grey);flex:0 0 132px;line-height:1.45}
+.arc-when b{color:var(--ink);font-weight:600}
+.arc-days{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.5px;
+  padding:2px 7px;border-radius:20px;background:#F1F1EE;color:var(--grey)}
+.arc-days.soon{background:#FBE8E0;color:var(--copper)}
+.arc-act{display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex:0 0 auto;margin-left:auto}
+.arc-act select{border:1px solid var(--line);border-radius:6px;padding:6px 8px;
+  font-family:inherit;font-size:12.5px;background:#fff;color:var(--ink);max-width:170px}
+.arc-chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;
+  background:#E4F0EC;color:var(--teal);border-radius:20px;padding:3px 5px 3px 10px}
+.arc-chip button{border:0;background:transparent;color:var(--teal);cursor:pointer;
+  font-size:14px;line-height:1;padding:0 4px;border-radius:50%}
+.arc-chip button:hover{background:rgba(31,86,98,.15)}
+.arc-tag{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:1px;
+  text-transform:uppercase;padding:2px 8px;border-radius:20px;background:#F1F1EE;color:var(--grey)}
+.detail-extra{background:#FCFCFA;border:1px solid var(--line);border-radius:var(--r-md);
+  padding:12px 14px;margin-bottom:10px}
+.detail-extra a{color:var(--teal);font-weight:700}
+.loc .dot{opacity:.5}
+.dgrid .val .sub{color:var(--grey);font-weight:400;font-size:12.5px}
+.arc-tag.arch{background:#F6F1DF;color:#8A7226}
+.arc-tag.hand{background:#E4F0EC;color:var(--teal)}
+.arc-tag.warn{background:#FBE8E0;color:var(--copper);text-transform:none;letter-spacing:0;font-weight:700}
+.arc-sweep{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:12.5px;
+  color:var(--grey);margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.arc-sweep .arc-msg{font-weight:600}
+.arc-sweep .arc-msg.ok{color:var(--teal)} .arc-sweep .arc-msg.bad{color:#9B2C2C}
+.arc-list{max-height:none}
+.adm-note{background:#FCFCFA;border:1px solid var(--line);border-left:3px solid var(--sage);
+  border-radius:var(--r-md);padding:11px 13px;font-size:13px;color:var(--grey);line-height:1.55}
+.adm-note b{color:var(--ink)}
+#clearFilters{display:none;align-self:flex-end;margin-bottom:1px}
+#clearFilters.show{display:inline-block}
+.toolbar input[type=search]{border:1px solid var(--line);border-radius:var(--r-md);padding:8px 12px;font-family:inherit;font-size:13.5px;min-width:260px;flex:1 1 260px;color:var(--ink)}
+.toolbar input[type=search]:focus{outline:2px solid var(--gold-soft);border-color:var(--gold)}
+.toolbar select{border:1px solid var(--line);border-radius:var(--r-md);padding:7px 9px;font-family:inherit;font-size:13px;background:#fff;color:var(--ink);max-width:100%}
+.toolbar select:focus{outline:2px solid var(--gold-soft);border-color:var(--gold)}
+.count{font-size:13px;color:var(--grey);font-weight:600;white-space:nowrap}
+#btnExport{margin-left:auto;white-space:nowrap;display:inline-flex;align-items:center;gap:7px}
+#btnExport::before{content:'';width:14px;height:14px;flex:0 0 14px;background:currentColor;
+  -webkit-mask:var(--dl) center/contain no-repeat;mask:var(--dl) center/contain no-repeat;
+  --dl:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'/%3E%3Cpolyline points='7 10 12 15 17 10'/%3E%3Cline x1='12' y1='15' x2='12' y2='3'/%3E%3C/svg%3E")}
+.count b{color:var(--ink)}
+.toggle{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--grey);cursor:pointer;user-select:none}
+
+/* ---------------- content ---------------- */
+.wrap{padding:20px 28px 60px;max-width:1180px;margin:0 auto}
+.panel{display:none}
+.panel.active{display:block}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:var(--r-lg);padding:44px 24px;text-align:center;color:var(--grey)}
+.empty b{display:block;color:var(--ink);font-size:16px;margin-bottom:6px}
+
+/* ---------------- deal card ---------------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);margin-bottom:10px;box-shadow:var(--shadow-1);overflow:hidden;transition:box-shadow .15s,border-color .15s}
+.card:hover{box-shadow:var(--shadow-2)}
+.card.open{border-color:var(--gold)}
+/* Brand-new deals. A gold border alone would say nothing — .card.open above is
+   already gold and cards open by default — so this adds a soft gold halo and a
+   tinted header. The ring is a box-shadow, not a thicker border, so nothing
+   reflows by a pixel when a card becomes (or stops being) new. */
+.card.isnew{border-color:var(--gold);
+  box-shadow:0 0 0 3px rgba(189,159,64,.18),var(--shadow-1)}
+.card.isnew:hover{box-shadow:0 0 0 3px rgba(189,159,64,.28),var(--shadow-2)}
+.card.isnew .card-head{background:linear-gradient(90deg,#FCF8EC 0%,rgba(252,248,236,0) 60%)}
+/* Brief pulse when a card is opened from an email link, so it is obvious which
+   one the link meant. */
+@keyframes cardflash{0%{box-shadow:0 0 0 0 rgba(31,86,98,.45)}
+  40%{box-shadow:0 0 0 6px rgba(31,86,98,.18)}100%{box-shadow:0 0 0 0 rgba(31,86,98,0)}}
+.card.flash{animation:cardflash 1.1s ease-out 2;border-color:var(--teal)}
+@media (prefers-reduced-motion: reduce){.card.flash{animation:none;border-color:var(--teal)}}
+.card-head{display:flex;align-items:center;gap:16px;padding:14px 18px;cursor:pointer}
+.addr{flex:1 1 260px;min-width:0}
+.addr .street{font-size:16.5px;font-weight:700;letter-spacing:-.2px}
+.addr .loc{font-size:13px;color:var(--grey);margin-top:1px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;flex:2 1 380px}
+.chip{background:var(--offwhite);border:1px solid var(--line);border-radius:20px;padding:3px 11px;font-size:12.5px;color:var(--ink);white-space:nowrap}
+.chip b{font-weight:700}
+.chip.key{background:#F6F1DF;border-color:var(--gold-soft)}
+.chip.warn{background:#F7EEE9;border-color:#E6CFC2;color:var(--copper)}
+.askbox{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;background:var(--teal);color:#fff;
+  border-radius:var(--r-md);padding:8px 14px;font-weight:600;font-size:13px;line-height:normal;
+  white-space:nowrap;min-width:164px;justify-content:center}   /* same box as .btn (Submit offer) */
+.askbox .ask-amt{font-weight:800}
+.chip.notes{background:#fff;border-color:var(--line);color:var(--grey)}
+.chip.notenew{background:#1F5662;border-color:#1F5662;color:#fff;font-weight:700}
+.notesbox{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-top:12px;background:#fff}
+.notesbox textarea{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:8px;padding:9px 11px;font:inherit;font-size:13.5px;resize:vertical}
+.nlist{display:flex;flex-direction:column;gap:8px;margin:4px 0 10px;max-height:340px;overflow:auto}
+.nmsg{border-left:3px solid var(--gold);padding:4px 10px;background:#FAF7F1;border-radius:0 6px 6px 0}
+.nmsg.co{border-left-color:var(--teal);background:#EEF4F5}
+.nmeta{font-size:11px;color:var(--grey);margin-bottom:2px}
+.ntext{font-size:13.5px;white-space:normal;word-wrap:break-word}
+.chip.offmkt{background:var(--charcoal);border-color:var(--charcoal);color:#fff;font-weight:800;
+  font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:4px 11px;display:inline-flex;align-items:center}
+.chip.link{color:var(--teal);text-decoration:none;font-weight:600}
+.chip.link:hover{border-color:var(--teal)}
+.acts{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.iconbtn{width:34px;height:34px;border:1px solid var(--line);background:#fff;border-radius:var(--r-md);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;padding:0;color:var(--grey)}
+.iconbtn:hover{border-color:var(--gold);color:var(--gold);background:#FCFAF3}
+.iconbtn.on{background:var(--teal);border-color:var(--teal);color:#fff}
+.iconbtn.on.down{background:var(--copper);border-color:var(--copper)}
+.iconbtn svg{width:17px;height:17px;display:block}
+.btn{border:0;border-radius:var(--r-md);padding:8px 14px;font-weight:600;font-size:13px;cursor:pointer;transition:.15s;font-family:inherit}
+.btn-gold{background:var(--gold);color:var(--charcoal)}
+.btn-gold:hover{filter:brightness(1.06)}
+.btn-teal{background:var(--teal);color:#fff}
+.btn-teal:hover{filter:brightness(1.12)}
+.btn-ghost{background:#fff;color:var(--grey);border:1px solid var(--line)}
+.btn-ghost:hover{border-color:var(--grey);color:var(--ink)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.chev{color:var(--grey);transition:transform .18s;flex:0 0 auto}
+.card.open .chev{transform:rotate(180deg)}
+
+/* ---------------- expanded detail ---------------- */
+.detail{display:none;border-top:1px solid var(--line);background:#FCFCFA;padding:18px}
+.card.open .detail{display:block}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px 20px;margin-bottom:16px}
+.field .lbl{font-size:10.5px;letter-spacing:1.1px;text-transform:uppercase;color:var(--grey);font-weight:700}
+.field .val{font-size:15px;font-weight:600;margin-top:1px}
+.section-lbl{font-size:10.5px;letter-spacing:1.1px;text-transform:uppercase;color:var(--grey);font-weight:700;margin:16px 0 6px}
+.note{background:#fff;border:1px solid var(--line);border-left:3px solid var(--sage);border-radius:var(--r-md);padding:10px 12px;font-size:13.5px;white-space:pre-wrap}
+.legal{font-size:12px;color:var(--grey);line-height:1.5}
+
+/* ---------------- offer form ---------------- */
+.offerbox{background:#fff;border:1px solid var(--gold-soft);border-radius:var(--r-md);padding:14px;margin-top:16px}
+.offerbox .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.money{position:relative;display:inline-flex;align-items:center}
+.money span{position:absolute;left:11px;color:var(--grey);font-weight:700}
+.money input{border:1px solid var(--line);border-radius:var(--r-md);padding:9px 12px 9px 24px;font-family:inherit;font-size:15px;font-weight:700;width:190px;color:var(--ink)}
+.money input:focus{outline:2px solid var(--gold-soft);border-color:var(--gold)}
+.hint{font-size:12.5px;color:var(--grey)}
+.err{color:#9B2C2C;font-size:12.5px;font-weight:600}
+
+/* ---------------- status ribbons ---------------- */
+.ribbon{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:3px 10px;border-radius:20px}
+.ribbon+.ribbon{margin-left:5px}
+.ribbon.new{background:var(--gold);color:var(--charcoal);letter-spacing:1.3px}
+.ribbon.saved{background:#E4F0EC;color:var(--teal)}
+.ribbon.offered{background:#F6F1DF;color:#8A7226}
+.ribbon.passed{background:#F1F1EE;color:var(--grey)}
+.ribbon.ls-new{background:#ECECE8;color:#4A4A47}
+.ribbon.ls-working{background:#BD9F40;color:#2E2E2B}
+.ribbon.ls-under{background:var(--teal);color:#fff}
+.ribbon.ls-fell{background:#995533;color:#fff}
+.ribbon.ls-other{background:#ECECE8;color:#4A4A47}
+
+/* ---------------- auth gate ---------------- */
+#gate{position:fixed;inset:0;background:var(--charcoal);z-index:100;display:flex;align-items:center;justify-content:center;padding:24px}
+.gatecard{background:#fff;border-radius:var(--r-lg);width:100%;max-width:420px;padding:30px 30px 26px;box-shadow:0 18px 50px rgba(0,0,0,.4);border-top:4px solid var(--gold)}
+.gatecard .mark{width:40px;height:40px;border:2px solid var(--gold);border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--gold);font-size:17px;letter-spacing:-1px;margin-bottom:16px}
+.gatecard h2{margin:0 0 4px;font-size:20px;font-weight:800}
+.gatecard p{margin:0 0 18px;color:var(--grey);font-size:13.5px}
+.gatecard label{display:block;font-size:10.5px;letter-spacing:1.1px;text-transform:uppercase;color:var(--grey);font-weight:700;margin-bottom:5px}
+.gatecard input{width:100%;border:1px solid var(--line);border-radius:var(--r-md);padding:11px 12px;font-family:inherit;font-size:15px;margin-bottom:12px;color:var(--ink)}
+.gatecard input:focus{outline:2px solid var(--gold-soft);border-color:var(--gold)}
+.gatecard input.code{letter-spacing:8px;font-weight:800;font-size:20px;text-align:center}
+.gatecard .btn{width:100%;padding:11px}
+.gatecard .back{background:none;border:0;color:var(--grey);font-size:12.5px;cursor:pointer;margin-top:12px;width:100%;font-family:inherit}
+.gatecard .back:hover{color:var(--ink);text-decoration:underline}
+.gatemsg{font-size:13px;margin-bottom:12px;padding:9px 11px;border-radius:var(--r-md);display:none}
+.gatemsg.show{display:block}
+.gatemsg.ok{background:#E4F0EC;color:var(--teal)}
+.gatemsg.bad{background:#FBECEC;color:#9B2C2C}
+.foot{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);font-size:11.5px;color:var(--grey);line-height:1.5}
+
+/* ---------------- toast + spinner ---------------- */
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--charcoal);color:#fff;padding:11px 20px;border-radius:var(--r-md);font-size:13.5px;font-weight:600;opacity:0;pointer-events:none;transition:.22s;z-index:200;box-shadow:var(--shadow-2);border-left:3px solid var(--gold)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#loading{padding:60px;text-align:center;color:var(--grey)}
+.spin{width:26px;height:26px;border:3px solid var(--neutral);border-top-color:var(--gold);border-radius:50%;animation:sp .8s linear infinite;margin:0 auto 12px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ---------------- property photos ---------------- */
+.photos{margin:0 0 16px}
+/* Most deals have no photos, so an empty slot takes no space. Not display:none:
+   a hidden element never "scrolls into view", and that is what triggers the
+   fetch. */
+.photos:empty{margin:0}
+.ph-strip{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:6px;
+  -webkit-overflow-scrolling:touch}
+/* Fixed tile size, so a not-yet-loaded image still has a box: lazy loading
+   decides what to fetch by position, and a zero-width tile counts as visible. */
+.ph-tile{flex:0 0 auto;width:240px;height:160px;border:1px solid var(--line);border-radius:var(--r-md);
+  padding:0;overflow:hidden;background:var(--neutral);cursor:zoom-in;scroll-snap-align:start}
+.ph-tile:hover{border-color:var(--gold)}
+.ph-tile img{width:100%;height:100%;object-fit:cover;display:block}
+.ph-meta{font-size:12px;color:var(--grey)}
+.ph-note{font-size:12.5px;color:var(--grey);margin-bottom:4px}
+.ph-note button{border:0;background:none;padding:0;color:var(--teal);font-weight:700;cursor:pointer;
+  font-family:inherit;font-size:12.5px}
+/* One cover photo on the card head, collapsed or not. The rest of the photos
+   load only when the partner expands the card or clicks the cover. */
+.ph-cover{flex:0 0 auto;width:104px;height:70px;border-radius:var(--r-md);overflow:hidden;
+  background:var(--neutral)}
+.ph-cover.none{display:none}
+.ph-cover.ph-link{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-decoration:none;
+  background:#F6F1DF;border:1px solid var(--gold-soft);color:var(--charcoal);font-size:11.5px;font-weight:800}
+.ph-cover.ph-link:hover{background:var(--gold);color:var(--charcoal)}
+.ph-cover button{position:relative;display:block;width:100%;height:100%;padding:0;border:0;
+  background:none;cursor:zoom-in}
+.ph-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.ph-cover .ph-n{position:absolute;right:4px;bottom:4px;background:rgba(20,20,18,.72);color:#fff;
+  font-size:11px;font-weight:700;line-height:16px;padding:0 6px;border-radius:8px}
+.ph-all{border:1px solid var(--line);background:var(--surface);border-radius:var(--r-md);padding:7px 12px;
+  color:var(--teal);font-weight:700;font-family:inherit;font-size:13px;cursor:pointer}
+.ph-all:hover{border-color:var(--gold)}
+
+/* 20 deals per page */
+.pager{display:flex;align-items:center;justify-content:center;gap:12px;margin:14px 0;
+  font-size:13px;color:var(--grey)}
+.pager.top{margin:0 0 12px;justify-content:flex-end}
+.pager button{min-width:92px}
+
+#lightbox{position:fixed;inset:0;z-index:150;background:rgba(20,20,18,.94);display:flex;
+  align-items:center;justify-content:center;padding:52px 68px}
+#lightbox img{max-width:100%;max-height:100%;object-fit:contain;border-radius:4px;
+  box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.lb-btn{position:absolute;border:0;background:rgba(255,255,255,.12);color:#fff;width:44px;height:44px;
+  border-radius:50%;font-size:26px;line-height:44px;cursor:pointer;padding:0;font-family:inherit}
+.lb-btn:hover{background:rgba(255,255,255,.26)}
+#lbPrev{left:12px;top:50%;margin-top:-22px}
+#lbNext{right:12px;top:50%;margin-top:-22px}
+#lbClose{top:12px;right:12px;font-size:22px}
+#lbCount{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);color:var(--neutral);
+  font-size:13px;font-weight:600;letter-spacing:1px}
+
+/* ---- List / Map toggle and the map view (added 2026-11-04) ---- */
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden;flex:0 0 auto}
+.seg button{border:0;background:#fff;color:var(--grey);font:inherit;font-size:13px;font-weight:600;padding:8px 14px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button.on{background:var(--charcoal);color:#fff}
+.mapwrap{position:relative;height:100%;min-height:360px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#EDEDE8}
+/* Map view = map on the left, the deal tiles on the right (Zillow-style). The
+   map stays put while the tiles scroll; the tiles list the homes inside the
+   map's current view. */
+.wrap.wide{max-width:none}
+.split{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px;align-items:start}
+.splitmap{position:sticky;top:var(--split-top,150px);height:calc(100vh - var(--split-top,150px) - 18px)}
+#mapSlot{height:100%}
+.splithead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:2px 2px 10px;flex-wrap:wrap}
+.splithead h3{margin:0;font-size:17px;font-weight:800;color:var(--ink)}
+.splithead .sub{font-size:12.5px;color:var(--grey)}
+.splitlist .card{margin-bottom:12px;scroll-margin-top:calc(var(--split-top,150px) + 4px)}
+#splitHead{scroll-margin-top:calc(var(--split-top,150px) + 4px)}
+.splitlist .card-head{flex-wrap:wrap;gap:10px 12px;padding:12px 14px}
+.splitlist .card-head .addr{flex:1 1 200px}
+.splitlist .card-head .chips{flex:1 1 100%;order:3}
+.splitlist .card-head .acts{flex:1 1 100%;order:4;justify-content:flex-end;flex-wrap:wrap}
+.splitlist .askbox{order:2}
+.splitlist .detail .dgrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.splitlist .card.hl{box-shadow:0 0 0 2px var(--gold),var(--shadow-1)}
+.splitlist .offmap{font-size:12px;color:var(--grey);margin:14px 2px 8px;text-transform:uppercase;letter-spacing:1px;font-weight:700}
+.spager{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:4px 0 12px;font-size:12.5px;color:var(--grey)}
+.pbub.hov{background:var(--charcoal);color:#fff;transform:scale(1.15);z-index:5}
+.mapwrap .maplibregl-map{position:absolute;inset:0}
+.mapmsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--grey);font-size:14px}
+.mapnote{font-size:12.5px;color:var(--grey);margin:0 0 8px}
+.pbub{background:var(--gold);color:var(--charcoal);font-weight:800;font-size:12.5px;line-height:1;padding:6px 9px;border-radius:14px;
+  border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);white-space:nowrap;cursor:pointer;position:relative;transition:transform .08s}
+.pbub:after{content:'';position:absolute;left:50%;bottom:-6px;margin-left:-5px;border:5px solid transparent;border-top-color:#fff;border-bottom:0}
+.pbub.nop{width:14px;height:14px;padding:0;border-radius:50%}
+.pbub.nop:after{display:none}
+.pbub:hover{transform:scale(1.12);z-index:3}
+.pbub.sel{background:var(--teal);color:#fff;z-index:4}
+.pbub.saw{background:#E3D5A6}
+.pclu{background:var(--charcoal);color:#fff;border:3px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:13px;box-shadow:0 1px 5px rgba(0,0,0,.35);cursor:pointer}
+.maplibregl-popup-content{padding:10px 12px;border-radius:10px;font-family:inherit;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.mpop .ma{font-weight:800;font-size:13.5px;color:var(--ink)}
+.mpop .mc{font-size:12px;color:var(--grey);margin:1px 0 5px}
+.mpop .mp{display:inline-block;background:var(--teal);color:#fff;font-weight:800;font-size:12.5px;padding:3px 8px;border-radius:6px}
+.mpop .mf{font-size:12px;color:var(--ink);margin-top:5px}
+.mpop .mo{display:inline-block;background:var(--charcoal);color:#fff;font-size:10px;font-weight:800;letter-spacing:.8px;padding:2px 7px;border-radius:10px;margin-left:4px;vertical-align:1px}
+@media(max-width:900px){
+  .split{grid-template-columns:1fr}
+  .splitmap{position:relative;top:0;height:420px}
+}
+@media(max-width:760px){
+  .band,.tabs,.toolbar,.wrap{padding-left:16px;padding-right:16px}
+  .band-row{align-items:flex-start}
+  .meta{text-align:left}
+  .card-head{flex-wrap:wrap}
+  .acts{width:100%;justify-content:flex-end}
+  .ph-tile{width:200px;height:134px}
+  .ph-cover{width:84px;height:58px}
+  .pager.top{justify-content:center}
+  #lightbox{padding:56px 8px}
+  #lbPrev,#lbNext{top:auto;bottom:8px;margin-top:0}
+}
+</style>
+</head>
+<body>
+
+<!-- ============================ AUTH GATE ============================ -->
+<div id="gate">
+  <div class="gatecard">
+    <img class="logo-img" src="../../assets/logo-light.svg" alt="Atlas"
+         onerror="this.style.display='none';var f=document.getElementById('gateFb');if(f)f.hidden=false;">
+    <div class="mark" id="gateFb" hidden>Atlas</div>
+
+    <div id="step-email">
+      <h2>Partner Portal</h2>
+      <p>Enter your email address. If it is authorized, we will send you a one-time access code.</p>
+      <div class="gatemsg" id="msg1"></div>
+      <label for="gEmail">Email address</label>
+      <input type="email" id="gEmail" autocomplete="email" placeholder="you@example.com">
+      <button class="btn btn-gold" id="btnCode">Send access code</button>
+    </div>
+
+    <div id="step-code" style="display:none">
+      <h2>Check your email</h2>
+      <p>We sent a 6-digit code to <b id="gEmailEcho"></b>. It expires in 10 minutes.</p>
+      <div class="gatemsg" id="msg2"></div>
+      <label for="gCode">Access code</label>
+      <input type="text" id="gCode" class="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="······">
+      <button class="btn btn-gold" id="btnVerify">Verify and continue</button>
+      <button class="back" id="btnBack">Use a different email</button>
+    </div>
+
+    <div class="foot">
+      Access is restricted to approved partner contacts. Sessions expire every 24 hours, and all
+      activity is logged. This portal shows a filtered subset of Atlas inventory.
+    </div>
+  </div>
+</div>
+
+<!-- ============================= PORTAL ============================= -->
+<div id="app" style="display:none">
+
+  <div class="band">
+    <div class="band-row">
+      <div>
+        <div class="logo">
+          <!-- CO_Logo_Horizontal_Gold.png, shared "anyone with link". If it ever
+               fails to load, the lettermark fallback below takes its place so a
+               partner never sees a broken image. -->
+          <img class="logo-img" src="../../assets/logo-light.svg" alt="Atlas"
+               onerror="this.style.display='none';var f=document.getElementById('logoFb');if(f)f.hidden=false;">
+          <div class="logo-fb" id="logoFb" hidden>
+            <div class="mark">Atlas</div>
+            <div class="name">Atlas</div>
+          </div>
+          <div class="logo-cap">Partner Portal</div>
+        </div>
+        <h1 style="margin-top:14px">Available Inventory</h1>
+        <div class="sub" id="subline">Deals matching your buy box</div>
+      </div>
+      <div class="meta">
+        <div><b id="mPartner"></b></div>
+        <div id="mEmail"></div>
+        <div id="mUpdated" style="margin-top:4px"></div>
+        <button class="link" id="btnRefresh">Refresh</button> &nbsp;·&nbsp;
+        <button class="link" id="btnOut">Sign out</button>
+      </div>
+    </div>
+    <div class="rule"></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-panel="deals">Deals <span class="pill" id="cDeals">0</span></button>
+    <button class="tab" data-panel="saved">Saved Deals <span class="pill" id="cSaved">0</span></button>
+    <button class="tab" data-panel="mine">My Deals <span class="pill" id="cMine">0</span></button>
+    <button class="tab admin" data-panel="admin" id="tabAdmin" hidden>Admin Filters</button>
+    <button class="tab admin" data-panel="archive" id="tabArchive" hidden>Archive <span class="pill" id="cArchive" hidden>0</span></button>
+  </div>
+
+  <div class="toolbar" id="toolbar">
+    <div class="tb-row">
+      <input type="search" id="q" placeholder="Search address, city, ZIP, market, or school district…">
+      <select id="sort">
+        <option value="new">Newest first</option>
+        <option value="old">Oldest first</option>
+        <option value="arv-desc">ARV: high to low</option>
+        <option value="arv-asc">ARV: low to high</option>
+        <option value="sqft-desc">Square feet: high to low</option>
+        <option value="year-desc">Year built: newest</option>
+        <option value="addr">Address A–Z</option>
+      </select>
+      <div class="seg" id="viewSeg" role="group" aria-label="View">
+        <button type="button" data-view="list">List</button><button type="button" data-view="map" class="on">Map</button>
+      </div>
+      <label class="toggle" id="passedWrap"><input type="checkbox" id="showPassed"> Show passed</label>
+      <button class="btn btn-ghost" id="btnExpand">Collapse all</button>
+      <span id="viewAsWrap">View as
+        <select id="viewAs"><option value="">Atlas (all deals)</option></select>
+      </span>
+      <div class="count" id="countLbl"></div>
+      <button class="btn btn-ghost" id="btnExport" title="Download the list below as a spreadsheet">
+        <span id="btnExportLbl">Export to Excel</span>
+      </button>
+    </div>
+    <div id="exportFallback" style="display:none;width:100%;margin-top:8px" class="hint">
+      Your browser blocked the download tab.
+      <a id="exportLink" href="#" target="_blank" rel="noopener">Click here to download the spreadsheet</a>.
+    </div>
+    <div class="tb-row filters" id="filterBar">
+      <button class="btn btn-ghost" id="clearFilters">Clear filters</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div id="loading"><div class="spin"></div>Loading inventory…</div>
+    <div class="panel active" id="panel-deals"></div>
+    <div class="panel" id="panel-saved"></div>
+    <div class="panel" id="panel-mine"></div>
+    <div class="panel" id="panel-admin"></div>
+    <div class="panel" id="panel-archive"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- Full-screen photo viewer. One for the page; the photos come from PHOTOS. -->
+<div id="lightbox" hidden>
+  <button type="button" class="lb-btn" id="lbClose" title="Close (Esc)">&times;</button>
+  <button type="button" class="lb-btn" id="lbPrev" title="Previous photo">&lsaquo;</button>
+  <img id="lbImg" alt="Property photo">
+  <button type="button" class="lb-btn" id="lbNext" title="Next photo">&rsaquo;</button>
+  <div id="lbCount"></div>
+</div>
+
+<script>
+/* ============================================================
+   Partner Portal — client
+   No deal data is embedded in this page. Everything is fetched
+   from the server against a token bound to an allow-listed email.
+   ============================================================ */
+
+var TOKEN_KEY = 'nwPartnerPortalToken';   // unique per dashboard (shared localStorage origin)
+var TOKEN = null;
+try { TOKEN = localStorage.getItem(TOKEN_KEY); } catch (e) { TOKEN = null; }
+
+var DATA = { deals: [], activity: {}, buybox: {} };
+var TAB = 'deals';
+var OPEN = {};              // dealId -> explicit override
+var DEFAULT_OPEN = true;    // cards arrive expanded; per-card clicks override
+
+/* Safety valve: expanding every card renders a full detail grid per row. At a
+   few hundred deals that is fine; past this the first paint starts to drag, so
+   the list arrives collapsed and the Expand all button is right there. Raise it
+   (or set Infinity) if you would rather always expand. */
+var AUTO_EXPAND_MAX = 400;
+
+/* Paging: only PAGE_SIZE cards are rendered, so a page only fetches the photos
+   of its own deals. */
+var PAGE_SIZE = 20;
+var PAGE = 0;
+var PAGE_KEY = '';          // the list PAGE belongs to; a new list starts at page 1
+var PAGE_FOCUS = '';        // deal id whose page render() should open (deep links)
+var SCROLL_TO_LIST = false;
+
+function pagerHtml(total, pages, where){
+  if (pages < 2) return '';
+  var from = PAGE * PAGE_SIZE + 1, to = Math.min(total, (PAGE + 1) * PAGE_SIZE);
+  return '<div class="pager' + (where ? ' ' + where : '') + '">'
+    + '<button type="button" class="btn btn-ghost" data-page="prev"' + (PAGE === 0 ? ' disabled' : '')
+    +   '>&lsaquo; Previous</button>'
+    + '<span>' + from + '&ndash;' + to + ' of ' + total + ' &middot; page ' + (PAGE + 1) + ' of ' + pages + '</span>'
+    + '<button type="button" class="btn btn-ghost" data-page="next"' + (PAGE >= pages - 1 ? ' disabled' : '')
+    +   '>Next 20 &rsaquo;</button>'
+    + '</div>';
+}
+
+function isOpen(id){
+  if (VIEW === 'map' && !OPEN.hasOwnProperty(id)) return false;   // map tiles start collapsed
+  return OPEN.hasOwnProperty(id) ? OPEN[id] : DEFAULT_OPEN;
+}
+function setAllOpen(open){
+  DEFAULT_OPEN = open;
+  OPEN = {};                // drop every per-card override
+}
+
+var $ = function (id) { return document.getElementById(id); };
+
+/* --------------------------- helpers --------------------------- */
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+  return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]; }); }
+function num(n){ return n===null||n===undefined||n===''?'—':Number(n).toLocaleString(); }
+function money(n){ return n===null||n===undefined||n===''?'—':'$'+Math.round(n).toLocaleString(); }
+var MON_ = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+/* "2026-09-04" -> "Sep 4, 2026", plus a relative age.
+   Deliberately NOT via new Date(iso): that parses as UTC midnight and renders
+   as the previous day in every US timezone. */
+function prettyDay(iso){
+  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso||'').trim());
+  if (!m) return esc(String(iso||''));
+  var txt = MON_[parseInt(m[2],10)-1] + ' ' + parseInt(m[3],10) + ', ' + m[1];
+  // Compare calendar days in LOCAL time, again avoiding a UTC round trip.
+  var then = new Date(parseInt(m[1],10), parseInt(m[2],10)-1, parseInt(m[3],10));
+  var now = new Date(); now = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var days = Math.round((now - then) / 86400000);
+  var rel = days === 0 ? 'today' : days === 1 ? 'yesterday'
+          : days > 1 ? days + ' days ago' : '';
+  return esc(txt) + (rel ? ' <span class="sub">(' + rel + ')</span>' : '');
+}
+function toast(m){ var t=$('toast'); t.textContent=m; t.classList.add('show');
+  clearTimeout(toast._t); toast._t=setTimeout(function(){t.classList.remove('show');},2600); }
+
+function gateMsg(which, text, good){
+  var el = $(which);
+  el.textContent = text;
+  el.className = 'gatemsg show ' + (good ? 'ok' : 'bad');
+  if (!text) el.className = 'gatemsg';
+}
+
+/* ---------------------------- auth ----------------------------- */
+function showGate(){ $('gate').style.display='flex'; $('app').style.display='none'; }
+function showApp(){ $('gate').style.display='none'; $('app').style.display='block'; }
+
+$('btnCode').onclick = function(){
+  var email = ($('gEmail').value||'').trim();
+  if (!email || email.indexOf('@') < 1) { gateMsg('msg1','Enter a valid email address.',false); return; }
+  this.disabled = true; this.textContent = 'Sending…';
+  var btn = this;
+  google.script.run
+    .withSuccessHandler(function(r){
+      btn.disabled=false; btn.textContent='Send access code';
+      if (!r.ok) { gateMsg('msg1', r.error || 'Something went wrong.', false); return; }
+      $('gEmailEcho').textContent = email;
+      $('step-email').style.display='none';
+      $('step-code').style.display='block';
+      gateMsg('msg2','If that address is authorized, a code is on its way.',true);
+      setTimeout(function(){ $('gCode').focus(); }, 60);
+    })
+    .withFailureHandler(function(e){
+      btn.disabled=false; btn.textContent='Send access code';
+      gateMsg('msg1', String(e && e.message || e), false);
+    })
+    .requestAccessCode(email);
+};
+
+$('btnVerify').onclick = function(){
+  var email = ($('gEmail').value||'').trim();
+  var code  = ($('gCode').value||'').trim();
+  if (code.length < 6) { gateMsg('msg2','Enter the 6-digit code.',false); return; }
+  this.disabled = true; this.textContent = 'Verifying…';
+  var btn = this;
+  google.script.run
+    .withSuccessHandler(function(r){
+      btn.disabled=false; btn.textContent='Verify and continue';
+      if (!r.ok) { gateMsg('msg2', r.error || 'Incorrect code.', false); return; }
+      TOKEN = r.token;
+      try { localStorage.setItem(TOKEN_KEY, TOKEN); } catch(e){}
+      showApp(); load();
+    })
+    .withFailureHandler(function(e){
+      btn.disabled=false; btn.textContent='Verify and continue';
+      gateMsg('msg2', String(e && e.message || e), false);
+    })
+    .verifyAccessCode(email, code);
+};
+
+$('btnBack').onclick = function(){
+  $('step-code').style.display='none';
+  $('step-email').style.display='block';
+  gateMsg('msg1','',true); $('msg1').className='gatemsg';
+  $('gCode').value='';
+};
+$('gEmail').addEventListener('keydown', function(e){ if(e.key==='Enter') $('btnCode').click(); });
+$('gCode').addEventListener('keydown',  function(e){ if(e.key==='Enter') $('btnVerify').click(); });
+
+$('btnOut').onclick = function(){
+  var t = TOKEN, btn = this;
+  btn.disabled = true; btn.textContent = 'Signing out…';
+
+  function finish(warn){
+    try { localStorage.removeItem(TOKEN_KEY); } catch(e){}
+    TOKEN = null;
+    btn.disabled = false; btn.textContent = 'Sign out';
+    $('step-code').style.display='none'; $('step-email').style.display='block';
+    $('gCode').value=''; $('msg2').className='gatemsg';
+    showGate();
+    if (warn) gateMsg('msg1', warn, false); else $('msg1').className='gatemsg';
+  }
+
+  // Wait for the server to confirm revocation. Clearing the UI first would make
+  // a failed sign-out look successful while the token stayed valid for 24h.
+  google.script.run
+    .withSuccessHandler(function(r){
+      finish(r && r.ok ? '' : 'Signed out here, but the session could not be revoked on the server. Close this browser.');
+    })
+    .withFailureHandler(function(){
+      finish('Signed out here, but we could not reach the server to revoke the session. Close this browser.');
+    })
+    .signOut(t);
+};
+
+function handleAuthFailure(e){
+  var m = String(e && e.message || e);
+  // Match the session error specifically. requireAdmin_'s refusal also starts
+  // with "Access denied", and that must NOT drop a valid session.
+  if (m.indexOf('sign in again') > -1) {
+    try { localStorage.removeItem(TOKEN_KEY); } catch(err){}
+    TOKEN = null; showGate();
+    gateMsg('msg1','Your session expired. Please sign in again.', false);
+    return true;
+  }
+  return false;
+}
+
+/* ---- admin chrome: the extra tab and the View-as selector ---- */
+function applyAdminChrome(r){
+  var admin = !!r.isAdmin;
+  $('tabAdmin').hidden = !admin;
+  $('tabArchive').hidden = !admin;
+  $('viewAsWrap').classList.toggle('show', admin);
+  if (admin) {
+    var sel = $('viewAs');
+    var want = (r.partners || []).filter(function(p){ return p !== r.partner; });
+    var sig = want.join('|');
+    if (sel.getAttribute('data-sig') !== sig) {
+      sel.innerHTML = '<option value="">' + esc(r.partner) + ' (all deals)</option>'
+        + want.map(function(p){ return '<option value="' + esc(p) + '">' + esc(p) + '</option>'; }).join('');
+      sel.setAttribute('data-sig', sig);
+    }
+    sel.value = r.viewAs || '';
+    $('viewAsWrap').classList.toggle('on', !!r.viewAs);
+  } else if (TAB === 'admin' || TAB === 'archive') {
+    TAB = 'deals';
+  }
+}
+
+/* ------------------------- deep link ---------------------------
+   The notify-back email links to <portal>/exec?deal=<id>. The page itself is
+   served inside Apps Script's sandbox iframe, so the query string is NOT on
+   window.location here — google.script.url.getLocation is the supported way to
+   read the parameters of the OUTER page. Entirely optional: if anything about
+   it fails the link still lands on the portal, just not on a specific card. */
+var DEEPLINK_DONE = false;
+
+function applyDeepLink(){
+  if (DEEPLINK_DONE) return;
+  DEEPLINK_DONE = true;
+  try {
+    google.script.url.getLocation(function(loc){
+      var id = loc && loc.parameter && loc.parameter.deal;
+      if (id) focusDeal(String(id));
+    });
+  } catch(e){ /* older host, or no url API — ignore */ }
+}
+
+function focusDeal(id){
+  var d = null;
+  for (var i=0;i<(DATA.deals||[]).length;i++) if (DATA.deals[i].id === id) d = DATA.deals[i];
+  if (!d) {                                   // not in their buy box any more
+    toast('That property is no longer in your list.');
+    return;
+  }
+  // Jump to whichever tab actually holds it, or the search would come up empty.
+  var b = bucket(d);
+  TAB = (b === 'passed') ? 'deals' : b;
+  if (b === 'passed') $('showPassed').checked = true;
+  document.querySelectorAll('.tab').forEach(function(x){
+    x.classList.toggle('active', x.getAttribute('data-panel') === TAB);
+  });
+  // Clear anything that would hide it from under the link.
+  FILTER_DEFS.forEach(function(def){ FILTERS[def.key] = []; });
+  $('q').value = '';
+  closeAllPanels();
+  renderFilterBar();
+  OPEN[id] = true;
+  PHOTO_ALL[id] = true;
+  PAGE_FOCUS = id;
+  render();
+  setTimeout(function(){
+    var card = $('card-' + id);
+    if (!card) return;
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    card.classList.add('flash');
+    setTimeout(function(){ card.classList.remove('flash'); }, 2400);
+  }, 80);
+}
+
+/* --------------------- optimistic save / pass ------------------
+   One write per deal at a time. A click while a write is in flight is
+   remembered and sent when that one lands, so fast clicking can never
+   deliver two states out of order — and the card always ends up showing
+   what the server last confirmed.                                     */
+var SAVING = {};        // id -> { was: <status>, queued: <status>|null }
+
+function statusLabel(s){
+  return s === 'saved'  ? 'Saved to Saved Deals'
+       : s === 'passed'  ? 'Passed'
+       : 'Moved back to Deals';
+}
+
+function setStatusOptimistic(id, next){
+  var prior = statusOf(id);
+  if (prior === 'offered') return;                 // offers are never toggled here
+
+  if (SAVING[id]) {                                // a write is already in flight
+    SAVING[id].queued = next;
+    applyStatusLocally(id, next);
+    return;
+  }
+  SAVING[id] = { was: prior, queued: null };
+  applyStatusLocally(id, next);
+  sendStatus(id, next);
+}
+
+function applyStatusLocally(id, next){
+  if (next === 'none') delete DATA.activity[id];
+  else DATA.activity[id] = { status: next, offer: null };
+  render();
+}
+
+function sendStatus(id, next){
+  google.script.run
+    .withSuccessHandler(function(r){
+      var pend = SAVING[id];
+      delete SAVING[id];
+      // Trust the server's answer over our guess.
+      if (r.status === 'none') delete DATA.activity[id];
+      else DATA.activity[id] = { status: r.status, offer: null };
+      if (pend && pend.queued !== null && pend.queued !== r.status) {
+        SAVING[id] = { was: r.status, queued: null };
+        applyStatusLocally(id, pend.queued);
+        sendStatus(id, pend.queued);
+        return;
+      }
+      toast(statusLabel(r.status));
+      render();
+    })
+    .withFailureHandler(function(e){
+      var pend = SAVING[id];
+      delete SAVING[id];
+      if (handleAuthFailure(e)) return;
+      // Put the card back exactly where it was and say why.
+      if (!pend || pend.was === 'none') delete DATA.activity[id];
+      else DATA.activity[id] = { status: pend.was, offer: null };
+      render();
+      toast('Could not save — ' + String(e && e.message || e));
+    })
+    .setDealStatus(TOKEN, id, next);
+}
+
+/* ===================== MAP VIEW (added 2026-11-04) =========================
+   MapLibre GL (open source) on a free background map: CARTO basemaps with the
+   key from Portal Config "Map Key", or OpenFreeMap (no key) when there is no
+   key — and automatically if CARTO ever fails. The map always shows exactly
+   the deals the list would (same tab, search and filters), as gold price
+   bubbles that group into numbered clusters when zoomed out. Hover a bubble
+   for a summary; click it to open that deal's card under the map. */
+var VIEW = 'map';
+try { if (localStorage.getItem('nwppView') === 'list') VIEW = 'list'; } catch (e) {}
+var MAPLIB = '../../assets/vendor/maplibre/';
+var OFM_STYLE = 'https://tiles.openfreemap.org/styles/liberty';
+var MAP = null, MAP_EL = null, MAP_READY = false, MAP_FAILED = '', MAP_FELL_BACK = false;
+var MAP_MARKERS = {}, MAP_IDS_KEY = '', MAP_SEL = '', MAP_POP = null, MAP_LIST = [], MAP_LIB_STATE = '';
+
+function cartoStyle(){ return 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json?key=' + encodeURIComponent(DATA.mapKey); }
+
+function loadMapLib(cb){
+  if (window.maplibregl) { cb(); return; }
+  if (MAP_LIB_STATE === 'loading') { setTimeout(function(){ loadMapLib(cb); }, 150); return; }
+  MAP_LIB_STATE = 'loading';
+  var css = document.createElement('link'); css.rel = 'stylesheet'; css.href = MAPLIB + 'maplibre-gl.css';
+  document.head.appendChild(css);
+  var js = document.createElement('script'); js.src = MAPLIB + 'maplibre-gl.js';
+  var t = setTimeout(function(){ if (!window.maplibregl) { MAP_LIB_STATE = 'failed'; MAP_FAILED = 'The map could not load. Check your connection and refresh.'; showMapMsg(); } }, 20000);
+  js.onload = function(){ clearTimeout(t); MAP_LIB_STATE = 'ok'; cb(); };
+  js.onerror = function(){ clearTimeout(t); MAP_LIB_STATE = 'failed'; MAP_FAILED = 'The map could not load. Check your connection and refresh.'; showMapMsg(); };
+  document.head.appendChild(js);
+}
+
+function showMapMsg(){
+  var slot = document.getElementById('mapSlot');
+  if (slot && MAP_FAILED) slot.innerHTML = '<div class="mapwrap"><div class="mapmsg">' + esc(MAP_FAILED) + '</div></div>';
+}
+
+function shortMoney(n){
+  if (n >= 1e6) return '$' + (Math.round(n / 1e5) / 10).toString().replace(/\.0$/, '') + 'M';
+  return '$' + Math.round(n / 1e3) + 'K';
+}
+
+function mapFeatures(list){
+  return list.filter(function(d){ return typeof d.lat === 'number' && typeof d.lng === 'number'; }).map(function(d){
+    return { type:'Feature', geometry:{ type:'Point', coordinates:[d.lng, d.lat] }, properties:{ id:d.id } };
+  });
+}
+
+function addDealSource(){
+  if (!MAP || !MAP.isStyleLoaded()) return;
+  if (MAP.getSource('deals')) return;
+  MAP.addSource('deals', { type:'geojson', data:{ type:'FeatureCollection', features: mapFeatures(MAP_LIST) },
+                           cluster:true, clusterMaxZoom:13, clusterRadius:48 });
+  // Invisible: it only makes the clustered points queryable for the HTML bubbles.
+  MAP.addLayer({ id:'deals-hit', type:'circle', source:'deals', paint:{ 'circle-radius':1, 'circle-opacity':0 } });
+  MAP_READY = true;
+  updateMarkers();
+  scheduleSplitList();
+}
+
+function initMap(){
+  if (MAP) return;
+  MAP_EL = document.createElement('div');
+  MAP_EL.className = 'mapwrap';
+  var inner = document.createElement('div'); inner.style.position = 'absolute'; inner.style.inset = '0';
+  MAP_EL.appendChild(inner);
+  var slot = document.getElementById('mapSlot');
+  if (slot) slot.appendChild(MAP_EL);
+  var useCarto = !!DATA.mapKey;
+  try {
+    MAP = new maplibregl.Map({
+      container: inner, style: useCarto ? cartoStyle() : OFM_STYLE,
+      center: [-96.8, 32.8], zoom: 4,          // default attribution: CARTO requires it visible
+      dragRotate: false, pitchWithRotate: false, cooperativeGestures: false,
+      transformRequest: function(url){
+        if (DATA.mapKey && /cartocdn\.com/.test(url) && !/[?&]key=/.test(url)) {
+          return { url: url + (url.indexOf('?') > -1 ? '&' : '?') + 'key=' + encodeURIComponent(DATA.mapKey) };
+        }
+      }
+    });
+  } catch (e) {
+    MAP = null; MAP_FAILED = 'Your browser could not start the map (WebGL is turned off). The list view still works.';
+    showMapMsg(); return;
+  }
+  MAP.addControl(new maplibregl.NavigationControl({ showCompass:false }), 'top-right');
+  MAP.touchZoomRotate.disableRotation();
+  MAP.on('style.load', addDealSource);
+  MAP.on('load', addDealSource);
+  // CARTO trouble (no/expired key, an outage): switch to OpenFreeMap once.
+  var cartoErrors = 0;
+  MAP.on('error', function(ev){
+    var st = ev && ev.error && ev.error.status;
+    var u = (ev && (ev.error && ev.error.url)) || (ev && ev.url) || '';
+    if (MAP_FELL_BACK || !useCarto) return;
+    if (/cartocdn/.test(String(u)) || st === 401 || st === 403 || !MAP.isStyleLoaded()) cartoErrors++;
+    if (cartoErrors >= 3 || !MAP.isStyleLoaded()) {
+      MAP_FELL_BACK = true; MAP_READY = false;
+      MAP.setStyle(OFM_STYLE);
+    }
+  });
+  MAP.on('sourcedata', function(e){ if (e.sourceId === 'deals' && e.isSourceLoaded) updateMarkers(); });
+  MAP.on('moveend', function(){ updateMarkers(); scheduleSplitList(); });
+  MAP.on('zoomend', updateMarkers);
+}
+
+function mountMap(list){
+  MAP_LIST = list;
+  var slot = document.getElementById('mapSlot');
+  if (!slot) return;
+  if (MAP_FAILED) { showMapMsg(); return; }
+  loadMapLib(function(){
+    if (!MAP) initMap();
+    else if (MAP_EL && MAP_EL.parentNode !== slot) slot.appendChild(MAP_EL);
+    if (!MAP) return;
+    MAP.resize();
+    setMapData(list);
+    scheduleSplitList();
+  });
+}
+
+function setMapData(list){
+  var feats = mapFeatures(list);
+  var src = MAP && MAP.getSource('deals');
+  if (src) src.setData({ type:'FeatureCollection', features: feats });
+  var key = feats.map(function(f){ return f.properties.id; }).sort().join(',');
+  if (key !== MAP_IDS_KEY) {
+    MAP_IDS_KEY = key;
+    if (feats.length === 1) {
+      MAP.jumpTo({ center: feats[0].geometry.coordinates, zoom: 13 });
+    } else if (feats.length) {
+      var b = new maplibregl.LngLatBounds();
+      feats.forEach(function(f){ b.extend(f.geometry.coordinates); });
+      MAP.fitBounds(b, { padding: 60, maxZoom: 13, duration: 0 });
+    }
+  }
+  updateMarkers();
+}
+
+function dealById(id){ for (var i = 0; i < DATA.deals.length; i++) if (DATA.deals[i].id === id) return DATA.deals[i]; return null; }
+
+function popHtml(d){
+  var ask = askOf(d);
+  var facts = [];
+  if (d.beds !== null && d.beds !== undefined) facts.push(d.beds + ' bd');
+  if (d.baths !== null && d.baths !== undefined) facts.push(d.baths + ' ba');
+  if (d.sqft) facts.push(num(d.sqft) + ' sq ft');
+  return '<div class="mpop"><div class="ma">' + esc(d.address) + (isFund(d) ? '<span class="mo">OFF PLATFORM</span>' : '') + '</div>'
+    + '<div class="mc">' + esc([d.city, d.state].filter(Boolean).join(', ') + ' ' + (d.zip || '')) + '</div>'
+    + '<span class="mp">' + (ask !== null ? 'Ask ' + money(ask) : 'No Price') + '</span>'
+    + (facts.length ? '<div class="mf">' + esc(facts.join(' · ')) + '</div>' : '')
+    + '</div>';
+}
+
+function updateMarkers(){
+  if (!MAP || !MAP_READY || !MAP.getSource('deals')) return;
+  var feats = MAP.querySourceFeatures('deals');
+  var want = {};
+  feats.forEach(function(f){
+    var p = f.properties || {};
+    var k = p.cluster ? 'c' + p.cluster_id : 'd' + p.id;
+    if (want[k]) return;
+    want[k] = f;
+  });
+  Object.keys(MAP_MARKERS).forEach(function(k){ if (!want[k]) { MAP_MARKERS[k].remove(); delete MAP_MARKERS[k]; } });
+  Object.keys(want).forEach(function(k){
+    var f = want[k], p = f.properties || {}, m = MAP_MARKERS[k];
+    if (m) { if (k.charAt(0) === 'd') m.getElement().classList.toggle('sel', p.id === MAP_SEL); return; }
+    var el = document.createElement('div');
+    if (p.cluster) {
+      var n = p.point_count, sz = n < 10 ? 34 : n < 50 ? 40 : n < 200 ? 48 : 56;
+      el.className = 'pclu'; el.style.width = el.style.height = sz + 'px';
+      el.textContent = p.point_count_abbreviated || n;
+      el.title = n + ' properties — click to zoom in';
+      el.addEventListener('click', function(ev){
+        ev.stopPropagation();
+        MAP.getSource('deals').getClusterExpansionZoom(p.cluster_id).then(function(z){
+          MAP.easeTo({ center: f.geometry.coordinates, zoom: Math.min(z, 16) });
+        }).catch(function(){ MAP.easeTo({ center: f.geometry.coordinates, zoom: MAP.getZoom() + 2 }); });
+      });
+    } else {
+      var d = dealById(p.id);
+      if (!d) return;
+      var ask = askOf(d);
+      el.className = 'pbub' + (ask === null ? ' nop' : '') + (p.id === MAP_SEL ? ' sel' : '')
+                   + (statusOf(p.id) === 'saved' || statusOf(p.id) === 'offered' ? ' saw' : '');
+      el.textContent = ask === null ? '' : shortMoney(ask);
+      el.setAttribute('data-mapdeal', p.id);
+      el.addEventListener('mouseenter', function(){
+        if (!MAP_POP) MAP_POP = new maplibregl.Popup({ closeButton:false, closeOnClick:false, offset: 16, maxWidth: '280px' });
+        MAP_POP.setLngLat(f.geometry.coordinates).setHTML(popHtml(d)).addTo(MAP);
+        var c = document.getElementById('card-' + p.id); if (c) c.classList.add('hl');
+      });
+      el.addEventListener('mouseleave', function(){
+        if (MAP_POP) MAP_POP.remove();
+        var c = document.getElementById('card-' + p.id); if (c && p.id !== MAP_SEL) c.classList.remove('hl');
+      });
+      el.addEventListener('click', function(ev){ ev.stopPropagation(); selectMapDeal(p.id); });
+    }
+    MAP_MARKERS[k] = new maplibregl.Marker({ element: el, anchor: p.cluster ? 'center' : 'bottom' })
+      .setLngLat(f.geometry.coordinates).addTo(MAP);
+  });
+}
+
+/* ---- the tiles beside the map ----
+   They list the homes inside the map's current view (pan or zoom and the list
+   follows), in the toolbar's sort order, 20 at a time. Homes that could not be
+   placed on the map are listed after them so nothing disappears. Tiles start
+   collapsed here (small photo, address, Ask, chips); click one to expand. */
+var SPLIT_PAGE = 0, SPLIT_KEY = '', SPLIT_TIMER = null;
+
+function inMapView(){
+  var withPin = MAP_LIST.filter(function(d){ return typeof d.lat === 'number'; });
+  var noPin = MAP_LIST.filter(function(d){ return typeof d.lat !== 'number'; });
+  var slot = document.getElementById('mapSlot');
+  if (!MAP || !MAP_READY || !MAP_EL || !slot || MAP_EL.parentNode !== slot) return { shown: withPin, noPin: noPin, bounded: false };
+  var b;
+  try { b = MAP.getBounds(); } catch (e) { return { shown: withPin, noPin: noPin, bounded: false }; }
+  var w = b.getWest(), e2 = b.getEast(), so = b.getSouth(), no = b.getNorth();
+  return { shown: withPin.filter(function(d){ return d.lat >= so && d.lat <= no && d.lng >= w && d.lng <= e2; }),
+           noPin: noPin, bounded: true };
+}
+
+function renderSplitList(){
+  var box = document.getElementById('splitList'), head = document.getElementById('splitHead');
+  if (!box) return;
+  var v = inMapView();
+  var key = v.shown.map(function(d){ return d.id; }).join(',');
+  if (key !== SPLIT_KEY) { SPLIT_KEY = key; SPLIT_PAGE = 0; }
+  var all = v.shown.concat(v.noPin);
+  var pages = Math.max(1, Math.ceil(all.length / PAGE_SIZE));
+  if (SPLIT_PAGE > pages - 1) SPLIT_PAGE = pages - 1;
+  var from = SPLIT_PAGE * PAGE_SIZE, page = all.slice(from, from + PAGE_SIZE);
+  if (head) {
+    head.innerHTML = '<h3>' + v.shown.length + (v.shown.length === 1 ? ' property' : ' properties')
+      + (v.bounded ? ' in this map area' : '') + '</h3>'
+      + '<span class="sub">' + (v.bounded && v.shown.length < MAP_LIST.length - v.noPin.length
+          ? 'of ' + (MAP_LIST.length - v.noPin.length) + ' — zoom out or move the map to see more' : 'Hover a tile to find it on the map') + '</span>';
+  }
+  var pager = pages > 1
+    ? '<div class="spager"><button type="button" class="btn btn-ghost" data-spage="prev"' + (SPLIT_PAGE === 0 ? ' disabled' : '') + '>&lsaquo; Previous</button>'
+      + '<span>' + (from + 1) + '&ndash;' + (from + page.length) + ' of ' + all.length + '</span>'
+      + '<button type="button" class="btn btn-ghost" data-spage="next"' + (SPLIT_PAGE >= pages - 1 ? ' disabled' : '') + '>Next 20 &rsaquo;</button></div>'
+    : '';
+  var html = '', offHead = false;
+  page.forEach(function(d){
+    if (typeof d.lat !== 'number' && !offHead) {
+      offHead = true;
+      html += '<div class="offmap">Not on the map yet (' + v.noPin.length + ')</div>';
+    }
+    html += cardHtml(d);
+  });
+  if (!all.length) html = '<div class="empty"><b>No properties in this map area</b>Zoom out or move the map.</div>';
+  box.innerHTML = pager + html + pager;
+  if (MAP_SEL) { var c = document.getElementById('card-' + MAP_SEL); if (c) c.classList.add('hl'); }
+  hydratePhotos();
+}
+
+function scheduleSplitList(){
+  clearTimeout(SPLIT_TIMER);
+  SPLIT_TIMER = setTimeout(function(){ try { renderSplitList(); } catch (e) { showViewError('tiles', e); } }, 120);
+}
+
+/* If anything in the map view fails, say so on the page instead of showing a
+   blank panel — and fall back to listing every tile without the map filter. */
+function showViewError(where, e){
+  try { console.error('Map view (' + where + '):', e); } catch (x) {}
+  var box = document.getElementById('splitList');
+  if (!box) return;
+  var msg = '<div class="note" style="border-left-color:var(--copper)">Something went wrong showing this view ('
+    + esc(String(e && e.message || e)) + '). Showing every property instead.</div>';
+  try { box.innerHTML = msg + MAP_LIST.map(cardHtml).join(''); hydratePhotos(); }
+  catch (e2) { box.innerHTML = msg; }
+}
+
+function selectMapDeal(id){
+  MAP_SEL = id;
+  OPEN[id] = true;
+  Object.keys(MAP_MARKERS).forEach(function(k){
+    if (k.charAt(0) === 'd') MAP_MARKERS[k].getElement().classList.toggle('sel', k === 'd' + id);
+  });
+  // Put its tile on the current page, open it and bring it into view.
+  var v = inMapView(), all = v.shown.concat(v.noPin);
+  for (var i = 0; i < all.length; i++) if (all[i].id === id) { SPLIT_PAGE = Math.floor(i / PAGE_SIZE); break; }
+  renderSplitList();
+  var c = document.getElementById('card-' + id);
+  if (c) c.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function markerFor(id){ var m = MAP_MARKERS['d' + id]; return m ? m.getElement() : null; }
+
+// Keep the map's sticky offset matched to the toolbar when the window changes size.
+window.addEventListener('resize', function(){
+  if (VIEW !== 'map') return;
+  var tb = $('toolbar');
+  document.documentElement.style.setProperty('--split-top', ((tb && tb.offsetHeight) || 140) + 14 + 'px');
+  if (MAP) MAP.resize();
+});
+
+// Hovering a tile lights up its bubble on the map.
+var HOV_ID = '';
+document.addEventListener('mouseover', function(ev){
+  var c = ev.target.closest && ev.target.closest('.splitlist .card');
+  var id = c ? c.id.replace(/^card-/, '') : '';
+  if (id === HOV_ID) return;
+  var old = HOV_ID && markerFor(HOV_ID); if (old) old.classList.remove('hov');
+  HOV_ID = id;
+  var el = id && markerFor(id); if (el) el.classList.add('hov');
+});
+
+function setView(v){
+  VIEW = v === 'map' ? 'map' : 'list';
+  try { localStorage.setItem('nwppView', VIEW); } catch (e) {}
+  Array.prototype.forEach.call(document.querySelectorAll('#viewSeg button'), function(b){
+    b.classList.toggle('on', b.getAttribute('data-view') === VIEW);
+  });
+  if (VIEW === 'list' && MAP_POP) MAP_POP.remove();
+  render();
+}
+Array.prototype.forEach.call(document.querySelectorAll('#viewSeg button'), function(b){
+  b.addEventListener('click', function(){ setView(b.getAttribute('data-view')); });
+});
+(function(){ var on = document.querySelector('#viewSeg button[data-view="' + VIEW + '"]');
+  Array.prototype.forEach.call(document.querySelectorAll('#viewSeg button'), function(b){ b.classList.toggle('on', b === on); }); })();
+
+/* Leads statuses change on the sheet while the page is open: re-check every
+   3 minutes (only while the tab is visible) and redraw if anything moved. */
+var LEAD_POLL_MS = 180000;
+function pollLeadStatuses(){
+  if (!TOKEN || !DATA || !DATA.deals || !DATA.deals.length || document.visibilityState === 'hidden') return;
+  google.script.run
+    .withSuccessHandler(function(r){
+      if (!r || !r.ok) return;
+      // New replies on deal notes (a reply typed on an open card is kept).
+      var nb = DATA.notes || {}, na = r.notes || {}, fresh = [];
+      Object.keys(na).forEach(function(id){
+        var a = na[id] || [], b = nb[id] || [];
+        if (a.length !== b.length) {
+          if (a.length && a[a.length - 1].side === 'co') fresh.push(id);
+          DATA.notes = DATA.notes || {}; DATA.notes[id] = a;
+        }
+      });
+      if (fresh.length) {
+        render();
+        var dn = DATA.deals.filter(function(x){ return x.id === fresh[0]; })[0];
+        if (dn) toast('Atlas replied on ' + dn.address);
+      }
+      var before = DATA.leadStatus || {}, after = r.leadStatus || {}, moved = [];
+      Object.keys(after).forEach(function(id){ if (before[id] !== after[id]) moved.push(id); });
+      Object.keys(before).forEach(function(id){ if (!(id in after)) moved.push(id); });
+      if (!moved.length) return;
+      DATA.leadStatus = after;
+      render();
+      var d = DATA.deals.filter(function(x){ return x.id === moved[0] && after[x.id]; })[0];
+      if (d) toast(d.address + ': ' + leadStatusLabel(after[d.id]) + (moved.length > 1 ? ' (+' + (moved.length - 1) + ' more)' : ''));
+    })
+    .withFailureHandler(function(){ /* quiet: the next poll or a reload will catch it */ })
+    .getLeadStatuses(TOKEN);
+}
+setInterval(pollLeadStatuses, LEAD_POLL_MS);
+document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'visible') pollLeadStatuses(); });
+
+/* ---------------------------- data ----------------------------- */
+var FORCE_NEXT = false;   // set by the Refresh button; the server caches 2 min
+var VIEW_AS = '';         // admins only; the server ignores it for partners
+try { document.getElementById('sort').value = 'new'; } catch(e){}
+
+function load(){
+  $('loading').style.display='block';
+  // Refresh means "re-read the sheet", so the admin lists go too.
+  if (!ADMIN.dirty) ADMIN.data = null;
+  ARC.data = null;
+  google.script.run
+    .withSuccessHandler(function(r){
+      DATA = r;
+      $('mPartner').textContent = r.partner || 'Partner';
+      $('mEmail').textContent   = r.email || '';
+      applyAdminChrome(r);
+      $('mUpdated').textContent = 'Updated ' + new Date(r.generatedAt).toLocaleString();
+      // The buy box is per-partner now, so the old hardcoded strapline would be
+      // wrong for everyone — an admin sees the whole feed, a partner sees theirs.
+      var n = (r.deals || []).length;
+      if (r.isAdmin && !r.viewAs) {
+        $('subline').textContent = 'All eligible inventory — ' + n
+          + (n === 1 ? ' property' : ' properties');
+      } else if (!r.ruleCount) {
+        $('subline').textContent = 'No properties are currently released to you — '
+          + 'contact your Atlas contact.';
+      } else {
+        $('subline').textContent = n + (n === 1 ? ' property' : ' properties')
+          + ' matching your buy box';
+      }
+      $('loading').style.display='none';
+      FORCE_NEXT = false;
+      applyDeepLink();
+      if (r.deals.length > AUTO_EXPAND_MAX) { DEFAULT_OPEN = false; OPEN = {}; }
+      refreshDynamicOptions();
+      renderFilterBar();
+      render();
+      resolveUnknownPhotos(false);
+    })
+    .withFailureHandler(function(e){
+      $('loading').style.display='none';
+      if (!handleAuthFailure(e)) toast(String(e && e.message || e));
+    })
+    .getPortalData(TOKEN, FORCE_NEXT, VIEW_AS);
+}
+$('btnRefresh').onclick = function(){ FORCE_NEXT = true; PHOTOS = {}; load(); toast('Refreshing…'); };
+
+/* ------------------------------- export -------------------------------
+   Apps Script serves the page inside a sandboxed iframe, which blocks
+   in-page downloads (blob/data URLs and <a download> are inert). So the
+   server mints a one-time URL and we open it as a top-level tab, which is
+   a real HTTP response and downloads normally. If the popup is blocked we
+   surface the link instead of failing silently.                          */
+$('btnExport').onclick = function(){
+  var list = currentList();
+  if (!list.length) { toast('Nothing to export — no properties match.'); return; }
+  var btn = this, lbl = $('btnExportLbl');
+  btn.disabled = true; lbl.textContent = 'Preparing…';
+  $('exportFallback').style.display = 'none';
+
+  google.script.run
+    .withSuccessHandler(function(r){
+      btn.disabled = false; updateExportLabel();
+      if (!r || !r.ok || !r.url) { toast('Could not prepare the export.'); return; }
+      var w = null;
+      try { w = window.open(r.url, '_blank'); } catch(e) { w = null; }
+      if (w) {
+        toast('Downloading ' + r.rows + (r.rows === 1 ? ' property…' : ' properties…'));
+      } else {
+        $('exportLink').href = r.url;
+        $('exportFallback').style.display = 'block';
+      }
+    })
+    .withFailureHandler(function(e){
+      btn.disabled = false; updateExportLabel();
+      if (!handleAuthFailure(e)) toast(String(e && e.message || e));
+    })
+    .prepareExport(TOKEN, list.map(function(d){ return d.id; }));
+};
+
+function updateExportLabel(){
+  var n = currentList().length;
+  $('btnExportLbl').textContent = n ? ('Export ' + n + ' to Excel') : 'Export to Excel';
+  $('btnExport').disabled = !n;
+}
+
+/* ==================== multi-select filters ====================
+   Every filter is a list of options; selecting several ORs them together,
+   and the filters AND across each other. Nothing selected = no constraint.
+   Beds/Baths/SqFt/Year are BANDS rather than "X or more" floors, so a
+   combination like "3 or 4 bedrooms" is expressible.                        */
+
+function band(lo, hi, key){                       // [lo, hi) on a numeric field
+  return function(d){ var v = d[key]; return v !== null && v !== undefined && v >= lo && v < hi; };
+}
+function exact(val, key){
+  return function(d){ return d[key] === val; };
+}
+function atLeast(lo, key){
+  return function(d){ var v = d[key]; return v !== null && v !== undefined && v >= lo; };
+}
+function textIs(val, key){
+  return function(d){ return String(d[key] || '').trim() === val; };
+}
+
+function askBand(lo, hi){                           // [lo, hi) on the Ask price
+  return function(d){ var v = askOf(d); return v !== null && v >= lo && v < hi; };
+}
+
+var FILTER_DEFS = [
+  { key:'ask', label:'Ask price', all:'Any ask price', counted:true, opts:[
+      { v:'a', l:'Under $150K',    t:askBand(0,      150000) },
+      { v:'b', l:'$150K – $250K',  t:askBand(150000, 250000) },
+      { v:'c', l:'$250K – $350K',  t:askBand(250000, 350000) },
+      { v:'d', l:'$350K – $500K',  t:askBand(350000, 500000) },
+      { v:'e', l:'$500K – $750K',  t:askBand(500000, 750000) },
+      { v:'f', l:'$750K+',         t:askBand(750000, Infinity) },
+      { v:'n', l:'No ask price',   t:function(d){ return askOf(d) === null; } } ] },
+  { key:'market',   label:'Market',          all:'All markets',   wide:true, from:'market' },
+  { key:'region',   label:'Region',          all:'All regions',   wide:true, from:'region' },
+  { key:'district', label:'School district', all:'All districts', wide:true, from:'schoolDistrict' },
+  { key:'arv', label:'ARV', all:'Any ARV', opts:[
+      { v:'a', l:'Under $250K',    t:band(0,       250000,  'arv') },
+      { v:'b', l:'$250K – $400K',  t:band(250000,  400000,  'arv') },
+      { v:'c', l:'$400K – $600K',  t:band(400000,  600000,  'arv') },
+      { v:'d', l:'$600K – $900K',  t:band(600000,  900000,  'arv') },
+      { v:'e', l:'$900K+',         t:atLeast(900000,        'arv') } ] },
+  { key:'beds', label:'Beds', all:'Any beds', opts:[
+      { v:'1', l:'1',   t:exact(1,'beds') }, { v:'2', l:'2', t:exact(2,'beds') },
+      { v:'3', l:'3',   t:exact(3,'beds') }, { v:'4', l:'4', t:exact(4,'beds') },
+      { v:'5', l:'5+',  t:atLeast(5,'beds') } ] },
+  { key:'baths', label:'Baths', all:'Any baths', opts:[
+      { v:'1', l:'1',   t:exact(1,'baths') }, { v:'2', l:'2', t:exact(2,'baths') },
+      { v:'3', l:'3',   t:exact(3,'baths') }, { v:'4', l:'4+', t:atLeast(4,'baths') } ] },
+  { key:'sqft', label:'Square feet', all:'Any size', opts:[
+      { v:'a', l:'Under 1,000',    t:band(0,    1000, 'sqft') },
+      { v:'b', l:'1,000 – 1,499',  t:band(1000, 1500, 'sqft') },
+      { v:'c', l:'1,500 – 1,999',  t:band(1500, 2000, 'sqft') },
+      { v:'d', l:'2,000 – 2,499',  t:band(2000, 2500, 'sqft') },
+      { v:'e', l:'2,500 – 2,999',  t:band(2500, 3000, 'sqft') },
+      { v:'f', l:'3,000+',         t:atLeast(3000,    'sqft') } ] },
+  { key:'year', label:'Year built', all:'Any year', opts:[
+      { v:'a', l:'Before 1970', t:band(0,    1970, 'year') },
+      { v:'b', l:'1970s',       t:band(1970, 1980, 'year') },
+      { v:'c', l:'1980s',       t:band(1980, 1990, 'year') },
+      { v:'d', l:'1990s',       t:band(1990, 2000, 'year') },
+      { v:'e', l:'2000s',       t:band(2000, 2010, 'year') },
+      { v:'f', l:'2010s',       t:band(2010, 2020, 'year') },
+      { v:'g', l:'2020s',       t:atLeast(2020,     'year') } ] },
+  { key:'pool', label:'Pool', all:'Any', opts:[
+      { v:'y', l:'Has a pool', t:function(d){ return d.pool === true; } },
+      { v:'n', l:'No pool',    t:function(d){ return d.pool !== true; } } ] },
+  /* Three states, not two. A deal whose photos have not been checked yet is
+     neither "has" nor "no" — counting it as "No photos" is exactly what made
+     the filter read 1 / 24 on a page where every deal had photos. Unchecked
+     deals are looked up in the background and the counts update as they land. */
+  { key:'photos', label:'Photos', all:'Any', counted:true, opts:[
+      { v:'y', l:'Has photos', t:function(d){ return photoState(d) === 'yes' || !!safeLink(d.photoLink); } },
+      { v:'n', l:'No photos',  t:function(d){ return photoState(d) === 'no' && !safeLink(d.photoLink); } } ] }
+];
+
+var FILTERS = {};                       // key -> array of selected option values
+FILTER_DEFS.forEach(function(def){ FILTERS[def.key] = []; });
+
+function defByKey(k){
+  for (var i=0;i<FILTER_DEFS.length;i++) if (FILTER_DEFS[i].key === k) return FILTER_DEFS[i];
+  return null;
+}
+
+/** Builds the control for one filter. Dynamic filters get their options from the data. */
+function buildFilterControl(def){
+  var wrap = document.createElement('div');
+  wrap.className = 'ms' + (def.wide ? ' wide' : '');
+  wrap.setAttribute('data-key', def.key);
+  wrap.innerHTML = '<label>' + esc(def.label) + '</label>'
+    + '<button type="button" class="ms-btn" data-toggle-ms></button>'
+    + '<div class="ms-panel" hidden>'
+    +   '<div class="ms-tools"><button type="button" data-ms-all>All</button>'
+    +     '<button type="button" data-ms-none>Clear</button></div>'
+    +   '<div class="ms-opts"></div>'
+    + '</div>';
+  return wrap;
+}
+
+/** Dynamic option lists come from the data itself, with counts. */
+function refreshDynamicOptions(){
+  FILTER_DEFS.forEach(function(def){
+    if (!def.from) return;
+    var counts = {};
+    DATA.deals.forEach(function(d){
+      var v = String(d[def.from] || '').trim();
+      if (v) counts[v] = (counts[v] || 0) + 1;
+    });
+    var names = Object.keys(counts).sort(function(a,b){ return a.localeCompare(b); });
+    def.opts = names.map(function(n){
+      return { v:n, l:n, n:counts[n], t:textIs(n, def.from) };
+    });
+    // Drop selections for values that no longer exist in the feed.
+    FILTERS[def.key] = FILTERS[def.key].filter(function(v){ return names.indexOf(v) > -1; });
+  });
+  refreshCountedOptions();
+}
+
+/** Fixed options that still show how many deals each one matches. */
+function refreshCountedOptions(){
+  FILTER_DEFS.forEach(function(def){
+    if (!def.counted) return;
+    def.opts.forEach(function(o){ o.n = DATA.deals.filter(o.t).length; });
+    if (def.key === 'photos') {
+      // A lookup that FAILED is not "still checking" — it would never finish.
+      def.pending = DATA.deals.filter(function(d){
+        var r = PHOTOS[d.id];
+        return photoState(d) === 'maybe' && !(r && r !== 'loading' && r.error);
+      }).length;
+    }
+  });
+}
+
+function renderFilterBar(){
+  var bar = $('filterBar');
+  FILTER_DEFS.forEach(function(def){
+    var el = bar.querySelector('[data-key="' + def.key + '"]');
+    if (!el) { el = buildFilterControl(def); bar.insertBefore(el, $('clearFilters')); }
+
+    var sel  = FILTERS[def.key];
+    var opts = def.opts || [];
+    var box  = el.querySelector('.ms-opts');
+    box.innerHTML = opts.length
+      ? opts.map(function(o){
+          var on = sel.indexOf(o.v) > -1;
+          return '<label class="ms-opt"><input type="checkbox" value="' + esc(o.v) + '"'
+               + (on ? ' checked' : '') + '><span>' + esc(o.l) + '</span>'
+               + (o.n ? '<em>' + o.n + '</em>' : '') + '</label>';
+        }).join('')
+        + (def.pending ? '<div class="ms-empty">Checking ' + def.pending
+            + (def.pending === 1 ? ' deal' : ' deals') + ' for photos&hellip;</div>' : '')
+      : '<div class="ms-empty">Nothing in the current feed.</div>';
+
+    var btn = el.querySelector('.ms-btn');
+    if (!sel.length)          btn.textContent = def.all;
+    else if (sel.length === 1) {
+      var one = null;
+      for (var i=0;i<opts.length;i++) if (opts[i].v === sel[0]) one = opts[i];
+      btn.textContent = one ? one.l : sel[0];
+    } else                     btn.textContent = sel.length + ' selected';
+    btn.classList.toggle('set', sel.length > 0);
+    btn.title = sel.length ? (def.label + ': ' + sel.join(', ')) : def.label;
+  });
+}
+
+function activeFilters(){
+  var n = 0;
+  FILTER_DEFS.forEach(function(def){ if (FILTERS[def.key].length) n++; });
+  $('clearFilters').classList.toggle('show', n > 0);
+  return n;
+}
+
+function passesFilters(d){
+  for (var i=0;i<FILTER_DEFS.length;i++){
+    var def = FILTER_DEFS[i], sel = FILTERS[def.key];
+    if (!sel.length) continue;                 // nothing chosen = no constraint
+    var opts = def.opts || [], hit = false;
+    for (var j=0;j<sel.length && !hit;j++){
+      for (var k=0;k<opts.length && !hit;k++){
+        if (opts[k].v === sel[j] && opts[k].t(d)) hit = true;
+      }
+    }
+    if (!hit) return false;                    // OR within a filter, AND across them
+  }
+  return true;
+}
+
+/* ---- panel open/close + checkbox wiring ---- */
+function closeAllPanels(except){
+  Array.prototype.forEach.call(document.querySelectorAll('.ms-panel'), function(p){
+    if (p !== except) p.hidden = true;
+  });
+}
+
+document.addEventListener('click', function(ev){
+  var t = ev.target;
+
+  var tog = t.closest && t.closest('[data-toggle-ms]');
+  if (tog){
+    var panel = tog.parentNode.querySelector('.ms-panel');
+    var wasOpen = !panel.hidden;
+    closeAllPanels();
+    panel.hidden = wasOpen;
+    return;
+  }
+
+  var ms = t.closest && t.closest('.ms');
+  if (!ms) { closeAllPanels(); return; }
+
+  var key = ms.getAttribute('data-key'), def = defByKey(key);
+  if (!def) return;
+
+  if (t.closest('[data-ms-all]')){
+    FILTERS[key] = (def.opts || []).map(function(o){ return o.v; });
+    renderFilterBar(); render(); return;
+  }
+  if (t.closest('[data-ms-none]')){
+    FILTERS[key] = [];
+    renderFilterBar(); render(); return;
+  }
+}, true);
+
+document.addEventListener('change', function(ev){
+  var cb = ev.target;
+  if (!cb || cb.type !== 'checkbox' || !cb.closest || !cb.closest('.ms-opts')) return;
+  var ms  = cb.closest('.ms'), key = ms.getAttribute('data-key');
+  var sel = FILTERS[key], v = cb.value, at = sel.indexOf(v);
+  if (cb.checked && at < 0) sel.push(v);
+  if (!cb.checked && at > -1) sel.splice(at, 1);
+  if (key === 'photos' && sel.length) resolveUnknownPhotos(true);
+  renderFilterBar(); render();
+});
+
+document.addEventListener('keydown', function(ev){ if (ev.key === 'Escape') closeAllPanels(); });
+
+function statusOf(id){ var a = DATA.activity[id]; return a ? a.status : 'none'; }
+function offerOf(id){ var a = DATA.activity[id]; return a ? a.offer : null; }
+/* Leads "Status" on a deal this viewer offered on ('' when none). */
+function leadStatusOf(id){ return (DATA.leadStatus && statusOf(id) === 'offered' && DATA.leadStatus[id]) || ''; }
+function leadStatusClass(s){
+  return ({ 'Not Started':'ls-new', 'Agent Working to Contract':'ls-working',
+            'Under Contract':'ls-under', 'Fell Through':'ls-fell' })[s] || 'ls-other';
+}
+/* What the partner sees for a Leads status (the sheet keeps its own wording). */
+var LEAD_STATUS_LABELS = { 'Agent Working to Contract': 'In progress' };
+function leadStatusLabel(s){ return LEAD_STATUS_LABELS[s] || s; }
+/* Deal notes (this login's own thread with Atlas). */
+var NOTE_DRAFT = {};      // what's typed in a note box survives a redraw
+document.addEventListener('input', function(ev){
+  var t = ev.target;
+  if (t && t.id && t.id.indexOf('note-') === 0) NOTE_DRAFT[t.id.slice(5)] = t.value;
+});
+function notesOf(id){ return (DATA.notes && DATA.notes[id]) || []; }
+function notesChip(d){
+  var n = notesOf(d.id);
+  if (!n.length) return '';
+  var last = n[n.length - 1];
+  return last.side === 'co'
+    ? '<span class="chip notenew">Atlas replied</span>'
+    : '<span class="chip notes">Notes &middot; ' + n.length + '</span>';
+}
+function notesHtml(d){
+  var n = notesOf(d.id);
+  var list = n.map(function(m){
+    return '<div class="nmsg ' + (m.side === 'co' ? 'co' : 'me') + '">'
+      + '<div class="nmeta">' + esc(m.side === 'co' ? m.from : 'You') + (m.at ? ' &middot; ' + esc(shortDay(String(m.at).slice(0,10)) || '') : '') + '</div>'
+      + '<div class="ntext">' + esc(m.text).replace(/\n/g, '<br>') + '</div></div>';
+  }).join('');
+  return '<div class="notesbox">'
+    + '<div class="section-lbl" style="margin-top:0">Notes with Atlas</div>'
+    + (list ? '<div class="nlist">' + list + '</div>' : '<div class="hint" style="margin-bottom:8px">Ask a question or leave a note about this property. The Atlas team is emailed and their answer shows up here (and in your inbox).</div>')
+    + '<textarea id="note-' + esc(d.id) + '" maxlength="2000" rows="3" placeholder="Write a note to the Atlas team…">' + esc(NOTE_DRAFT[d.id] || '') + '</textarea>'
+    + '<div class="row" style="margin-top:8px"><button class="btn btn-teal" data-sendnote="' + esc(d.id) + '">Send note</button>'
+    + '<div class="hint">Only you and the Atlas team see this conversation.</div></div>'
+    + '<div class="err" id="noteerr-' + esc(d.id) + '" style="display:none"></div>'
+    + '</div>';
+}
+
+function leadStatusBadge(id){
+  var s = leadStatusOf(id);
+  return s ? '<span class="ribbon ls ' + leadStatusClass(s) + '" title="Deal status">' + esc(leadStatusLabel(s)) + '</span>' : '';
+}
+
+/* ---------------------------- render --------------------------- */
+function bucket(d){
+  var s = statusOf(d.id);
+  if (s === 'offered') return 'mine';
+  if (s === 'saved')   return 'saved';
+  if (s === 'passed')  return 'passed';
+  return 'deals';
+}
+
+function currentList(){
+  var q = ($('q').value||'').trim().toLowerCase();
+  var showPassed = $('showPassed').checked;
+  var list = DATA.deals.filter(function(d){
+    var b = bucket(d);
+    if (TAB === 'deals') { if (!(b === 'deals' || (showPassed && b === 'passed'))) return false; }
+    else if (b !== TAB) return false;
+    if (!passesFilters(d)) return false;
+    if (!q) return true;
+    return (d.address + ' ' + d.city + ' ' + d.state + ' ' + d.zip + ' '
+            + (d.market||'') + ' ' + (d.schoolDistrict||''))
+      .toLowerCase().indexOf(q) > -1;
+  });
+  var s = $('sort').value;
+  list.sort(function(a,b){
+    // A deal an admin added back from the archive leads the list in EVERY sort
+    // mode — Ramsey asked for it to be the first thing the partner sees, so it
+    // must not fall to the bottom under "Oldest first" or an ARV sort.
+    var ap = a.pinned ? 0 : 1, bp = b.pinned ? 0 : 1;
+    if (ap !== bp) return ap - bp;
+    // The server orders the deals newest-first and sends an opaque `rank`
+    // (0 = newest). The created date is deliberately NOT in the payload, so
+    // recency is only ever expressed as a position.
+    if (s === 'new') return (a.rank || 0) - (b.rank || 0);
+    if (s === 'old') return (b.rank || 0) - (a.rank || 0);
+    if (s === 'arv-desc')  return (b.arv||0)-(a.arv||0);
+    if (s === 'arv-asc')   return (a.arv||0)-(b.arv||0);
+    if (s === 'sqft-desc') return (b.sqft||0)-(a.sqft||0);
+    if (s === 'year-desc') return (b.year||0)-(a.year||0);
+    return String(a.address).localeCompare(String(b.address));
+  });
+  return list;
+}
+
+var ICON_UP   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg>';
+var ICON_DOWN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"/></svg>';
+var ICON_CHEV = '<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+
+/* "2026-09-04" -> "Sep 4", or "Sep 4, 2025" when it is not the current year.
+   The year is normally noise inside a rolling 7-day feed, but a deal added back
+   from the archive can be older, and "Sep 4" alone would then mislead. */
+/* How recent counts as NEW, in days. 0 = today only, 1 = today or yesterday.
+   Deliberately a constant: "new" is a judgement call, not a fact. */
+var NEW_WITHIN_DAYS = 0;
+
+/* Today in local time as yyyy-mm-dd, built from Date PARTS rather than
+   toISOString(), which converts to UTC and rolls the date over early evening
+   in the US. */
+function todayIso(){
+  var n = new Date(), p = function(x){ return (x < 10 ? '0' : '') + x; };
+  return n.getFullYear() + '-' + p(n.getMonth() + 1) + '-' + p(n.getDate());
+}
+
+/* True when the deal was created today (or within NEW_WITHIN_DAYS).
+   Recomputed on every render, so it follows the calendar rather than being
+   baked in when the payload was built. */
+function isNew(iso){
+  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso||'').trim());
+  if (!m) return false;
+  if (NEW_WITHIN_DAYS === 0) return String(iso).trim() === todayIso();
+  var then = new Date(parseInt(m[1],10), parseInt(m[2],10)-1, parseInt(m[3],10));
+  var now = new Date(); now = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var days = Math.round((now - then) / 86400000);
+  return days >= 0 && days <= NEW_WITHIN_DAYS;
+}
+
+function shortDay(iso){
+  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso||'').trim());
+  if (!m) return '';
+  var txt = MON_[parseInt(m[2],10)-1] + ' ' + parseInt(m[3],10);
+  return (parseInt(m[1],10) === new Date().getFullYear()) ? txt : txt + ', ' + m[1];
+}
+
+/* "Request info", or a quiet acknowledgement once this partner has asked.
+   Hidden entirely once the details are actually on the card — there is nothing
+   left to request. */
+function reqInfo(id){ return !!(DATA.infoRequested && DATA.infoRequested[id]); }
+
+/* Server-set once the deal has gathered detail (Deal Details tab, or a form
+   submission). NOT "any detail field present": every deal now carries an Ask
+   Price, and that alone must not hide the button. */
+function hasDetails(d){ return d.infoFilled === true; }
+
+function askOf(d){
+  var v = d.askingPrice;
+  if (v === null || v === undefined || v === '') return null;
+  var n = Number(String(v).replace(/[^0-9.\-]/g, ''));
+  return (isNaN(n) || n <= 0) ? null : n;
+}
+/* The Ask price, big enough to read at a glance. Nothing when there is none. */
+function askBox(d){
+  var ask = askOf(d);
+  if (ask === null) return '<div class="askbox">Ask price <span class="ask-amt">No Price</span></div>';
+  return '<div class="askbox">Ask price <span class="ask-amt">' + money(ask) + '</span></div>';
+}
+function isFund(d){ return /^fx-/.test(String(d.id || '')); }
+function safeLink(u){ return /^https:\/\//i.test(String(u || '')) ? String(u) : ''; }
+
+function reqInfoBtn(d){
+  if (hasDetails(d)) return '';
+  if (reqInfo(d.id)) {
+    return '<button class="btn btn-ghost" disabled title="The Atlas team has your request">'
+         + 'Info requested</button>';
+  }
+  return '<button class="btn btn-ghost" data-reqinfo="' + esc(d.id) + '" '
+       + 'title="Ask the Atlas team for photos, HVAC and roof age, deal type and more">'
+       + 'Request info</button>';
+}
+
+function chips(d){
+  var c = [];
+  if (isFund(d)) c.push('<span class="chip offmkt">Off Platform</span>');
+  var nc = notesChip(d); if (nc) c.push(nc);
+  var ask = askOf(d);
+  if (d.arv !== null || (ask === null && !isFund(d))) c.push('<span class="chip key">ARV <b>' + money(d.arv) + '</b></span>');
+  if (d.beds !== null)  c.push('<span class="chip">' + d.beds + ' bd</span>');
+  if (d.baths !== null) c.push('<span class="chip">' + d.baths + ' ba</span>');
+  if (d.sqft !== null)  c.push('<span class="chip">' + num(d.sqft) + ' sq ft</span>');
+  if (d.year !== null)  c.push('<span class="chip">Built ' + d.year + '</span>');
+  if (d.lotAcres !== null) c.push('<span class="chip">' + d.lotAcres + ' ac lot</span>');
+  else if (d.lotUnverified) c.push('<span class="chip warn">Lot size unverified</span>');
+  if (d.pool === true)  c.push('<span class="chip warn">Pool</span>');
+  var pl = safeLink(d.photoLink);
+  // (Off Platform photo links now sit in the tile's photo spot — see coverSlot.)
+  return c.join('');
+}
+
+function detailHtml(d){
+  // A form deal has no ARV, sq ft, lot, school… — leave those out rather than
+  // show a wall of dashes.
+  var fund = isFund(d);
+  var f = function(lbl, val){
+    if (fund && (val === '—' || val === '')) return '';
+    return '<div class="field"><div class="lbl">' + lbl + '</div><div class="val">' + val + '</div></div>';
+  };
+  var ask = askOf(d);
+  var h = photoSlot(d)
+    + '<div class="dgrid">'
+    + f('AA ARV', money(d.arv))
+    + f('Est. repair cost', d.repair === null ? '—' : money(d.repair))
+    + f('Bedrooms', d.beds === null ? '—' : d.beds)
+    + f('Bathrooms', d.baths === null ? '—' : d.baths)
+    + f('Square feet', num(d.sqft))
+    + f('Year built', d.year === null ? '—' : d.year)
+    + f('Created', d.created ? prettyDay(d.created) : '—')
+    + f('Lot size', d.lotSqft === null ? '—' : (num(d.lotSqft) + (d.lotUnverified ? ' (units unclear)' : ' sq ft')))
+    + f('Lot acres', d.lotAcres === null ? (d.lotUnverified ? 'Unverified' : '—') : d.lotAcres)
+    + f('Pool', d.pool === null ? '—' : (d.pool ? 'Yes' : 'No'))
+    + f('Garage', d.garage === null ? '—' : d.garage)
+    + f('Occupancy', d.occupancy ? esc(d.occupancy) : '—')
+    + f('Market', d.market ? esc(d.market) : '—')
+    + f('Region', d.region ? esc(d.region) : '—')
+    + f('School district', d.schoolDistrict ? esc(d.schoolDistrict) : '—')
+    + f('Unit type', d.unitType ? esc(d.unitType) : '—')
+    + f('ZIP', esc(d.zip))
+    + '</div>';
+
+  if (d.lotUnverified) h += '<div class="note" style="border-left-color:var(--copper);margin-bottom:4px">'
+    + 'The recorded lot size for this property is unusually small, so its units are unclear '
+    + '(it may be stated in acres rather than square feet). Please confirm the lot size directly.'
+    + '</div>';
+
+
+  // Hand-gathered detail, when it has been filled in on the Deal Details tab.
+  var F = DATA.detailFields || [];
+  // Ask price is already at the top of the grid. Free-text notes get a
+  // full-width block below rather than a cramped grid cell.
+  var LONG = { detailNotes: 1, leasebackNotes: 1 };
+  var got = F.filter(function(f){ return !!d[f.key] && f.key !== 'askingPrice' && !LONG[f.key]; });
+  var longs = F.filter(function(f){ return !!d[f.key] && LONG[f.key]; });
+  if (got.length) {
+    h += '<div class="section-lbl">Property details</div><div class="dgrid detail-extra">'
+      + got.map(function(f){
+          var v = d[f.key], out;
+          if (f.kind === 'url') {
+            var u = safeLink(v);
+            out = u ? '<a href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">View photos</a>' : '—';
+          } else if (f.kind === 'money') {
+            var n = Number(String(v).replace(/[^0-9.\-]/g, ''));
+            out = isNaN(n) || !v ? esc(v) : money(n);
+          } else if (f.kind === 'days') {
+            out = esc(v) + ' days';
+          } else {
+            out = esc(v);
+          }
+          return '<div class="field"><div class="lbl">' + esc(f.label) + '</div>'
+               + '<div class="val">' + out + '</div></div>';
+        }).join('')
+      + '</div>';
+  }
+  longs.forEach(function(f){
+    h += '<div class="section-lbl">' + esc(f.key === 'detailNotes' ? 'Property notes' : f.label) + '</div>'
+       + '<div class="note">' + esc(d[f.key]) + '</div>';
+  });
+  if (!got.length && !longs.length && reqInfo(d.id)) {
+    h += '<div class="note" style="border-left-color:var(--teal)">'
+      + 'Your request for more detail is with the Atlas team. It will appear here.'
+      + '</div>';
+  }
+
+  if (d.notes) h += '<div class="section-lbl">Marketing comments</div><div class="note">' + esc(d.notes) + '</div>';
+  if (d.legal) h += '<div class="section-lbl">Legal description</div><div class="legal">' + esc(d.legal) + '</div>';
+
+  var st = statusOf(d.id), off = offerOf(d.id);
+  if (st === 'offered') {
+    h += '<div class="offerbox" style="padding-bottom:10px"><div class="row">'
+       + '<div><div style="font-size:10.5px;letter-spacing:1.1px;text-transform:uppercase;color:var(--grey);font-weight:700">Your offer</div>'
+       + '<div style="font-size:24px;font-weight:800;color:var(--teal)">' + money(off) + '</div></div>'
+       + (leadStatusOf(d.id)
+          ? '<div style="flex:1"><div style="font-size:10.5px;letter-spacing:1.1px;text-transform:uppercase;color:var(--grey);font-weight:700">Deal status</div>'
+            + '<div style="margin-top:5px">' + leadStatusBadge(d.id) + '</div></div>'
+          : '<div class="hint" style="flex:1">Submitted to the Atlas team. They will follow up directly.</div>')
+       + '</div></div>';
+  }
+  {
+    h += '<div class="offerbox">'
+       + '<div style="font-size:10.5px;letter-spacing:1.1px;text-transform:uppercase;color:var(--grey);font-weight:700;margin-bottom:7px">'
+       + (st === 'offered' ? 'Revise your offer' : 'Submit an offer') + '</div>'
+       + '<div class="row">'
+       +   '<div class="money"><span>$</span><input type="text" inputmode="numeric" id="off-' + esc(d.id) + '" placeholder="0"></div>'
+       +   '<button class="btn btn-gold" data-offer="' + esc(d.id) + '">'
+       +     (st === 'offered' ? 'Submit revised offer' : 'Submit offer') + '</button>'
+       +   '<div class="hint">' + (st === 'offered'
+             ? 'A revised offer must be a different amount. The Atlas team is notified of the change.'
+             : 'Submitting notifies the Atlas team and moves this property to <b>My Deals</b>.') + '</div>'
+       + '</div>'
+       + '<div class="err" id="offerr-' + esc(d.id) + '" style="display:none"></div>'
+       + '</div>';
+  }
+  if (!DATA.isAdmin) h += notesHtml(d);
+  return h;
+}
+
+function cardHtml(d){
+  var st = statusOf(d.id);
+  var open = isOpen(d.id);
+  var fresh = isNew(d.created);
+  var ribbon = (fresh ? '<span class="ribbon new">New</span>' : '')
+             + (st === 'saved'   ? '<span class="ribbon saved">Saved</span>'
+             :  st === 'offered' ? '<span class="ribbon offered">Offer ' + money(offerOf(d.id)) + '</span>' + leadStatusBadge(d.id)
+             :  st === 'passed'  ? '<span class="ribbon passed">Passed</span>' : '');
+  var acts = '';
+  if (st !== 'offered') {
+    acts += '<button class="iconbtn ' + (st==='saved'?'on':'') + '" title="Save this deal" data-act="saved" data-id="' + esc(d.id) + '">' + ICON_UP + '</button>'
+          + '<button class="iconbtn down ' + (st==='passed'?'on':'') + '" title="Pass on this deal" data-act="passed" data-id="' + esc(d.id) + '">' + ICON_DOWN + '</button>'
+          + reqInfoBtn(d)
+          + '<button class="btn btn-gold" data-openoffer="' + esc(d.id) + '">Submit offer</button>';
+  } else {
+    // Revisions are allowed at a different amount.
+    acts += reqInfoBtn(d)
+          + '<button class="btn btn-ghost" data-openoffer="' + esc(d.id) + '">Revise offer</button>';
+  }
+  var loc = [d.city, d.state].filter(Boolean).join(', ');
+  return '<div class="card' + (open?' open':'') + (fresh?' isnew':'')
+    + '" id="card-' + esc(d.id) + '">'
+    + '<div class="card-head" data-toggle="' + esc(d.id) + '">'
+    +   coverSlot(d)
+    +   '<div class="addr"><div class="street">' + esc(d.address) + ' ' + ribbon + '</div>'
+    +     '<div class="loc">' + esc(loc ? loc + ' ' + d.zip : d.zip)
+    +       (shortDay(d.created)
+              ? ' <span class="dot">&middot;</span> '
+                + (fresh ? 'added today' : 'created ' + esc(shortDay(d.created)))
+              : '')
+    +     '</div></div>'
+    +   askBox(d)
+    +   '<div class="chips">' + chips(d) + '</div>'
+    +   '<div class="acts">' + acts + ICON_CHEV + '</div>'
+    + '</div>'
+    + '<div class="detail">' + (open ? detailHtml(d) : '') + '</div>'
+    + '</div>';
+}
+
+function render(){
+  if (TAB === 'admin' || TAB === 'archive') {
+    ['deals','saved','mine','admin','archive'].forEach(function(p){
+      $('panel-'+p).classList.toggle('active', p === TAB);
+    });
+    $('toolbar').hidden = true;      // deal search/sort/filters mean nothing here
+    if (TAB === 'admin') renderAdmin(); else renderArchive();
+    return;
+  }
+  $('panel-admin').classList.remove('active');
+  $('panel-archive').classList.remove('active');
+  $('toolbar').hidden = false;
+
+  var counts = { deals:0, saved:0, mine:0, passed:0 };
+  DATA.deals.forEach(function(d){ counts[bucket(d)]++; });
+  $('cDeals').textContent = counts.deals;
+  $('cSaved').textContent = counts.saved;
+  $('cMine').textContent  = counts.mine;
+  $('passedWrap').style.display = (TAB === 'deals' && counts.passed) ? 'flex' : 'none';
+
+  var nFilters = activeFilters();
+  var list = currentList();
+
+  // Back to page 1 whenever the list itself changes (tab, search, sort,
+  // filters); a save or pass that only moves one card keeps the page.
+  var key = [TAB, $('q').value.trim(), $('sort').value, $('showPassed').checked,
+             JSON.stringify(FILTERS)].join('|');
+  if (key !== PAGE_KEY) { PAGE_KEY = key; PAGE = 0; }
+  if (PAGE_FOCUS) {                            // a deep link: the page that holds that card
+    for (var fi = 0; fi < list.length; fi++) {
+      if (list[fi].id === PAGE_FOCUS) { PAGE = Math.floor(fi / PAGE_SIZE); break; }
+    }
+    PAGE_FOCUS = '';
+  }
+  var pages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+  if (PAGE > pages - 1) PAGE = pages - 1;
+  var pageList = list.slice(PAGE * PAGE_SIZE, (PAGE + 1) * PAGE_SIZE);
+  var total = TAB === 'deals' ? counts.deals + ($('showPassed').checked ? counts.passed : 0)
+            : TAB === 'saved' ? counts.saved : counts.mine;
+  $('countLbl').innerHTML = (list.length < total)
+    ? '<b>' + list.length + '</b> of ' + total + ' properties'
+    : '<b>' + list.length + '</b> ' + (list.length === 1 ? 'property' : 'properties');
+
+  var html;
+  if (!list.length) {
+    var filtered = nFilters > 0 || ($('q').value || '').trim();
+    var msg = filtered
+      ? '<b>No properties match your filters</b>' + total + ' ' + (total === 1 ? 'property is' : 'properties are')
+        + ' available on this tab. Try widening or clearing the filters.'
+      : TAB === 'saved'
+      ? '<b>No saved deals yet</b>Give a property a thumbs up on the Deals tab and it will appear here.'
+      : TAB === 'mine'
+      ? '<b>No offers submitted yet</b>Submit an offer on any property and it will move here.'
+      : '<b>No properties available</b>Check back after the next Salesforce refresh.';
+    html = '<div class="empty">' + msg + '</div>';
+  } else if (VIEW === 'map') {
+    html = '<div class="split"><div class="splitmap"><div id="mapSlot"></div></div>'
+         + '<div class="splitlist"><div class="splithead" id="splitHead"></div><div id="splitList"></div></div></div>';
+  } else {
+    html = pagerHtml(list.length, pages, 'top') + pageList.map(cardHtml).join('')
+         + pagerHtml(list.length, pages, '');
+  }
+
+  // Admins previewing a partner get a standing reminder that this is not the
+  // full feed — otherwise "where did my deals go" is an easy panic.
+  if (DATA.isAdmin && DATA.viewAs) {
+    html = '<div class="previewbar">Viewing as <b>' + esc(DATA.viewAs) + '</b> — this is what they see.'
+         + '<button class="btn btn-ghost" id="btnExitPreview">Back to all deals</button></div>' + html;
+  }
+  ['deals','saved','mine'].forEach(function(p){
+    $('panel-'+p).classList.toggle('active', p === TAB);
+    // Empty the hidden tabs: the map view's elements have fixed ids (mapSlot,
+    // splitList…), and a stale copy left in a hidden tab was being found first
+    // — so My Deals / Saved Deals drew into the hidden Deals tab and looked blank.
+    $('panel-'+p).innerHTML = (p === TAB) ? html : '';
+  });
+  var xp = document.getElementById('btnExitPreview');
+  if (xp) xp.onclick = function(){ VIEW_AS = ''; $('viewAs').value = ''; load(); };
+  document.querySelector('.wrap').classList.toggle('wide', VIEW === 'map');
+  if (VIEW === 'map' && list.length) {
+    if (MAP_SEL && !list.some(function(d){ return d.id === MAP_SEL; })) MAP_SEL = '';
+    var tb = $('toolbar');
+    document.documentElement.style.setProperty('--split-top', ((tb && tb.offsetHeight) || 140) + 14 + 'px');
+    MAP_LIST = list;
+    try { renderSplitList(); }
+    catch (se) { showViewError('tiles', se); }
+    try { mountMap(list); }
+    catch (me) { MAP_FAILED = 'The map could not start (' + (me && me.message || me) + '). The tiles on the right still work.'; showMapMsg(); }
+  }
+
+  syncExpandBtn();
+  hydratePhotos();
+  if (SCROLL_TO_LIST) { SCROLL_TO_LIST = false; $('panel-' + TAB).scrollIntoView({ block: 'start' }); }
+  $('btnExportLbl').textContent = list.length ? ('Export ' + list.length + ' to Excel') : 'Export to Excel';
+  $('btnExport').disabled = !list.length;
+  $('exportFallback').style.display = 'none';
+}
+
+/* =============================== photos ================================
+   Photos come from getDealPhotos on the server (which calls the API's
+   /property-media). The server's photo index (DATA.photos) says up front which
+   deals have photos, so only those cards ask, and only once they are on the
+   current page and near the screen, in batches: asking for every deal at once
+   would spend the per-viewer rate limit (150 calls / 10 min).
+
+   What downloads, to keep a page light (photos are ~4 MB each):
+     card head   one cover photo
+     open card   "Show all N photos" until the partner asks; a card the partner
+                 expands by hand, or whose cover they click, gets the full strip
+     viewer      one photo at a time, plus the next one                       */
+
+var PHOTOS = {};            // dealId -> 'loading' | { photos:[{url}], count, error }
+var PHOTO_ALL = {};         // dealId -> true once the partner asked for every photo
+var PHOTO_QUEUE = [];
+var PHOTO_TIMER = null;
+var PHOTO_INFLIGHT = 0;
+var PHOTO_BATCH = 8;        // PHOTO_BATCH_MAX on the server
+var PHOTO_PARALLEL = 2;
+var PHOTO_OBS = ('IntersectionObserver' in window)
+  ? new IntersectionObserver(onPhotoSlotSeen, { rootMargin: '400px 0px' }) : null;
+
+/* 'yes' | 'no' | 'maybe': what is known about a deal's photos so far. */
+function photoState(d){
+  if (isFund(d)) return 'no';                 // form deals: a photo LINK, not the S3 gallery
+  var r = PHOTOS[d.id];
+  if (r && r !== 'loading' && !r.error) return (r.photos && r.photos.length) ? 'yes' : 'no';
+  var P = DATA.photos;
+  if (!P || !P.ready) return 'maybe';         // index not built yet: ask, as before it existed
+  if (P.counts && P.counts[d.id] > 0) return 'yes';
+  if (!P.unknownSet) {
+    P.unknownSet = {};
+    (P.unknown || []).forEach(function(id){ P.unknownSet[id] = true; });
+  }
+  return P.unknownSet[d.id] ? 'maybe' : 'no';
+}
+
+function photoCount(d){
+  var r = PHOTOS[d.id];
+  if (r && r !== 'loading' && !r.error) return (r.photos || []).length;
+  return (DATA.photos && DATA.photos.counts && DATA.photos.counts[d.id]) || 0;
+}
+
+function coverSlot(d){
+  // Off Platform deals have a photo LINK, not the S3 gallery: show it in the
+  // photo spot so it is visible on the collapsed tile.
+  var pl = isFund(d) ? safeLink(d.photoLink) : '';
+  if (pl) return '<a class="ph-cover ph-link" href="' + esc(pl) + '" target="_blank" rel="noopener noreferrer" title="Open the photos">'
+    + '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+    + '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>'
+    + '<span>View photos &#8599;</span></a>';
+  if (photoState(d) === 'no') return '';
+  return '<div class="ph-cover" data-photos="' + esc(d.id) + '"></div>';
+}
+
+function photoSlot(d){
+  if (photoState(d) === 'no') return '';
+  return '<div class="photos" data-photos="' + esc(d.id) + '"></div>';
+}
+
+function photoSlots(id){
+  return Array.prototype.filter.call(document.querySelectorAll('[data-photos]'),
+    function(el){ return el.getAttribute('data-photos') === id; });
+}
+
+/** Shows every photo of a deal: its strips fill in, and the viewer has them all. */
+function showAllPhotos(id){
+  PHOTO_ALL[id] = true;
+  var r = PHOTOS[id];
+  if (r && r !== 'loading') setPhotos(id, r);
+}
+
+/** Fills every slot that already has an answer and watches the rest. */
+function hydratePhotos(){
+  if (PHOTO_OBS) PHOTO_OBS.disconnect();      // render() replaced the old slots
+  Array.prototype.forEach.call(document.querySelectorAll('[data-photos]'), function(el){
+    var id = el.getAttribute('data-photos'), r = PHOTOS[id];
+    if (r === 'loading') return;
+    if (r) { fillPhotoSlot(el, r); return; }
+    if (PHOTO_OBS) PHOTO_OBS.observe(el); else queuePhotos(id);
+  });
+}
+
+function onPhotoSlotSeen(entries){
+  entries.forEach(function(en){
+    if (!en.isIntersecting) return;
+    PHOTO_OBS.unobserve(en.target);
+    queuePhotos(en.target.getAttribute('data-photos'));
+  });
+}
+
+function queuePhotos(id){
+  if (!id || PHOTOS[id]) return;
+  PHOTOS[id] = 'loading';
+  PHOTO_QUEUE.push(id);
+  clearTimeout(PHOTO_TIMER);
+  PHOTO_TIMER = setTimeout(flushPhotos, 120);  // let one scroll's worth of cards gather
+}
+
+function flushPhotos(){
+  while (PHOTO_QUEUE.length && PHOTO_INFLIGHT < PHOTO_PARALLEL) {
+    sendPhotoBatch(PHOTO_QUEUE.splice(0, PHOTO_BATCH));
+  }
+}
+
+function sendPhotoBatch(ids){
+  PHOTO_INFLIGHT++;
+  google.script.run
+    .withSuccessHandler(function(r){
+      PHOTO_INFLIGHT--;
+      ids.forEach(function(id){ setPhotos(id, (r && r[id]) || { photos: [], count: 0 }); });
+      flushPhotos();
+    })
+    .withFailureHandler(function(e){
+      PHOTO_INFLIGHT--;
+      if (handleAuthFailure(e)) return;
+      ids.forEach(function(id){ setPhotos(id, { photos: [], count: 0, error: true }); });
+      flushPhotos();
+    })
+    .getDealPhotos(TOKEN, ids);
+}
+
+function setPhotos(id, r){
+  PHOTOS[id] = r;
+  photoSlots(id).forEach(function(el){ fillPhotoSlot(el, r); });
+  schedulePhotoRecount();
+}
+
+/* The Photos counts, and the list when a Photos filter is on, follow the
+   lookups as they land — batched, so 30 answers cost one redraw, not 30. */
+var PHOTO_RECOUNT_TIMER = null;
+function schedulePhotoRecount(){
+  clearTimeout(PHOTO_RECOUNT_TIMER);
+  PHOTO_RECOUNT_TIMER = setTimeout(function(){
+    if (!DATA || !DATA.deals) return;
+    refreshCountedOptions();
+    renderFilterBar();
+    if (FILTERS.photos && FILTERS.photos.length) render();
+  }, 400);
+}
+
+/* Unchecked deals on the page load are looked up in the background, so the
+   counts become exact without anyone scrolling. Capped, because without a
+   built photo index EVERY deal is unchecked; choosing a Photos option lifts
+   the cap, since the partner has asked for the answer. */
+var PHOTO_BACKGROUND_MAX = 200;
+function resolveUnknownPhotos(all){
+  if (!DATA || !DATA.deals) return;
+  var maybe = DATA.deals.filter(function(d){ return photoState(d) === 'maybe' && !PHOTOS[d.id]; });
+  if (!all) maybe = maybe.slice(0, PHOTO_BACKGROUND_MAX);
+  maybe.forEach(function(d){ queuePhotos(d.id); });
+}
+
+function fillPhotoSlot(el, r){
+  var id = el.getAttribute('data-photos');
+  var p = (r && r.photos) || [];
+
+  if (el.classList.contains('ph-cover')) {
+    // The head shows the first photo only; an error or an empty folder hides it
+    // (the open card's strip is where an error is explained).
+    if (r.error || !p.length) { el.innerHTML = ''; el.classList.add('none'); return; }
+    el.classList.remove('none');
+    el.innerHTML = '<button type="button" data-photo="' + esc(id) + '" data-i="0"'
+      + ' title="View ' + p.length + (p.length === 1 ? ' photo' : ' photos') + '">'
+      + '<img src="' + esc(p[0].url) + '" alt="Photo 1" loading="lazy" decoding="async">'
+      + (p.length > 1 ? '<span class="ph-n">' + p.length + '</span>' : '')
+      + '</button>';
+    return;
+  }
+
+  if (r.error) {
+    el.innerHTML = '<div class="ph-note">Photos could not be loaded. '
+      + '<button type="button" data-phretry="' + esc(id) + '">Try again</button></div>';
+    return;
+  }
+  if (!p.length) { el.innerHTML = ''; return; }
+  if (!PHOTO_ALL[id]) {
+    // The card opened on its own (the list arrives expanded): the cover is
+    // already up top, so the other photos wait until the partner asks.
+    el.innerHTML = p.length > 1
+      ? '<button type="button" class="ph-all" data-phall="' + esc(id) + '">Show all ' + p.length + ' photos</button>'
+      : '';
+    return;
+  }
+  el.innerHTML = '<div class="ph-strip">'
+    + p.map(function(x, i){
+        return '<button type="button" class="ph-tile" data-photo="' + esc(id) + '" data-i="' + i + '"'
+             + ' title="Photo ' + (i + 1) + ' of ' + p.length + '">'
+             + '<img src="' + esc(x.url) + '" alt="Photo ' + (i + 1) + '" loading="lazy" decoding="async">'
+             + '</button>';
+      }).join('')
+    + '</div>'
+    + '<div class="ph-meta">' + p.length + (p.length === 1 ? ' photo' : ' photos')
+    + (p.length > 1 ? ' &middot; scroll for more, click to enlarge' : ' &middot; click to enlarge')
+    + '</div>';
+}
+
+/* ---- full-screen viewer ---- */
+var LB = { id: '', i: 0, x: null };
+
+function openLightbox(id, i){
+  var r = PHOTOS[id];
+  if (!r || !r.photos || !r.photos.length) return;
+  showAllPhotos(id);                          // clicking the cover counts as asking for them
+  LB.id = id; LB.i = i;
+  $('lightbox').hidden = false;
+  document.body.style.overflow = 'hidden';
+  showLightbox();
+}
+
+function showLightbox(){
+  var p = PHOTOS[LB.id].photos, n = p.length;
+  LB.i = (LB.i % n + n) % n;
+  $('lbImg').src = p[LB.i].url;
+  $('lbCount').textContent = (LB.i + 1) + ' / ' + n;
+  $('lbPrev').hidden = $('lbNext').hidden = n < 2;
+  if (n > 1) { var next = new Image(); next.src = p[(LB.i + 1) % n].url; }   // arrowing on is instant
+}
+
+function stepLightbox(k){ LB.i += k; showLightbox(); }
+
+function closeLightbox(){
+  $('lightbox').hidden = true;
+  $('lbImg').removeAttribute('src');
+  document.body.style.overflow = '';
+}
+
+$('lbClose').onclick = closeLightbox;
+$('lbPrev').onclick = function(){ stepLightbox(-1); };
+$('lbNext').onclick = function(){ stepLightbox(1); };
+$('lightbox').onclick = function(ev){ if (ev.target === this) closeLightbox(); };
+document.addEventListener('keydown', function(ev){
+  if ($('lightbox').hidden) return;
+  if (ev.key === 'Escape') closeLightbox();
+  else if (ev.key === 'ArrowLeft') stepLightbox(-1);
+  else if (ev.key === 'ArrowRight') stepLightbox(1);
+});
+$('lightbox').addEventListener('touchstart', function(ev){
+  LB.x = ev.changedTouches[0].clientX;
+}, { passive: true });
+$('lightbox').addEventListener('touchend', function(ev){
+  if (LB.x === null) return;
+  var dx = ev.changedTouches[0].clientX - LB.x;
+  LB.x = null;
+  if (Math.abs(dx) > 40) stepLightbox(dx < 0 ? 1 : -1);
+});
+
+/* ============================ admin filters ============================
+   Rendered only when the server says this viewer is an admin. The hidden tab
+   is cosmetic — requireAdmin_() on the server is the real control, so a
+   partner calling adminSaveRules directly is refused.                      */
+
+var ADMIN = { data: null, partner: '', rules: [], dirty: false, msg: '', bad: false };
+
+function opNeedsValue(fieldKey, op){
+  var def = null, F = (ADMIN.data && ADMIN.data.fields) || [];
+  for (var i=0;i<F.length;i++) if (F[i].key === fieldKey) def = F[i];
+  if (!def) return false;
+  if (def.type === 'bool') return false;
+  return op !== 'is blank' && op !== 'is not blank';
+}
+function fieldType(fieldKey){
+  var F = (ADMIN.data && ADMIN.data.fields) || [];
+  for (var i=0;i<F.length;i++) if (F[i].key === fieldKey) return F[i].type;
+  return 'text';
+}
+function opHint(fieldKey, op){
+  if (op === 'between')  return 'Two numbers, low first — e.g. 200000, 1500000';
+  if (op === 'is any of' || op === 'is none of') return 'Comma-separated, matched exactly — e.g. Dallas, Tampa';
+  if (op === 'contains' || op === 'does not contain') return 'Comma-separated; matches if any appears anywhere in the text';
+  if (op === 'equals' || op === 'not equals') return 'One or more numbers, comma-separated';
+  if (op === 'at least' || op === 'at most') return 'A single number';
+  return '';
+}
+
+function loadAdmin(){
+  $('panel-admin').innerHTML = '<div class="adm"><div class="spin"></div></div>';
+  google.script.run
+    .withSuccessHandler(function(r){
+      ADMIN.data = r;
+      var selectable = r.partners.filter(function(p){ return p !== r.adminPartner; });
+      if (!ADMIN.partner || selectable.indexOf(ADMIN.partner) < 0) {
+        ADMIN.partner = selectable.length ? selectable[0] : '';
+      }
+      loadRulesForPartner();
+    })
+    .withFailureHandler(function(e){
+      if (!handleAuthFailure(e)) {
+        $('panel-admin').innerHTML = '<div class="empty"><b>Could not load the rules</b>'
+          + esc(String(e && e.message || e)) + '</div>';
+      }
+    })
+    .adminGetRules(TOKEN);
+}
+
+function loadRulesForPartner(){
+  var src = (ADMIN.data && ADMIN.data.rules[ADMIN.partner]) || [];
+  ADMIN.rules = src.map(function(r){
+    return { field:r.field, op:r.op, value:r.value, allowBlank:!!r.allowBlank,
+             active:true, notes:r.notes || '', group:(r.group || '').trim() };
+  });
+  ADMIN.grouped = ADMIN.rules.filter(function(r){ return r.group; });
+  ADMIN.dirty = false; ADMIN.msg = ''; ADMIN.bad = false;
+  renderAdmin();
+}
+
+function renderAdmin(){
+  // Own the panel visibility too — renderAdmin is reached both from render()
+  // and directly from the async rule fetch, and the latter used to leave the
+  // Deals panel on screen with the admin content rendered invisibly behind it.
+  if (TAB === 'admin') {
+    ['deals','saved','mine','archive'].forEach(function(x){ $('panel-'+x).classList.remove('active'); });
+    $('panel-admin').classList.add('active');
+  }
+  var d = ADMIN.data;
+  if (!d) { loadAdmin(); return; }
+
+  var partnerOpts = d.partners.filter(function(p){ return p !== d.adminPartner; });
+  var savedCount = (d.counts && d.counts[ADMIN.partner] !== undefined) ? d.counts[ADMIN.partner] : null;
+
+  var h = '<div class="adm">'
+    + '<h3>Buy box rules</h3>'
+    + '<div class="sub2">Set which deals a partner sees. Rules combine with AND; '
+    + 'several values inside one rule mean OR. A partner can also have several '
+    + 'named <b>regions</b> on the Partner Buy Box tab, and a deal need only fit one '
+    + 'of them. Only fields the partner can already see are available.</div>'
+    + (partnerOpts.length
+        ? ''
+        : '<div class="adm-note" style="border-left-color:var(--copper)">No partners to '
+          + 'configure yet. Add a row to the <b>Access</b> tab with a name in '
+          + '<b>Partner Name</b> &mdash; the Email column can be left blank for now. '
+          + 'A row whose <b>Active</b> column says <i>No</i> is ignored.</div>')
+    + ((d.badRows || []).length
+        ? '<div class="adm-note" style="border-left-color:var(--copper)"><b>'
+          + d.badRows.length + ' row(s) on the Access tab have a broken email cell.</b> '
+          + 'These partners look configured but can never receive a sign-in code:<br>'
+          + d.badRows.map(function(b2){
+              return '&nbsp;&nbsp;row ' + b2.row + ' &mdash; <b>' + esc(b2.name || '(no name)')
+                + '</b> &mdash; <code>' + esc(b2.raw) + '</code>'
+                + (b2.reveal ? ' <span style="color:var(--copper)">hidden characters: '
+                    + esc(b2.reveal) + '</span>' : '');
+            }).join('<br>')
+          + '<br>Delete each cell and retype the address by hand. Run '
+          + '<code>whyCantTheyLogIn(\'their@email.com\')</code> in the Apps Script editor '
+          + 'for the full reason.</div>'
+        : '')
+    + (((d.noLogin || []).indexOf(ADMIN.partner) > -1)
+        ? '<div class="adm-note">No email on the <b>Access</b> tab for <b>'
+          + esc(ADMIN.partner) + '</b> yet, so nobody can sign in as them. You can build '
+          + 'their buy box and add deals back now; it all takes effect the moment you put '
+          + 'an email on their row.</div>'
+        : '')
+    + '<div class="adm-head">'
+    +   '<div><div style="font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:var(--grey);font-weight:700;margin-bottom:3px">Partner</div>'
+    +   '<select id="admPartner">'
+    +     (partnerOpts.length
+          ? partnerOpts.map(function(p){
+              var nl = (d.noLogin || []).indexOf(p) > -1;
+              return '<option value="' + esc(p) + '"' + (p === ADMIN.partner ? ' selected' : '') + '>'
+                + esc(p) + (nl ? '  (no login yet)' : '') + '</option>';
+            }).join('')
+          : '<option value="">No external partners on the Access tab</option>')
+    +   '</select></div>'
+    +   '<div class="adm-count' + (savedCount === 0 ? ' zero' : '') + '">'
+    +     '<b>' + (savedCount === null ? '—' : savedCount) + '</b>'
+    +     'of ' + d.totalDeals + ' deals currently visible'
+    +   '</div>'
+    + '</div>';
+
+  if (!partnerOpts.length) {
+    h += '<div class="adm-note">Add the partner\'s email to the <b>Access</b> tab first, '
+       + 'with their company name in the <b>Partner Name</b> column. They will appear here.</div></div>';
+    $('panel-admin').innerHTML = h;
+    return;
+  }
+
+  h += unmappedHtml(d);
+
+  h += ADMIN.rules.length
+    ? rulesByRegionHtml(d)
+    : (hasRegions()
+        ? '<div class="adm-note">No partner-wide rules — every rule for '
+          + esc(ADMIN.partner) + ' lives in one of the regions above. Add one here to apply it '
+          + 'to all of them at once.</div>'
+        : '<div class="adm-note" style="border-left-color:var(--copper)"><b>No rules — this partner sees nothing.</b> '
+          + 'That is deliberate: adding a partner and forgetting their rules must not expose the whole feed. '
+          + 'Add a rule below.</div>');
+
+  h += '<div class="adm-actions">'
+    +   '<button class="btn btn-ghost" id="admAdd">+ Add rule</button>'
+    +   '<button class="btn btn-gold" id="admSave"' + (ADMIN.dirty ? '' : ' disabled') + '>Save rules</button>'
+    +   '<button class="btn btn-ghost" id="admRevert"' + (ADMIN.dirty ? '' : ' disabled') + '>Revert</button>'
+    +   '<button class="btn btn-ghost" id="admPreview">View as ' + esc(ADMIN.partner) + '</button>'
+    +   '<span style="font-size:12px;color:var(--grey)">' + partnerOpts.length
+    +     (partnerOpts.length === 1 ? ' partner' : ' partners') + ' on the Access tab</span>'
+    +   '<span class="adm-msg ' + (ADMIN.bad ? 'bad' : 'ok') + '">' + esc(ADMIN.msg) + '</span>'
+    + '</div>'
+    + '</div>';
+
+  h += '<div class="adm"><h3>How this works</h3>'
+    + '<div class="adm-note">'
+    + '<b>Saving takes effect immediately</b> — the partner sees the change on their next load '
+    + '(within the 2-minute cache). Every save is written to the <b>Portal Audit Log</b> with who '
+    + 'changed what, from what to what.<br><br>'
+    + '<b>Blank values.</b> A rule excludes deals whose field is empty, unless you tick '
+    + '<b>Allow blank</b>. Partner B\'s lot-size rule has it ticked, which is what preserves the '
+    + 'original behaviour of showing deals with no lot size recorded.<br><br>'
+    + '<b>Record quality.</b> ' + (d.requireCompleteRecord
+        ? 'Rows without an address, and rows whose Unit Type is explicitly non-residential '
+        + '(condo, multi-family, land, commercial), are always excluded regardless of rules — '
+        + 'otherwise a partner whose only rule is a market would receive land and placeholder records. '
+        + 'Set <b>REQUIRE_COMPLETE_RECORD</b> to false in Code.gs to lift it.'
+        : 'The record-quality screen is currently <b>disabled</b> in Code.gs.')
+    + '</div></div>';
+
+  $('panel-admin').innerHTML = h;
+  wireAdmin();
+}
+
+function hasRegions(){ return !!(ADMIN.grouped && ADMIN.grouped.length); }
+
+
+
+/**
+ * The partner's named buy boxes, read-only.
+ *
+ * Editing happens on the Partner Buy Box tab: a region is a set of rules that
+ * AND together, and the regions OR with each other. Showing them here — with
+ * each one's own deal count — is what makes an empty region obvious.
+ */
+/**
+ * "These markets are in this region but are not on this box's list."
+ *
+ * Not an error — a partner only sees what they asked for. It is the prompt to
+ * decide, once, whether a newly-opened market belongs in their scope.
+ */
+
+
+/** The unmapped-market warning: markets with no row on the mapping tab. */
+function unmappedHtml(d){
+  if (!(d.unmappedMarkets || []).length) return '';
+  return '<div class="adm-note" style="border-left-color:var(--copper)">'
+       + '<b>' + d.unmappedMarkets.length + ' market(s) have no row on the '
+       + '<i>Region &amp; Office Mapping</i> tab.</b> Their Region is blank, so a rule on '
+       + 'Region cannot reach them, and they belong to no region below: '
+       + d.unmappedMarkets.map(function(u){ return esc(u.market) + ' (' + u.count + ')'; }).join(', ')
+       + '. Add a row there and they classify on the next load.</div>';
+}
+
+/**
+ * "These markets are in this region but are not on this region's list."
+ *
+ * Not an error — a partner only sees what they asked for. It is the prompt to
+ * decide, once, whether a newly-opened market belongs in their scope.
+ */
+function gapHtml(g){
+  if (!g || !g.missing || !g.missing.length) return '';
+  return '<div style="margin:2px 0 4px;padding-left:2px;font-size:12px;color:var(--grey)">'
+       + '<b style="color:var(--copper)">Also in ' + esc(g.region) + ', not on this list:</b> '
+       + g.missing.map(function(m){ return esc(m.market) + ' (' + m.count + ')'; }).join(', ')
+       + ' &mdash; add to the market rule if the partner buys there.'
+       + '</div>';
+}
+
+/** Every region name this partner could use: their own, plus Atlas's regions. */
+function regionChoices(d){
+  var out = [], seen = {};
+  ADMIN.rules.forEach(function(r){
+    if (r.group && !seen[r.group.toLowerCase()]) { seen[r.group.toLowerCase()] = 1; out.push(r.group); }
+  });
+  (d.regionNames || []).forEach(function(n){
+    if (!seen[n.toLowerCase()]) { seen[n.toLowerCase()] = 1; out.push(n); }
+  });
+  return out;
+}
+
+/**
+ * The rules, grouped by the region they belong to.
+ *
+ * Base rules first (they constrain every region), then one block per region
+ * with its own deal count and its reconciliation line. Every row still carries
+ * a Region picker, so moving a rule between regions is one dropdown.
+ */
+function rulesByRegionHtml(d){
+  var counts = (d.buyBoxCounts && d.buyBoxCounts[ADMIN.partner]) || {};
+  var gaps = {};
+  ((d.regionGaps && d.regionGaps[ADMIN.partner]) || []).forEach(function(g){
+    gaps[g.box.toLowerCase()] = g;
+  });
+
+  var order = [], bucket = {};
+  ADMIN.rules.forEach(function(r, i){
+    var k = (r.group || '').toLowerCase();
+    if (!bucket[k]) { bucket[k] = { name: r.group || '', rows: [] }; order.push(k); }
+    bucket[k].rows.push(i);
+  });
+  // base rules always render first
+  order.sort(function(a, b){ return (a === '' ? -1 : 0) - (b === '' ? -1 : 0); });
+
+  var h = '';
+  order.forEach(function(k){
+    var g = bucket[k];
+    if (g.name) {
+      var c = counts[g.name];
+      h += '<div class="adm-boxhead">'
+        +    '<b>' + esc(g.name) + '</b>'
+        +    '<span>' + (c === undefined ? 'new region' :
+                         c + (c === 1 ? ' deal' : ' deals')
+                         + (c === 0 ? ' — nothing matches this region right now' : '')) + '</span>'
+        +  '</div>';
+    } else if (hasRegions()) {
+      h += '<div class="adm-boxhead"><b>Applies to every region</b>'
+        +  '<span>base rules — they narrow all the regions below</span></div>';
+    }
+    g.rows.forEach(function(i){ h += ruleRowHtml(ADMIN.rules[i], i, d); });
+    if (g.name) h += gapHtml(gaps[k]);
+  });
+  return h;
+}
+
+function ruleRowHtml(r, i, d){
+  var type = fieldType(r.field);
+  var ops  = d.ops[type] || [];
+  var needsVal = opNeedsValue(r.field, r.op);
+  var dl = (d.distinct && d.distinct[r.field] && d.distinct[r.field].length)
+    ? 'list="dl-' + esc(r.field) + '"' : '';
+  var hint = opHint(r.field, r.op);
+
+  var choices = regionChoices(d);
+  return '<div class="adm-rule' + (r.active ? '' : ' off') + '" data-i="' + i + '">'
+    + '<select class="r-group" title="Which region this rule belongs to">'
+    +   '<option value=""' + (r.group ? '' : ' selected') + '>&mdash; every region &mdash;</option>'
+    +   choices.map(function(n){
+          return '<option value="' + esc(n) + '"' + (n === r.group ? ' selected' : '') + '>'
+               + esc(n) + '</option>'; }).join('')
+    +   '<option value="__new">+ New region&hellip;</option>'
+    + '</select>'
+    + '<select class="r-field">'
+    +   d.fields.map(function(f){
+          return '<option value="' + esc(f.key) + '"' + (f.key === r.field ? ' selected' : '') + '>'
+               + esc(f.label) + '</option>'; }).join('')
+    + '</select>'
+    + '<select class="r-op">'
+    +   ops.map(function(o){
+          return '<option value="' + esc(o) + '"' + (o === r.op ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('')
+    + '</select>'
+    + '<input class="r-val" type="text" ' + dl + ' value="' + esc(r.value) + '"'
+    +   (needsVal ? '' : ' disabled placeholder="no value needed"') + '>'
+    + (d.distinct && d.distinct[r.field] && d.distinct[r.field].length
+        ? '<datalist id="dl-' + esc(r.field) + '">'
+          + d.distinct[r.field].map(function(v){ return '<option value="' + esc(v) + '">'; }).join('')
+          + '</datalist>' : '')
+    + '<label class="chk" title="Include deals where this field is empty">'
+    +   '<input type="checkbox" class="r-blank"' + (r.allowBlank ? ' checked' : '')
+    +   (needsVal ? '' : ' disabled') + '> Allow blank</label>'
+    + '<label class="chk"><input type="checkbox" class="r-active"' + (r.active ? ' checked' : '') + '> Active</label>'
+    + '<button class="r-del" title="Remove this rule">&times;</button>'
+    + (hint ? '<div class="r-hint">' + esc(hint) + '</div>' : '')
+    + '</div>';
+}
+
+function wireAdmin(){
+  var pSel = $('panel-admin').querySelector('#admPartner');
+  if (pSel) pSel.onchange = function(){
+    if (ADMIN.dirty && !confirmDiscard()) { renderAdmin(); return; }
+    ADMIN.partner = this.value; loadRulesForPartner();
+  };
+
+  var add = $('panel-admin').querySelector('#admAdd');
+  if (add) add.onclick = function(){
+    var last = ADMIN.rules[ADMIN.rules.length - 1];
+    ADMIN.rules.push({ field:'arv', op:'between', value:'', allowBlank:false, active:true,
+                       notes:'', group: last ? last.group : '' });
+    ADMIN.dirty = true; ADMIN.msg = ''; renderAdmin();
+  };
+
+  var rev = $('panel-admin').querySelector('#admRevert');
+  if (rev) rev.onclick = function(){ loadRulesForPartner(); };
+
+  var prev = $('panel-admin').querySelector('#admPreview');
+  if (prev) prev.onclick = function(){
+    $('viewAs').value = ADMIN.partner;
+    VIEW_AS = ADMIN.partner;
+    TAB = 'deals';
+    document.querySelectorAll('.tab').forEach(function(x){
+      x.classList.toggle('active', x.getAttribute('data-panel') === 'deals'); });
+    load();
+  };
+
+  var save = $('panel-admin').querySelector('#admSave');
+  if (save) save.onclick = function(){
+    var btn = this; btn.disabled = true; btn.textContent = 'Saving…';
+    google.script.run
+      .withSuccessHandler(function(r){
+        ADMIN.dirty = false;
+        ADMIN.bad = false;
+        ADMIN.msg = 'Saved — ' + ADMIN.partner + ' now sees ' + r.matches + ' deals.';
+        ADMIN.data = null;                       // refetch counts
+        loadAdmin();
+        toast('Rules saved for ' + ADMIN.partner);
+      })
+      .withFailureHandler(function(e){
+        btn.disabled = false; btn.textContent = 'Save rules';
+        if (!handleAuthFailure(e)) {
+          ADMIN.bad = true; ADMIN.msg = String(e && e.message || e); renderAdmin();
+        }
+      })
+      .adminSaveRules(TOKEN, ADMIN.partner, ADMIN.rules);
+  };
+
+  // rule row edits
+  Array.prototype.forEach.call($('panel-admin').querySelectorAll('.adm-rule'), function(row){
+    var i = Number(row.getAttribute('data-i'));
+    var r = ADMIN.rules[i];
+    row.querySelector('.r-group').onchange = function(){
+      if (this.value === '__new') {
+        var name = (window.prompt('Name this region — use the same wording as the '
+                  + 'Region & Office Mapping tab so the two reconcile:', '') || '').trim();
+        if (!name) { renderAdmin(); return; }      // cancelled: put the select back
+        r.group = name;
+      } else {
+        r.group = this.value;
+      }
+      ADMIN.dirty = true; ADMIN.msg = ''; renderAdmin();
+    };
+    row.querySelector('.r-field').onchange = function(){
+      r.field = this.value;
+      var t = fieldType(r.field);
+      var ops = ADMIN.data.ops[t] || [];
+      if (ops.indexOf(r.op) < 0) r.op = ops[0];   // operator must suit the new type
+      ADMIN.dirty = true; ADMIN.msg = ''; renderAdmin();
+    };
+    row.querySelector('.r-op').onchange = function(){
+      r.op = this.value; ADMIN.dirty = true; ADMIN.msg = ''; renderAdmin();
+    };
+    row.querySelector('.r-val').oninput = function(){ r.value = this.value; ADMIN.dirty = true; ADMIN.msg = ''; };
+    row.querySelector('.r-blank').onchange = function(){ r.allowBlank = this.checked; ADMIN.dirty = true; };
+    row.querySelector('.r-active').onchange = function(){
+      r.active = this.checked; ADMIN.dirty = true; renderAdmin();
+    };
+    row.querySelector('.r-del').onclick = function(){
+      ADMIN.rules.splice(i, 1); ADMIN.dirty = true; ADMIN.msg = ''; renderAdmin();
+    };
+  });
+}
+
+function confirmDiscard(){ return true; }   // no blocking dialogs inside the Apps Script frame
+
+/* ============================== archive ================================
+   Admin-only, exactly like Admin Filters. Every deal that has phased out of
+   the rolling 7-day feed is snapshotted server-side; anything whose Deal:
+   Created Date is older than the retention window is purged automatically.
+   "Add back" hands one deal to one partner, bypassing that partner's buy box,
+   and the reinstated deal is pinned to the top of their Deals tab.
+
+   The hidden tab is cosmetic — requireAdmin_() on the server is the real
+   control, so a partner calling adminGetArchive directly is refused.      */
+
+var ARC = { data: null, q: '', onlyBack: false, msg: '', bad: false, busy: false };
+
+function loadArchive(){
+  $('panel-archive').innerHTML = '<div class="empty"><b>Loading the archive…</b>'
+    + 'Reading every snapshot on the Deal Archive tab.</div>';
+  google.script.run
+    .withSuccessHandler(function(r){
+      ARC.data = r;
+      $('cArchive').textContent = r.archivedCount;
+      $('cArchive').hidden = false;
+      renderArchive();
+    })
+    .withFailureHandler(function(e){
+      if (handleAuthFailure(e)) return;
+      $('panel-archive').innerHTML = '<div class="empty"><b>Could not load the archive</b>'
+        + esc(String(e && e.message || e)) + '</div>';
+    })
+    .adminGetArchive(TOKEN);
+}
+
+function arcList(){
+  var d = (ARC.data && ARC.data.deals) || [];
+  var q = ARC.q.trim().toLowerCase();
+  return d.filter(function(x){
+    if (ARC.onlyBack && !(x.reinstatedFor || []).length) return false;
+    if (!q) return true;
+    return (x.address + ' ' + x.city + ' ' + x.state + ' ' + x.zip + ' '
+            + (x.market||'') + ' ' + (x.schoolDistrict||'') + ' '
+            + (x.source||'') + ' '
+            + (x.reinstatedFor||[]).join(' ')).toLowerCase().indexOf(q) > -1;
+  });
+}
+
+function arcDaysHtml(d){
+  if (d.daysLeft === null || d.daysLeft === undefined) {
+    return '<span class="arc-days">no date</span>';
+  }
+  var n = d.daysLeft;
+  if (n <= 0) return '<span class="arc-days soon">purges tonight</span>';
+  return '<span class="arc-days' + (n <= 5 ? ' soon' : '') + '">'
+       + n + (n === 1 ? ' day left' : ' days left') + '</span>';
+}
+
+function arcRowHtml(d, partners){
+  var loc = [d.city, d.state].filter(Boolean).join(', ');
+  var opts = '<option value="">Add back for…</option>'
+    + partners.filter(function(p){
+        // Don't offer a partner who already has it.
+        for (var i=0;i<(d.reinstatedFor||[]).length;i++) {
+          if (String(d.reinstatedFor[i]).toLowerCase() === p.toLowerCase()) return false;
+        }
+        return true;
+      })
+      .map(function(p){
+        var nl = (ARC.data && (ARC.data.noLogin || []).indexOf(p) > -1);
+        return '<option value="' + esc(p) + '">' + esc(p) + (nl ? '  (no login yet)' : '')
+          + '</option>';
+      }).join('');
+
+  var chips = (d.reinstatedFor || []).map(function(p){
+    return '<span class="arc-chip">' + esc(p)
+      + '<button type="button" class="arc-rm" data-id="' + esc(d.id) + '" data-p="' + esc(p)
+      + '" title="Remove ' + esc(p) + '">&times;</button></span>';
+  }).join('');
+
+  var manual = d.source === 'Manual';
+  return '<div class="arc-row" data-id="' + esc(d.id) + '">'
+    + '<div class="arc-main">'
+    +   '<div class="arc-addr">' + esc(d.address) + '</div>'
+    +   '<div class="arc-meta">' + esc(loc ? loc + ' ' + d.zip : d.zip)
+    +     (d.market && String(d.market) !== String(d.city) ? ' &middot; ' + esc(d.market) : '')
+    +     ' &middot; <span class="arc-tag' + (manual ? ' hand' : ' arch') + '">'
+    +     (manual ? 'Added by hand' : 'Archived') + '</span>'
+    +     ((d.badPartners || []).length
+        ? ' <span class="arc-tag warn">&#9888; &ldquo;' + esc(d.badPartners.join('", "'))
+          + '&rdquo; is not on the Access tab</span>' : '')
+    +   '</div>'
+    + '</div>'
+    + '<div class="arc-facts">' + money(d.arv) + ' ARV<br>'
+    +   '<span>' + num(d.beds) + 'bd / ' + num(d.baths) + 'ba &middot; '
+    +   num(d.sqft) + ' sqft &middot; built ' + (d.year ? String(d.year) : '—')
+    +   '</span></div>'
+    + '<div class="arc-when">'
+    +   (manual
+        ? 'Added <b>' + esc(d.archivedAt || '—') + '</b>'
+        : 'Left feed <b>' + esc(d.archivedAt || d.lastSeen || '—') + '</b>')
+    +   '<br>' + arcDaysHtml(d) + '</div>'
+    + '<div class="arc-act">' + chips
+    +   '<select class="arc-sel" data-id="' + esc(d.id) + '">' + opts + '</select>'
+    + '</div>'
+    + '</div>';
+}
+
+function renderArchive(){
+  if (TAB === 'archive') {
+    ['deals','saved','mine','admin'].forEach(function(x){ $('panel-'+x).classList.remove('active'); });
+    $('panel-archive').classList.add('active');
+  }
+  var d = ARC.data;
+  if (!d) { loadArchive(); return; }
+
+  var list = arcList();
+  var partners = d.partners || [];
+  var sweptOn = d.lastSweep ? new Date(d.lastSweep).toLocaleString() : 'never';
+
+  var h = '<div class="adm">'
+    + '<h3>Deal archive</h3>'
+    + '<div class="sub2">Every deal that has phased out of the feed, snapshotted as it '
+    + 'last appeared &mdash; plus anything added by hand on the <b>' + esc(d.mirrorTab || 'Archived Deals')
+    + '</b> tab. Deals are removed automatically ' + d.maxAgeDays
+    + ' days after their created date. Adding a deal back ignores that partner&rsquo;s '
+    + 'buy box and pins it to the top of their Deals tab.</div>'
+
+    + '<div class="adm-head">'
+    +   '<label style="font-size:12.5px;color:var(--grey)">Search'
+    +     '<input type="text" id="arcQ" value="' + esc(ARC.q) + '" placeholder="Address, market, partner…" '
+    +     'style="display:block;margin-top:4px;border:1px solid var(--line);border-radius:var(--r-md);'
+    +     'padding:8px 10px;font-family:inherit;font-size:13px;min-width:240px"></label>'
+    +   '<label class="chk" style="display:flex;align-items:center;gap:6px;font-size:12.5px;'
+    +     'color:var(--grey);padding-bottom:8px">'
+    +     '<input type="checkbox" id="arcOnly"' + (ARC.onlyBack ? ' checked' : '')
+    +     ' style="accent-color:var(--teal)"> In the portal only</label>'
+    +   '<div class="adm-count' + (d.archivedCount ? '' : ' zero') + '"><b>' + d.archivedCount
+    +     '</b>archived &middot; ' + d.reinstatedCount + ' in the portal'
+    +     (d.manualCount ? ' &middot; ' + d.manualCount + ' by hand' : '') + '</div>'
+    + '</div>';
+
+  if (d.controlsPresent === false) {
+    h += '<div class="adm-note" style="border-left-color:var(--copper)">The <b>'
+      + esc(d.mirrorTab) + '</b> tab has no <b>Return to Portal</b> or <b>Partner</b> column, '
+      + 'so adding deals back is switched off. Run <code>setupPortal</code> and check the '
+      + 'execution log &mdash; it names the header spellings the script accepts.</div>';
+  }
+
+  if (!partners.length) {
+    h += '<div class="adm-note">There are no partner rows on the <b>Access</b> tab yet, so there '
+      +  'is nobody to add a deal back for.</div>';
+  }
+
+  h += '<div class="arc-list">'
+    + (list.length
+        ? list.map(function(x){ return arcRowHtml(x, partners); }).join('')
+        : '<div class="empty"><b>Nothing here</b>'
+          + (ARC.q ? 'No archived deal matches &ldquo;' + esc(ARC.q) + '&rdquo;.'
+                   : 'No deals have phased out of the feed yet. Run a sweep to capture today&rsquo;s.')
+          + '</div>')
+    + '</div>';
+
+  h += '<div class="arc-sweep">'
+    + '<button class="btn btn-ghost" id="arcSweep"' + (ARC.busy ? ' disabled' : '') + '>'
+    +   (ARC.busy ? 'Sweeping…' : 'Run sweep now') + '</button>'
+    + '<span>Last sweep: <b style="color:var(--ink)">' + esc(sweptOn) + '</b>'
+    +   (d.lastSweepNote ? ' &middot; ' + esc(d.lastSweepNote) : '') + '</span>'
+    + '<span class="arc-msg ' + (ARC.bad ? 'bad' : 'ok') + '">' + esc(ARC.msg) + '</span>'
+    + '</div>';
+
+  if (/BASELINE ONLY/.test(String(d.lastSweepNote || ''))) {
+    h += '<div class="adm-note" style="border-left-color:var(--copper)"><b>The last sweep '
+      + 'only laid down a baseline.</b> It had no previous snapshot of the feed to compare '
+      + 'against, so nothing could be detected as having left it &mdash; that is why the '
+      + 'archive looks empty. Drop-outs are caught from the next sweep onward. Deals that '
+      + 'left the feed before that baseline cannot be recovered.</div>';
+  }
+
+  h += '<div class="adm-note">The sweep also runs automatically once a night. It never '
+    + 'removes a row whose created date is missing &mdash; which is what keeps a hand-typed '
+    + 'deal alive indefinitely &mdash; and it audit-logs by name any <b>added-back</b> deal '
+    + 'that reaches the ' + d.maxAgeDays + '-day cutoff, so a deal a partner is actively '
+    + 'working never disappears silently.</div>';
+
+  if (d.mirrorTab) {
+    h += '<div class="adm-note">This list <i>is</i> the <b>' + esc(d.mirrorTab) + '</b> tab in '
+      + 'the spreadsheet &mdash; one archive, two ways in. On the tab you get every Salesforce '
+      + 'column: tick <b>Return to Portal</b>, put a partner in <b>Partner</b>, and the deal '
+      + 'goes back for them. You can also type a deal in by hand and it shows up here.</div>';
+  }
+
+  h += '</div>';
+  $('panel-archive').innerHTML = h;
+  wireArchive();
+}
+
+function wireArchive(){
+  var P = $('panel-archive');
+
+  var q = P.querySelector('#arcQ');
+  if (q) q.oninput = function(){
+    ARC.q = this.value;
+    // Re-render only the list, so the search box keeps focus and the caret.
+    var list = arcList(), partners = (ARC.data && ARC.data.partners) || [];
+    var wrap = P.querySelector('.arc-list');
+    if (!wrap) { renderArchive(); return; }
+    wrap.innerHTML = list.length
+      ? list.map(function(x){ return arcRowHtml(x, partners); }).join('')
+      : '<div class="empty"><b>Nothing here</b>No archived deal matches &ldquo;'
+        + esc(ARC.q) + '&rdquo;.</div>';
+    wireArcRows();
+  };
+
+  var only = P.querySelector('#arcOnly');
+  if (only) only.onchange = function(){ ARC.onlyBack = this.checked; renderArchive(); };
+
+  var sweep = P.querySelector('#arcSweep');
+  if (sweep) sweep.onclick = function(){
+    ARC.busy = true; ARC.msg = ''; ARC.bad = false; renderArchive();
+    google.script.run
+      .withSuccessHandler(function(r){
+        ARC.busy = false; ARC.bad = false; ARC.msg = r.message || 'Sweep complete.';
+        ARC.data = null;                          // refetch counts and rows
+        renderArchive();
+        toast('Archive sweep complete');
+      })
+      .withFailureHandler(function(e){
+        ARC.busy = false;
+        if (handleAuthFailure(e)) return;
+        ARC.bad = true; ARC.msg = String(e && e.message || e); renderArchive();
+      })
+      .adminRunSweep(TOKEN);
+  };
+
+  wireArcRows();
+}
+
+function wireArcRows(){
+  var P = $('panel-archive');
+
+  P.querySelectorAll('.arc-sel').forEach(function(sel){
+    sel.onchange = function(){
+      var partner = this.value, id = this.getAttribute('data-id');
+      if (!partner) return;
+      this.disabled = true;
+      arcCall('adminReinstate', id, partner,
+        'Added back for ' + partner, 'reinstate');
+    };
+  });
+
+  P.querySelectorAll('.arc-rm').forEach(function(btn){
+    btn.onclick = function(){
+      var partner = this.getAttribute('data-p'), id = this.getAttribute('data-id');
+      this.disabled = true;
+      arcCall('adminUnreinstate', id, partner,
+        'Removed for ' + partner, 'unreinstate');
+    };
+  });
+}
+
+/** One round-trip for both add-back and remove; patches the row in place. */
+function arcCall(fn, id, partner, okMsg){
+  ARC.msg = ''; ARC.bad = false;
+  google.script.run
+    .withSuccessHandler(function(r){
+      // Update the one row we changed rather than refetching the whole archive.
+      var deals = (ARC.data && ARC.data.deals) || [];
+      for (var i=0;i<deals.length;i++) {
+        if (deals[i].id === r.id) { deals[i].reinstatedFor = r.reinstatedFor; break; }
+      }
+      ARC.msg = okMsg + ' — ' + (r.address || '');
+      renderArchive();
+      toast(okMsg);
+    })
+    .withFailureHandler(function(e){
+      if (handleAuthFailure(e)) return;
+      ARC.bad = true; ARC.msg = String(e && e.message || e);
+      renderArchive();
+    })[fn](TOKEN, id, partner);
+}
+
+
+/* --------------------------- interaction ----------------------- */
+document.querySelectorAll('.tab').forEach(function(t){
+  t.onclick = function(){
+    document.querySelectorAll('.tab').forEach(function(x){ x.classList.remove('active'); });
+    t.classList.add('active');
+    TAB = t.getAttribute('data-panel');
+    // Re-read the partner list every time these tabs are opened. Both are
+    // driven by the Access tab, which changes outside the portal — a partner
+    // added to the sheet has to show up without a full page reload. Unsaved
+    // edits are never thrown away for this.
+    if (TAB === 'admin'   && !ADMIN.dirty) ADMIN.data = null;
+    if (TAB === 'archive' && !ARC.busy)    ARC.data = null;
+    render();   // render() routes to the admin panel and owns panel visibility
+  };
+});
+$('q').addEventListener('input', render);
+$('sort').addEventListener('change', render);
+$('showPassed').addEventListener('change', render);
+
+/* ---- expand / collapse all ---- */
+function syncExpandBtn(){
+  var list = currentList(), openN = 0;
+  list.forEach(function(d){ if (isOpen(d.id)) openN++; });
+  var allOpen = list.length > 0 && openN === list.length;
+  $('btnExpand').textContent = allOpen ? 'Collapse all' : 'Expand all';
+  $('btnExpand').disabled = !list.length;
+}
+$('viewAs').onchange = function(){ VIEW_AS = this.value; load(); };
+
+$('btnExpand').onclick = function(){
+  var list = currentList(), openN = 0;
+  list.forEach(function(d){ if (isOpen(d.id)) openN++; });
+  setAllOpen(!(list.length > 0 && openN === list.length));
+  render();
+};
+$('clearFilters').onclick = function(){
+  FILTER_DEFS.forEach(function(def){ FILTERS[def.key] = []; });
+  $('q').value = '';
+  closeAllPanels();
+  renderFilterBar();
+  render();
+};
+
+document.addEventListener('click', function(ev){
+  var el;
+
+  // a photo on a card opens the full-screen viewer
+  el = ev.target.closest('[data-photo]');
+  if (el) {
+    openLightbox(el.getAttribute('data-photo'), Number(el.getAttribute('data-i')) || 0);
+    return;
+  }
+  el = ev.target.closest('[data-phall]');
+  if (el) { showAllPhotos(el.getAttribute('data-phall')); return; }
+  el = ev.target.closest('[data-spage]');
+  if (el) {
+    SPLIT_PAGE += el.getAttribute('data-spage') === 'next' ? 1 : -1;
+    renderSplitList();
+    var sl = document.getElementById('splitHead'); if (sl) sl.scrollIntoView({ block: 'start' });
+    return;
+  }
+  el = ev.target.closest('[data-page]');
+  if (el) {
+    PAGE += el.getAttribute('data-page') === 'next' ? 1 : -1;
+    SCROLL_TO_LIST = true;
+    render();
+    return;
+  }
+  el = ev.target.closest('[data-phretry]');
+  if (el) {
+    var idp = el.getAttribute('data-phretry');
+    el.parentNode.textContent = 'Loading photos…';
+    delete PHOTOS[idp];
+    queuePhotos(idp);
+    return;
+  }
+
+  // expand / collapse
+  //
+  // The guard used to name each action attribute, and adding "Request info"
+  // without adding it to that list meant clicking the button just expanded the
+  // card — the toggle matched first and returned. Excluding any <button>
+  // instead is generic: every button inside the head is an action, the chevron
+  // is an <svg>, and the detail body is a SIBLING of this element rather than
+  // inside it. A new action button can no longer be swallowed by forgetting a
+  // list.
+  el = ev.target.closest('[data-toggle]');
+  if (el && !ev.target.closest('button, a')) {
+    var id = el.getAttribute('data-toggle');
+    OPEN[id] = !isOpen(id);
+    var card = $('card-' + id);
+    var det  = card.querySelector('.detail');
+    if (OPEN[id]) {
+      PHOTO_ALL[id] = true;                    // expanded by hand: show every photo
+      var d = DATA.deals.filter(function(x){ return x.id === id; })[0];
+      det.innerHTML = detailHtml(d);
+      card.classList.add('open');
+      hydratePhotos();
+    } else {
+      card.classList.remove('open');
+      det.innerHTML = '';
+    }
+    syncExpandBtn();
+    return;
+  }
+
+  // thumbs up / down — OPTIMISTIC.
+  //
+  // The card used to sit there until the server came back, which on a cold
+  // execution meant a wait for a round trip Apps Script cannot make fast. The
+  // save is not something the partner needs to watch: move the card now, send
+  // the write behind it, and put the card back if the write actually fails.
+  el = ev.target.closest('[data-act]');
+  if (el) {
+    ev.stopPropagation();
+    var id2 = el.getAttribute('data-id');
+    var act = el.getAttribute('data-act');
+    var next = (statusOf(id2) === act) ? 'none' : act;
+    setStatusOptimistic(id2, next);
+    return;
+  }
+
+  // request more information
+  el = ev.target.closest('[data-sendnote]');
+  if (el) {
+    ev.stopPropagation();
+    var idn = el.getAttribute('data-sendnote');
+    var ta = $('note-' + idn), er = $('noteerr-' + idn);
+    var txt = ta ? ta.value.trim() : '';
+    if (!txt) { if (er) { er.textContent = 'Type your note first.'; er.style.display = 'block'; } return; }
+    el.disabled = true; el.textContent = 'Sending…';
+    google.script.run
+      .withSuccessHandler(function(r){
+        if (!DATA.notes) DATA.notes = {};
+        DATA.notes[idn] = (r && r.notes) || [];
+        delete NOTE_DRAFT[idn];
+        toast('Note sent to the Atlas team');
+        render();
+      })
+      .withFailureHandler(function(e){
+        el.disabled = false; el.textContent = 'Send note';
+        if (handleAuthFailure(e)) return;
+        if (er) { er.textContent = String(e && e.message || e); er.style.display = 'block'; }
+      })
+      .sendDealNote(TOKEN, idn, txt);
+    return;
+  }
+
+  el = ev.target.closest('[data-reqinfo]');
+  if (el) {
+    ev.stopPropagation();
+    var idr = el.getAttribute('data-reqinfo');
+    el.disabled = true; el.textContent = 'Sending…';
+    google.script.run
+      .withSuccessHandler(function(r){
+        if (!DATA.infoRequested) DATA.infoRequested = {};
+        DATA.infoRequested[idr] = true;
+        // The server also saves the deal, unless an offer is already in. Mirror
+        // that here so the card moves to Saved Deals straight away.
+        if (r.saved && !(DATA.activity[idr] && DATA.activity[idr].status === 'offered')) {
+          DATA.activity[idr] = { status: 'saved', offer: null };
+        }
+        toast(r.message || 'Request sent');
+        render();
+      })
+      .withFailureHandler(function(e){
+        el.disabled = false; el.textContent = 'Request info';
+        if (!handleAuthFailure(e)) toast(String(e && e.message || e));
+      })
+      .requestInfo(TOKEN, idr);
+    return;
+  }
+
+  // open the card straight to the offer form
+  el = ev.target.closest('[data-openoffer]');
+  if (el) {
+    ev.stopPropagation();
+    var id3 = el.getAttribute('data-openoffer');
+    OPEN[id3] = true;
+    var c3 = $('card-' + id3);
+    var d3 = DATA.deals.filter(function(x){ return x.id === id3; })[0];
+    c3.querySelector('.detail').innerHTML = detailHtml(d3);
+    c3.classList.add('open');
+    hydratePhotos();
+    var inp = $('off-' + id3);
+    if (inp) { inp.focus(); inp.scrollIntoView({ behavior:'smooth', block:'center' }); }
+    return;
+  }
+
+  // submit offer
+  el = ev.target.closest('[data-offer]');
+  if (el) {
+    ev.stopPropagation();
+    var id4 = el.getAttribute('data-offer');
+    var input = $('off-' + id4);
+    var errEl = $('offerr-' + id4);
+    var raw = (input.value || '').replace(/[^0-9.]/g, '');
+    var amt = parseFloat(raw);
+    if (!amt || amt <= 0) { errEl.style.display='block'; errEl.textContent='Enter an offer amount.'; return; }
+    errEl.style.display='none';
+    el.disabled = true; el.textContent = 'Submitting…';
+    google.script.run
+      .withSuccessHandler(function(r){
+        DATA.activity[id4] = { status:'offered', offer:r.offer };
+        OPEN[id4] = false;
+        toast(r.revised ? 'Offer revised — the Atlas team has been notified.'
+                        : 'Offer submitted — the Atlas team has been notified.');
+        render();
+      })
+      .withFailureHandler(function(e){
+        el.disabled=false; el.textContent='Submit offer';
+        if (!handleAuthFailure(e)) { errEl.style.display='block'; errEl.textContent = String(e&&e.message||e); }
+      })
+      .submitOffer(TOKEN, id4, amt);
+    return;
+  }
+});
+
+// live thousands separators in the offer box
+document.addEventListener('input', function(ev){
+  if (!ev.target.id || ev.target.id.indexOf('off-') !== 0) return;
+  var v = ev.target.value.replace(/[^0-9]/g,'');
+  ev.target.value = v ? Number(v).toLocaleString() : '';
+});
+
+/* ----------------------------- boot ---------------------------- */
+google.script.run
+  .withSuccessHandler(function(r){ if (r && r.ok) { showApp(); load(); } else { showGate(); } })
+  .withFailureHandler(function(){ showGate(); })
+  .getAuthState(TOKEN);
+</script>
+</body>
+</html>
