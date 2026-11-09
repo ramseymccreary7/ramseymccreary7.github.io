@@ -68,3 +68,11 @@ pre.code .c{color:#7f8a99}pre.code .s{color:#b5d99c}pre.code .k{color:#e0a84a}
 .tab[aria-selected="true"] .n{background:var(--accent-soft);color:var(--accent)}
 section.panel-tab{padding-top:22px}
 @media (max-width:640px){.tabs{grid-template-columns:1fr;gap:10px}.tab{padding:13px 14px}.tab .ti{width:36px;height:36px}}
+.card p.what{color:var(--ink);font-size:14.5px;font-weight:500}
+.ba{margin:2px 0 0;display:grid;gap:8px}
+.ba>div{display:grid;grid-template-columns:52px 1fr;gap:10px;align-items:baseline}
+.ba dt{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;text-align:center;border-radius:6px;padding:3px 0}
+.ba .b dt{background:var(--chip);color:var(--muted)}
+.ba .a dt{background:var(--accent-soft);color:var(--accent)}
+.ba dd{margin:0;font-size:13.5px;line-height:1.5;color:var(--muted)}
+.ba .a dd{color:var(--ink)}
