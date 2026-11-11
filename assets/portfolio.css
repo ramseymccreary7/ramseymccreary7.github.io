@@ -76,3 +76,54 @@ section.panel-tab{padding-top:22px}
 .ba .a dt{background:var(--accent-soft);color:var(--accent)}
 .ba dd{margin:0;font-size:13.5px;line-height:1.5;color:var(--muted)}
 .ba .a dd{color:var(--ink)}
+/* buttons */
+.cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:14px;font-weight:600;text-decoration:none;transition:border-color .15s ease,transform .15s ease}
+.btn:hover{text-decoration:none;border-color:var(--accent);transform:translateY(-1px)}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.primary:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+/* resume */
+.rs{max-width:900px;padding-bottom:30px}
+.rs-head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;padding:48px 0 26px;border-bottom:1px solid var(--line)}
+.rs-head h1{max-width:none;margin:8px 0 6px;font-size:clamp(30px,4.6vw,44px)}
+.rs-role{margin:0 0 10px;font-size:17px;color:var(--muted)}
+.rs-contact{margin:0;font-size:14.5px;display:flex;flex-wrap:wrap;align-items:center;row-gap:4px}
+.rs-contact span:not(.sep){color:var(--muted)}
+.sep{color:var(--line);margin:0 10px}
+.rs-actions{display:flex;gap:10px;flex-wrap:wrap}
+.rs-sec{padding:26px 0 6px}
+.rs-sec h2{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 14px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.rs-comp{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 18px;font-size:15px}
+.rs-comp li{position:relative;padding-left:14px}.rs-comp li:before{content:"";position:absolute;left:0;top:.62em;width:6px;height:6px;border-radius:2px;background:var(--accent)}
+.rs-list{margin:0;padding-left:20px;font-size:15px}.rs-list li{margin:0 0 9px}.rs-list li::marker{color:var(--accent)}
+.rs-note{font-size:13.5px;color:var(--muted);margin:-4px 0 18px;border-left:3px solid var(--accent);padding:4px 0 4px 12px}
+.rs-job{margin:0 0 18px}
+.rs-jh{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:8px;font-size:16px}
+.rs-jh i{color:var(--muted)}
+.rs-date{font-size:13.5px;color:var(--muted);white-space:nowrap}
+.rs-links{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.rs-links a{font-size:12.5px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
+.rs-links a:hover{text-decoration:none;filter:brightness(1.05)}
+.rs-edu{margin:0;font-size:14.5px;color:var(--muted);font-style:italic}
+.rs-cta{margin:30px 0 10px;padding:22px 24px;border:1px solid var(--line);border-radius:14px;background:var(--surface);display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+.rs-cta p{margin:0;font-weight:600}
+@media (max-width:640px){.rs-comp{grid-template-columns:1fr 1fr}.rs-head{padding-top:30px}}
+@media (max-width:420px){.rs-comp{grid-template-columns:1fr}}
+@page{size:Letter;margin:0.38in 0.45in}
+@media print{
+ :root{--bg:#fff;--surface:#fff;--ink:#000;--muted:#222;--line:#000;--accent:#000;--accent-soft:#fff}
+ body{font:9.9pt/1.2 "Times New Roman",Times,serif;background:#fff;color:#000}
+ header.site,footer,.rs-actions,.rs-note,.rs-links,.rs-cta,.eyebrow,.rs-role{display:none!important}
+ .wrap{max-width:none;padding:0}
+ a{color:#000}
+ .rs-head{display:block;text-align:center;padding:0 0 4px;border:0}
+ .rs-head h1{font-size:19pt;margin:0 0 2px;letter-spacing:0;font-weight:700}
+ .rs-contact{justify-content:center;font-size:9pt}.rs-contact span:not(.sep){color:#000}.sep{color:#000;margin:0 5px}
+ .rs-sec{padding:4px 0 0}
+ .rs-sec h2{font-size:11.5pt;letter-spacing:0;color:#000;border-bottom:1px solid #000;padding-bottom:1px;margin:0 0 3px}
+ .rs-comp{font-size:9.6pt;gap:0 12px;padding-left:12px}.rs-comp li{padding-left:0}.rs-comp li:before{display:none}
+ .rs-list{font-size:9.6pt;padding-left:18px}.rs-list li{margin:0}.rs-list li::marker{color:#000;content:"▪  "}
+ .rs-job{margin:0 0 3px}.rs-jh{margin:0;font-size:9.9pt}.rs-jh i{color:#000}.rs-date{font-size:9.6pt;color:#000;font-style:italic}
+ .rs-edu{color:#000;font-size:9.6pt}
+ .rs-job,.rs-list li{break-inside:avoid}
+}
